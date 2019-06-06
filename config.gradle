@@ -1,0 +1,30 @@
+ext {
+    androidCompileSdkVersion = 28
+    androidMinSdkVersion = 15
+    androidTargetSdkVersion = 28
+    playServicesVersion = '15.0.0'
+    supportVersion = '25.3.1'
+    robolectricVersion = '3.1.2'
+    mockitoVersion = '2.0.57-beta'
+    jUnitVersion = '4.12'
+    mockwebserver = '3.3.0'
+}
+
+android {
+    compileSdkVersion androidCompileSdkVersion
+    buildToolsVersion '27.0.3'
+
+    defaultConfig {
+        minSdkVersion androidMinSdkVersion
+        targetSdkVersion androidTargetSdkVersion
+    }
+
+    dexOptions {
+        maxProcessCount 2
+        javaMaxHeapSize "2g"
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+}

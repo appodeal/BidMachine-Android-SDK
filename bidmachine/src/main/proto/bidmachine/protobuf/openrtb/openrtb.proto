@@ -1,0 +1,378 @@
+// OpenRTB 3.0 Protocol
+// https://github.com/InteractiveAdvertisingBureau/openrtb
+
+syntax = "proto3";
+
+package bidmachine.protobuf.openrtb;
+
+option java_multiple_files = true;
+option java_outer_classname = "OpenrtbProto";
+option java_package = "io.bidmachine.protobuf.openrtb";
+option objc_class_prefix = "ORTB";
+
+import "google/protobuf/any.proto";
+
+
+// This top-level object is the root for both request and response payloads.
+// It includes versioning information and references to the Layer-4 domain model
+// on which transactions are based. By default, the domain model used by OpenRTB
+// is the Advertising Common Object Model (AdCOM).
+message Openrtb {
+  // Version of the Layer-3 OpenRTB specification (e.g., "3.0").
+  string ver = 1;
+  // Identifier of the Layer-4 domain model.
+  // @default "adcom"
+  string domainspec = 2;
+  // Specification version of the Layer-4 domain model referenced in the “domainspec” attribute.
+  // @required
+  string domainver = 3;
+  oneof payload {
+    // Bid request container.
+    // @required*
+    Request request = 4;
+    // Bid response container.
+    // @required*
+    Response response = 5;
+  }
+}
+
+// The Request object contains a globally unique bid request ID.
+// This id attribute is required as is an Item array with at least
+// one object (i.e., at least one item for sale).
+// Other attributes establish rules and restrictions that apply to all items being offered.
+message Request {
+  // Unique ID of the bid request; provided by the exchange.
+  string id = 1;
+  // Indicator of test mode in which auctions are not billable,
+  // where false = live mode, true = test mode.
+  // @default false
+  bool test = 2;
+  // Maximum time in milliseconds the exchange allows for bids to be
+  // received including Internet latency to avoid timeout.
+  uint32 tmax = 3;
+  // Auction type, where 1 = First Price, 2 = Second Price Plus.
+  // Values greater than 500 can be used for exchange-specific auction types.
+  // @default 2
+  uint32 at = 4;
+  // Array of accepted currencies for bids on this bid request
+  // using ISO-4217 alpha codes.
+  // @default ["USD"]
+  repeated string cur = 5;
+  // Restriction list of buyer seats for bidding on this item.
+  repeated string seat = 6;
+  // Flag that determines the restriction interpretation of the “seat” array,
+  // where false = block list, true = whitelist.
+  // @default true
+  bool wseat = 7;
+  // Allows bidder to retrieve data set on its behalf in the exchange’s cookie.
+  // The string must be in base85 cookie-safe characters.
+  string cdata = 8;
+  // This object carries data about the source of the transaction
+  // including the unique ID of the transaction itself,
+  // source authentication information, and the chain of custody.
+  message Source {
+    // Transaction ID that must be common across all participants throughout
+    // the entire supply chain of this transaction.
+    // This also applies across all participating exchanges
+    // in a header bidding or similar publisher-centric broadcast scenario.
+    // @recommended
+    string tid = 1;
+    // Digital signature used to authenticate this request computed by the publisher
+    // or its trusted agent from the transaction digest string "tid:digest",
+    // where ‘tid’ matches the "tid" attribute and ‘digest’ is a string
+    // composed of an immutable portion of domain objects as defined
+    // in the domain specification used for this request.
+    // @recommended
+    string ds = 2;
+    // Format version of the digest string that was digitally signed to produce “ds”.
+    // @recommended
+    uint32 dsgver = 3;
+    // The full transaction digest string that was signed to produce the digital signature.
+    // @debug
+    string digest = 4;
+    // File name of the certificate (i.e., the public key) used
+    // to generate the digital signature in “ds” attribute.\
+    // @recommended
+    string cert = 5;
+    // Payment ID chain string containing embedded syntax described
+    // in the TAG Payment ID Protocol. NOTE that the authentication
+    // features in this Source object combined with the “ads.txt”
+    // specification may lead to the future deprecation of this attribute.
+    string pchain = 6;
+    // Optional exchange-specific extensions.
+    repeated google.protobuf.Any ext = 7;
+  }
+  // A “Source” object that provides data about the inventory source
+  // and which entity makes the final decision.
+  Source source = 9;
+  // This object represents a unit of goods being offered for sale either
+  // on the open market or in relation to a private marketplace deal.
+  // The id attribute is required since there may be multiple items being
+  // offered in the same bid request and bids must reference the specific item of interest.
+  message Item {
+    // A unique identifier for this item within the context of the offer.
+    // @required
+    string id = 1;
+    // The number of instances (i.e., "quantity") of this item being offered.
+    // @default 1
+    uint32 qty = 2;
+    // If multiple items are offered in the same bid request,
+    // the sequence number allows for the coordinated delivery.
+    uint32 seq = 3;
+    // Minimum bid price for this item expressed in CPM.
+    double flr = 4;
+    // Currency of the “flr” attribute specified using
+    // ISO-4217 alpha codes.
+    // @default "USD"
+    string flrcur = 6;
+    // Advisory as to the number of seconds that may elapse
+    // between auction and fulfilment.
+    uint32 exp = 7;
+    // Date/time when the item is expected to be fulfilled
+    // using the W3C-defined ISO-8601 format.
+    string dt = 8;
+    // Item (e.g., an Ad object) delivery method required,
+    // where 0 = either method, 1 = the item must be sent as part of the transaction,
+    // and 2 = an item previously uploaded to the exchange must be referenced by its ID.
+    // @default 0
+    uint32 dlvy = 9;
+    // This object is associated with an item as an array of metrics.
+    // These metrics can offer insight to assist with decisioning such
+    // as average recent viewability, click-through rate, etc.
+    // Each metric is identified by its type, reports the value of the metric,
+    // and optionally identifies the source or vendor measuring the value.
+    message Metric {
+      // Type of metric being presented using exchange curated string names.
+      // @required
+      string type = 1;
+      // Number representing the value of the metric.
+      // @required
+      float value = 2;
+      // Source of the value using exchange curated string names.
+      // @recommended
+      string vendor = 3;
+      // Optional exchange-specific extensions.
+      repeated google.protobuf.Any ext = 4;
+    }
+    // An array of “Metric” objects.
+    repeated Metric metric = 10;
+    // This object constitutes a specific deal that was struck a priori
+    // between a seller and a buyer. Its presence indicates that this item
+    // is available under the terms of that deal.
+    message Deal {
+      // A unique identifier for the deal.
+      // @required
+      string id = 1;
+      // Minimum deal price for this item expressed in CPM.
+      double flr = 2;
+      // Currency of the “flr” attribute specified using ISO-4217 alpha codes.
+      // @default "USD"
+      string flrcur = 3;
+      // Optional override of the overall auction type of the request.
+      uint32 at = 4;
+      // Whitelist of buyer seats allowed to bid on this deal.
+      repeated string wseat = 5;
+      // Array of advertiser domains allowed to bid on this deal.
+      repeated string wadomain = 6;
+      // Optional exchange-specific extensions.
+      repeated google.protobuf.Any ext = 7;
+    }
+    // Array of “Deal” objects that convey special terms applicable to this item.
+    repeated Deal deal = 11;
+    // Indicator of auction eligibility to seats named in “Deal” objects,
+    // where false = all bids are accepted, true = bids are restricted
+    // to the deals specified and the terms thereof.
+    // @default false
+    bool private = 12;
+    // Layer-4 domain object structure that provides specifies the item
+    // being offered conforming to the specification and version referenced
+    // in “openrtb.domainspec” and “openrtb.domainver”.
+    // For AdCOM v1.x, the objects allowed here are “Placement” and
+    // any objects subordinate to these as specified by AdCOM.
+    // @required
+    google.protobuf.Any spec = 13;
+    // Optional exchange-specific extensions.
+    repeated google.protobuf.Any ext = 14;
+  }
+  // Array of “Item” objects (at least one) that constitute
+  // the set of goods being offered for sale.
+  // @required
+  repeated Item item = 10;
+  // Flag to indicate if the Exchange can verify that the items
+  // offered represent all of the items available in context.
+  uint32 package = 11;
+  // Layer-4 domain object structure that provides context for the items
+  // being offered conforming to the specification and version referenced
+  // in “openrtb.domainspec” and “openrtb.domainver”.
+  // For AdCOM v1.x, the objects allowed here all of which are optional are
+  // one of the “DistributionChannel” subtypes (i.e., “Site”, “App”, or “Dooh”),
+  // “User”, “Device”, “Regs”, and any objects subordinate to these as specified by AdCOM.
+  // @recommended
+  google.protobuf.Any context = 12;
+  // Optional exchange-specific extensions.
+  repeated google.protobuf.Any ext = 13;
+}
+
+// This object is the bid response object under the Openrtb root.
+// Its id attribute is a reflection of the bid request ID.
+// The bidid attribute is an optional response tracking ID for bidders.
+// If specified, it will be available for use in substitution macros
+// placed in markup and notification URLs.
+// At least one Seatbid object is required, which contains
+// at least one Bid for an item.
+message Response {
+  // ID of the bid request to which this is a response;
+  // must match the "request.id" attribute.
+  // @required
+  string id = 1;
+  // Bidder generated response ID to assist with logging/tracking.
+  string bidid = 2;
+  // Reason for not bidding if applicable.
+  NoBidReason nbr = 3;
+  // Bid currency using ISO-4217 alpha codes.
+  // @default "USD"
+  string cur = 4;
+  // Allows bidder to set data in the exchange’s cookie,
+  // which can be retrieved on bid requests
+  string cdata = 5;
+  // A bid response can contain multiple Seatbid objects,
+  // each on behalf of a different buyer seat and each
+  // containing one or more individual bids. If multiple
+  // items are presented in the request offer,
+  // the package attribute can be used to specify if a seat
+  // is willing to accept any impressions that it can win (default)
+  // or if it is interested in winning any only if it can win them all as a group.
+  message Seatbid {
+    // ID of the buyer seat on whose behalf this bid is made.
+    string seat = 1;
+    // For offers with multiple items, this flag Indicates
+    // if the bidder is willing to accept wins on a subset
+    // of bids or requires the full group as a package.
+    // @default false
+    bool package = 2;
+    // A Seatbid object contains one or more Bid objects,
+    // each of which relates to a specific item in the bid request
+    // offer via the “item” attribute and constitutes an offer to buy
+    // that item for a given price.
+    message Bid {
+      // Bidder generated bid ID to assist with logging/tracking.
+      // @recommended
+      string id = 1;
+      // ID of the item object in the related bid request; specifically "item.id".
+      // @required
+      string item = 2;
+      // Bid price expressed as CPM although the actual transaction is for a unit item only.
+      // @required
+      double price = 3;
+      // Reference to a deal from the bid request if this bid pertains to a private marketplace deal;
+      // specifically “deal.id”.
+      string deal = 4;
+      // Campaign ID or other similar grouping of brand-related ads.
+      string cid = 5;
+      // Tactic ID to enable buyers to label bids for reporting to the
+      // exchange the tactic through which their bid was submitted.
+      string tactic = 6;
+      // Pending notice URL called by the exchange when a bid has been declared the winner.
+      string purl = 7;
+      // Billing notice URL called by the exchange when a winning bid becomes billable.
+      // @recommended
+      string burl = 8;
+      // Loss notice URL called by the exchange when a bid is known to have been lost.
+      string lurl = 9;
+      // Advisory as to the number of seconds the buyer is willing to wait
+      // between auction and fulfilment.
+      uint32 exp = 10;
+      // ID to enable media to be specified by reference if previously uploaded
+      // to the exchange rather than including it by value in the domain objects.
+      string mid = 11;
+      // This object constitutes a buyer defined key/value pair used to inject
+      // dynamic values into media markup. While they apply to any media markup
+      // irrespective of how it is conveyed, the principle use case is for media
+      // that was uploaded to the exchange prior to the transaction
+      // (e.g., pre-registered for creative quality review) and referenced in bid.
+      message Macro {
+        // Name of a buyer specific macro.
+        // @required
+        string key = 1;
+        // Value to substitute for each instance of the macro found in markup.
+        string value = 2;
+        // Optional demand source specific extensions.
+        repeated google.protobuf.Any ext = 3;
+      }
+      // Array of “Macro” objects that enable bid specific values to be substituted into markup;
+      repeated Macro macro = 12;
+      // Layer-4 domain object structure that specifies the media to be presented
+      // if the bid is won conforming to the specification and version referenced
+      // in “openrtb.domainspec” and “openrtb.domainver”.
+      // For AdCOM v1.x, the objects allowed here are “Ad” and any objects subordinate
+      // thereto as specified by AdCOM.
+      google.protobuf.Any media = 13;
+      // Optional demand source specific extensions.
+      repeated google.protobuf.Any ext = 14;
+    }
+    // Array of 1+ "Bid" objects each related to an item.
+    // Multiple bids can relate to the same item.
+    repeated Bid bid = 3;
+    // Optional demand source specific extensions.
+    repeated google.protobuf.Any ext = 4;
+  }
+  // Array of “Seatbid” objects; 1+ required if a bid is to be made.
+  repeated Seatbid seatbid = 6;
+  // Optional demand source specific extensions.
+  repeated google.protobuf.Any ext = 7;
+}
+
+// The following table lists the options for a bidder to signal
+// the exchange as to why it did not offer a bid for the item.
+enum NoBidReason {
+  NO_BID_REASON_INVALID = 0;
+  NO_BID_REASON_TECHNICAL_ERROR = 1;
+  NO_BID_REASON_INVALID_REQUEST = 2;
+  NO_BID_REASON_KNOWN_WEB_CRAWLER = 3;
+  NO_BID_REASON_NON_HUMAN_TRAFFIC = 4;
+  NO_BID_REASON_PROXY_IP = 5;
+  NO_BID_REASON_UNSUPPORTED_DEVICE = 6;
+  NO_BID_REASON_BLOCKED = 7;
+  NO_BID_REASON_UNMATCHED_USER = 8;
+  NO_BID_REASON_DAILY_USER_CAP_MET = 9;
+  NO_BID_REASON_DAILY_DOMAIN_CAP_MET = 10;
+  NO_BID_REASON_ADS_TXT_AUTHORIZATION_UNAVAILABLE = 11;
+  NO_BID_REASON_ADS_TXT_AUTHORIZATION_VIOLATION = 12;
+  NO_BID_REASON_ADS_CERT_AUTHENTICATION_UNAVAILABLE = 13;
+  NO_BID_REASON_ADS_CERT_AUTHENTICATION_VIOLATION = 14;
+  NO_BID_REASON_INSUFFICIENT_AUCTION_TIME = 15;
+}
+
+// The following table lists the options for an exchange to inform
+// a bidder as to the reason why they did not win an item.
+enum LossReason {
+  LOSS_REASON_BID_WON = 0;
+  LOSS_REASON_INTERNAL_ERROR = 1;
+  LOSS_REASON_IMPRESSION_OPPORTUNITY_EXPIRED = 2;
+  LOSS_REASON_INVALID_BID_RESPONSE = 3;
+  LOSS_REASON_INVALID_DEAL_ID = 4;
+  LOSS_REASON_INVALID_AUCTION_ID = 5;
+  LOSS_REASON_INVALID_ADVERTISER_DOMAIN = 6;
+  LOSS_REASON_MISSING_MARKUP = 7;
+  LOSS_REASON_MISSING_CREATIVE_ID = 8;
+  LOSS_REASON_MISSING_BID_PRICE = 9;
+  LOSS_REASON_MISSING_CREATIVE_APPROVAL_DATA = 10;
+  LOSS_REASON_BELOW_AUCTION_FLOOR = 100;
+  LOSS_REASON_BELOW_DEAL_FLOOR = 101;
+  LOSS_REASON_LOST_TO_HIGHER_BID = 102;
+  LOSS_REASON_LOST_TO_A_DEAL = 103;
+  LOSS_REASON_SEAT_BLOCKED = 104;
+  LOSS_REASON_CREATIVE_FILTERED_GENERAL = 200;
+  LOSS_REASON_CREATIVE_FILTERED_PENDING_PROCESSING = 201;
+  LOSS_REASON_CREATIVE_FILTERED_DISAPPROVED = 202;
+  LOSS_REASON_CREATIVE_FILTERED_SIZE_NOT_ALLOWED = 203;
+  LOSS_REASON_CREATIVE_FILTERED_INCORRECT_CREATIVE_FORMAT = 204;
+  LOSS_REASON_CREATIVE_FILTERED_ADVERTISER_EXCLUSIONS = 205;
+  LOSS_REASON_CREATIVE_FILTERED_NOT_SECURE = 206;
+  LOSS_REASON_CREATIVE_FILTERED_LANGUAGE_EXCLUSIONS = 207;
+  LOSS_REASON_CREATIVE_FILTERED_CATEGORY_EXCLUSIONS = 208;
+  LOSS_REASON_CREATIVE_FILTERED_CREATIVE_ATTRIBUTE_EXCLUSIONS = 209;
+  LOSS_REASON_CREATIVE_FILTERED_AD_TYPE_EXCLUSIONS = 210;
+  LOSS_REASON_CREATIVE_FILTERED_ANIMATION_TOO_LONG = 211;
+  LOSS_REASON_CREATIVE_FILTERED_NOT_ALLOWED_IN_DEAL = 212;
+}

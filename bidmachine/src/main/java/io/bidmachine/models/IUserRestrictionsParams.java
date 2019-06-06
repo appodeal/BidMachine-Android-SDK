@@ -1,0 +1,24 @@
+package io.bidmachine.models;
+
+public interface IUserRestrictionsParams<SelfType> {
+
+    /**
+     * @param hasConsent - user has given consent to the processing of personal data relating to him or her. https://www.eugdpr.org/
+     *
+     * @param consentString - GDPR consent string if applicable, complying with the comply with the IAB standard
+     *                      <a href="https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/Consent%20string%20and%20vendor%20list%20formats%20v1.1%20Final.md">Consent String Format</a>
+     *                      in the <a href="https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework">Transparency and Consent Framework</a> technical specifications
+     */
+    SelfType setConsentConfig(boolean hasConsent, String consentString);
+
+    /**
+     * @param subject - Flag indicating if GDPR regulations apply. <a href="https://wikipedia.org/wiki/General_Data_Protection_Regulation">The  General Data Protection Regulation (GDPR)</a> is a regulation of the European Union
+     */
+    SelfType setSubjectToGDPR(Boolean subject);
+
+    /**
+     * @param coppa - Flag indicating if COPPA regulations apply. <a href="https://wikipedia.org/wiki/Children%27s_Online_Privacy_Protection_Act">The Children's Online Privacy Protection Act (COPPA)</a> was established by the U.S. Federal Trade Commission
+     */
+    SelfType setCoppa(Boolean coppa);
+
+}

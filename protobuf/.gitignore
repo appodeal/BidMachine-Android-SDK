@@ -1,0 +1,10 @@
+.gradle
+/local.properties
+.DS_Store
+/build
+/libs
+
+*.iml
+.idea/*
+
+jarjar_rules.txt

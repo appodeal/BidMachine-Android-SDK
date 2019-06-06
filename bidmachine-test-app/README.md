@@ -1,0 +1,1 @@
+# BidMachineSDK-Android-TestApp

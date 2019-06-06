@@ -1,0 +1,126 @@
+// OpenBids 1.0 Extensions
+
+syntax = "proto3";
+
+package bidmachine.protobuf;
+
+option java_multiple_files = true;
+option java_outer_classname = "ExtensionsProto";
+option java_package = "io.bidmachine.protobuf";
+option objc_class_prefix = "BDM";
+
+import "bidmachine/protobuf/adcom/adcom.proto";
+import "google/protobuf/any.proto";
+
+
+message RequestExtension {
+  string seller_id = 1;
+  // Extra data
+  map<string, string> seller_data = 2;
+}
+
+// Layer-4 Placement Subtype Object Extension
+message PlacementExtension {
+  string ad_space_id = 1 [deprecated=true];
+  message CachedPlacement {
+    // SDK technology
+    bidmachine.protobuf.adcom.ApiFramework api = 1;
+    // Estimated price, calculated externally
+    double price_estimate = 2;
+    // Credentials obtained on client from SDK technology
+    map<string, string> tokens = 3;
+    // Optional SDK-specific extensions
+    repeated google.protobuf.Any ext = 5;
+  }
+  repeated CachedPlacement cache = 2;
+}
+
+message AdExtension {
+  // Credentials obtained on server to feed in SDK technology
+  map<string, string> tokens = 1;
+  // Preload ad's markup before rendering with ad framework
+  bool preload = 2;
+  // Number of seconds an ad must load or play before user can skip this ad
+  uint32 skip_after = 3;
+  // Minimal time in view for ad to be considered viewable
+  uint32 viewability_time_threshold = 4;
+  // Minimal percentage of the pixels in view for ad to be considered viewable
+  // 0.5 = 50% of pixels 
+  float viewability_pixel_threshold = 5;
+  // Minimal completed duration for video ad to be consideder viewable
+  // 0.5 = 50% of video duration
+  float viewability_duration_threshold = 6;
+  // List of custom tracking events
+  repeated bidmachine.protobuf.adcom.Ad.Event event = 7;
+}
+
+// Use for tracking events
+// Insert this codes in BM_EVENT_CODE macros in error tracking
+enum EventTypeExtended {
+  option allow_alias = true;
+  EVENT_TYPE_EXTENDED_INVALID = 0;
+  // Ad lifecycle and interaction trackers
+  EVENT_TYPE_EXTENDED_LOADED = 500;
+  EVENT_TYPE_EXTENDED_IMPRESSION = 501;
+  EVENT_TYPE_EXTENDED_VIEWABLE = 502;
+  EVENT_TYPE_EXTENDED_CLICK = 503;
+  EVENT_TYPE_EXTENDED_CLOSED = 504;
+  EVENT_TYPE_EXTENDED_DESTROYED = 505;
+  EVENT_TYPE_EXTENDED_INIT_LOADED = 506;
+  EVENT_TYPE_EXTENDED_REQUEST_LOADED = 507;
+  EVENT_TYPE_EXTENDED_REQUEST_CANCELED = 508;
+  // Ad progress trackers
+  EVENT_TYPE_EXTENDED_STARTED = 600;
+  EVENT_TYPE_EXTENDED_FIRST_QUARTILE = 601;
+  EVENT_TYPE_EXTENDED_MIDPOINT = 602;
+  EVENT_TYPE_EXTENDED_THIRD_QUARTILE = 602;
+  EVENT_TYPE_EXTENDED_COMPLETED = 603;
+  // Error tracker
+  EVENT_TYPE_EXTENDED_ERROR = 1000;
+  EVENT_TYPE_EXTENDED_TRACKING_ERROR = 1001;
+  // deprecated
+  EVENT_TYPE_EXTENDED_FILL = 500 [deprecated=true];
+  EVENT_TYPE_EXTENDED_FINISH = 502 [deprecated=true];
+}
+// Use for tracking process errors 
+// insert this codes in BM_ACTION_CODE macros in error
+enum ActionType {
+  ACTION_TYPE_TYPE_INVALID = 0;
+  // Ad lifecycle
+  ACTION_TYPE_LOADING = 500;
+  ACTION_TYPE_SHOWING = 501;
+  ACTION_TYPE_VIEWING = 502;
+  ACTION_TYPE_CLICKING = 503;
+  ACTION_TYPE_CLOSING = 504;
+  ACTION_TYPE_DESTROYING = 505;
+  ACTION_TYPE_INITIALIZING = 506;
+  ACTION_TYPE_REQUEST_LOADING = 507;
+  ACTION_TYPE_REQUEST_CANCELING = 508;
+}
+// Use for tracking errors of both error types
+// insert this codes in BM_ERROR_REASON macros in error
+enum ErrorReason {
+  ERROR_REASON_INVALID = 0;
+  ERROR_REASON_NO_CONNECTION = 100;
+  ERROR_REASON_BAD_CONTENT = 101;
+  ERROR_REASON_TIMEOUT = 102;
+  ERROR_REASON_NO_CONTENT = 103;
+  ERROR_REASON_HANDLED_EXCEPTION = 104;
+  ERROR_REASON_WAS_CLOSED = 105;
+  ERROR_REASON_WAS_DESTROYED = 106;
+  ERROR_REASON_WAS_EXPIRED = 107;
+  ERROR_REASON_INTERNAL = 108;
+  ERROR_REASON_HTTP_SERVER_ERROR = 109;
+  ERROR_REASON_HTTP_BAD_REQUEST = 110;
+}
+
+enum ApiFrameworkExtended {
+  API_FRAMEWORK_EXTENDED_INVALID = 0;
+  API_FRAMEWORK_EXTENDED_ADCOLONY = 500;
+  API_FRAMEWORK_EXTENDED_APPLOVIN = 510;
+  API_FRAMEWORK_EXTENDED_SMAATO = 520;
+  API_FRAMEWORK_EXTENDED_VUNGLE = 530;
+  API_FRAMEWORK_EXTENDED_MYTARGET = 540;
+  API_FRAMEWORK_EXTENDED_TAPJOY = 550;
+  API_FRAMEWORK_EXTENDED_PUBNATIVE = 560;
+}

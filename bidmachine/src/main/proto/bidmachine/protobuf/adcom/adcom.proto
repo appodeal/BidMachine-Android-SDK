@@ -1,0 +1,1103 @@
+// AdCOM Specification v1.0
+// https://github.com/InteractiveAdvertisingBureau/AdCOM
+
+syntax = "proto3";
+
+package bidmachine.protobuf.adcom;
+
+option java_multiple_files = true;
+option java_outer_classname = "AdcomProto";
+option java_package = "io.bidmachine.protobuf.adcom";
+option objc_class_prefix = "ADCOM";
+
+import "google/protobuf/any.proto";
+
+
+message Context {
+  message App {
+    // Vendor-specific unique identifier of the distribution channel.
+    string id = 1;
+    // Displayable name of the distribution channel.
+    string name = 2;
+    message Publisher {
+      // Vendor-specific unique publisher identifier, as used in ads.txt files.
+      string id = 1;
+      // Displayable name of the publisher.
+      string name = 2;
+      // Highest level domain of the publisher (e.g., "publisher.com").
+      string domain = 3;
+      // Array of content categories that describe the publisher using IDs
+      // from the taxonomy indicated in "cattax".
+      repeated string cat = 4;
+      // The taxonomy in use for the "cat" attribute.
+      CategoryTaxonomy cattax = 5;
+      // Optional vendor-specific extensions.
+      repeated google.protobuf.Any ext = 6;
+    }
+    // Details about the publisher of the distribution channel.
+    Publisher pub = 3;
+    message Content {
+      // ID uniquely identifying the content.
+      string id = 1;
+      // Episode number.
+      uint32 episode = 2;
+      // Content title.
+      string title = 3;
+      // Content series.
+      string series = 4;
+      // Content season (e.g., "Season 3").
+      string season = 5;
+      // Artist credited with the content.
+      string artist = 6;
+      // Genre that best describes the content (e.g., rock, pop, etc).
+      string genre = 7;
+      // Album to which the content belongs; typically for audio.
+      string album = 8;
+      // International Standard Recording Code conforming to ISO-3901.
+      string isrc = 9;
+      // URL of the content, for buy-side contextualization or review.
+      string url = 10;
+      // Array of content categories describing the content using IDs
+      // from the taxonomy indicated in "cattax".
+      repeated string cat = 11;
+      // The taxonomy in use for the "cat" attribute.
+      CategoryTaxonomy cattax = 12;
+      // Production quality.
+      ProductionQuality prodq = 13;
+      // Type of content (game, video, text, etc.).
+      ContentContext context = 14;
+      // Content rating (e.g., MPAA).
+      string rating = 15;
+      // User rating of the content (e.g., number of stars, likes, etc.).
+      string urating = 16;
+      // Media rating per IQG guidelines.
+      MediaRating mrating = 17;
+      // Comma separated list of keywords describing the content.
+      string keywords = 18;
+      // Indication of live content.
+      bool live = 19;
+      // Source relationship, where 0 = indirect, 1 = direct.
+      uint32 srcrel = 20;
+      // Length of content in seconds; typically for video or audio.
+      uint32 len = 21;
+      // Content language using ISO-639-1-alpha-2.
+      string lang = 22;
+      // Indicator of whether or not the content is embedded off-site
+      // from the the site or app described in those objects
+      // (e.g., an embedded video player)
+      bool embed = 23;
+      message Producer {
+        // Vendor-specific unique producer identifier.
+        string id = 1;
+        // Displayable name of the producer.
+        string name = 2;
+        // Highest level domain of the producer (e.g., "producer.com").
+        string domain = 3;
+        // Array of content categories that describe the producer using IDs
+        // from the taxonomy indicated in "cattax".
+        repeated string cat = 4;
+        // The taxonomy in use for the "cat" attribute.
+        CategoryTaxonomy cattax = 5;
+        // Optional vendor-specific extensions.
+        repeated google.protobuf.Any ext = 6;
+      }
+      // Details about the content producer.
+      Producer producer = 24;
+      // Additional user data. Each "Data" object represents a different data source.
+      repeated Data data = 25;
+      // Optional vendor-specific extensions.
+      repeated google.protobuf.Any ext = 26;
+    }
+    // Details about the content within the distribution channel.
+    Content content = 4;
+    //Domain of the app
+    string domain = 5;
+    // Array of content categories describing the app.
+    repeated string cat = 6;
+    // Array of content categories describing the current section of the app.
+    repeated string sectcat = 7;
+    repeated string pagecat = 8;
+    CategoryTaxonomy cattax = 9;
+    // Indicates if the app has a privacy policy.
+    bool privpolicy = 10;
+    // Comma separated list of keywords about the app.
+    string keywords = 11;
+    // Bundle or package name of the app.
+    string bundle = 12;
+    // The ID of the app in an app store.
+    string storeid = 13;
+    // App store URL for an installed app; for IQG 2.1 compliance.
+    string storeurl = 14;
+    // Application version.
+    string ver = 15;
+    // Indicator of whether or not this is a paid app.
+    bool paid = 16;
+    // Optional vendor-specific extensions.
+    repeated google.protobuf.Any ext = 17;
+  }
+  // App container
+  App app = 1;
+  message Data {
+    // Vendor-specific ID for the data provider.
+    string id = 1;
+    // Vendor-specific displayable name for the data provider.
+    string name = 2;
+    message Segment {
+      // ID of the data segment specific to the data provider.
+      string id = 1;
+      // Displayable name of the data segment specific to the data provider.
+      string name = 2;
+      // String representation of the data segment value.
+      string value = 3;
+      // Optional vendor-specific extensions.
+      repeated google.protobuf.Any ext = 4;
+    }
+    // Array of "Segment" objects that contain the actual data values.
+    repeated Segment segment = 3;
+    // Optional vendor-specific extensions.
+    repeated google.protobuf.Any ext = 4;
+  }
+  message Geo {
+    // Source of location data; recommended when passing lat/lon.
+    LocationType type = 1;
+    // Latitude from -90.0 to +90.0, where negative is south.
+    float lat = 2;
+    // Longitude from -180.0 to +180.0, where negative is west.
+    float lon = 3;
+    // Estimated location accuracy in meters.
+    uint32 accur = 4;
+    // Number of seconds since this geolocation fix was established.
+    uint64 lastfix = 5;
+    // Service or provider used to determine geolocation from IP address.
+    IpLocationService ipserv = 6;
+    // Country code using ISO-3166-1-alpha-2.
+    string country = 7;
+    // Region code using ISO-3166-2; 2-letter state code if USA.
+    string region = 8;
+    // Regional marketing areas such as Nielsen's DMA codes.
+    string metro = 9;
+    // City using United Nations Code for Trade & Transport Locations "UN/LOCODE".
+    string city = 10;
+    // ZIP or postal code.
+    string zip = 11;
+    // Local time as the number +/- of minutes from UTC.
+    int32 utcoffset = 12;
+    // Optional vendor-specific extensions.
+    repeated google.protobuf.Any ext = 13;
+  }
+  message Device {
+    // The general type of device.
+    DeviceType type = 1;
+    // Browser user agent string.
+    string ua = 2;
+    // ID sanctioned for advertiser use in the clear (i.e., not hashed).
+    string ifa = 3;
+    // Standard "Do Not Track" flag as set in the header by the browser.
+    bool dnt = 4;
+    // "Limit Ad Tracking" signal commercially endorsed (e.g., iOS, Android).
+    bool lmt = 5;
+    // Device make (e.g., "Apple").
+    string make = 6;
+    // Device model (e.g., "iPhone").
+    string model = 7;
+    // Device operating system.
+    OS os = 8;
+    // Device operating system version.
+    string osv = 9;
+    // Hardware version of the device.
+    string hwv = 10;
+    // Physical height of the screen in pixels.
+    uint32 h = 11;
+    // Physical width of the screen in pixels.
+    uint32 w = 12;
+    // Screen size as pixels per linear inch.
+    uint32 ppi = 13;
+    // The ratio of physical pixels to device independent pixels.
+    float pxratio = 14;
+    // Support for JavaScript.
+    bool js = 15;
+    // Browser language using ISO-639-1-alpha-2.
+    string lang = 16;
+    // IPv4 address closest to device.
+    string ip = 17;
+    // IP address closest to device as IPv6.
+    string ipv6 = 18;
+    // The value of the x-forwarded-for header.
+    string xff = 19;
+    // Indicator of truncation of any of the IP attributes
+    // (i.e., "ip", "ipv6", "xff").
+    bool iptr = 20;
+    // Carrier or ISP (e.g., "VERIZON") using exchange curated string names.
+    string carrier = 21;
+    // Mobile carrier as the concatenated MCC-MNC code.
+    string mccmnc = 22;
+    // MCC and MNC of the SIM card using the same format as "mccmnc".
+    string mccmncsim = 23;
+    // Network connection type.
+    ConnectionType contype = 24;
+    // Indicates if the geolocation API will be available to JavaScript code running in display ad.
+    bool geofetch = 25;
+    // Location of the device.
+    Geo geo = 26;
+    // Optional vendor-specific extensions.
+    repeated google.protobuf.Any ext = 27;
+  }
+  // Device container.
+  Device device = 2;
+  message Regs {
+    // Flag indicating if COPPA regulations apply.
+    bool coppa = 1;
+    // Flag indicating if GDPR regulations apply
+    bool gdpr = 2;
+    // Optional vendor-specific extensions.
+    repeated google.protobuf.Any ext = 3;
+  }
+  // Regs container.
+  Regs regs = 3;
+  // This object allows lists of restrictions on ad responses to be specified
+  // including specific content categories, advertisers, ads pertaining to
+  // specific apps, or creative attributes.
+  message Restrictions {
+    // Block list of content categories using IDs from the taxonomy indicated in cattax.
+    repeated string bcat = 1;
+    // The taxonomy in use for the bcat attribute.
+    CategoryTaxonomy cattax = 2;
+    // Block list of advertisers by their domains (e.g., “ford.com”).
+    repeated string badv = 3;
+    // Block list of apps for which ads are disallowed.
+    // These should be bundle or package names (e.g., “com.foo.mygame”)
+    // and should NOT be app store IDs (e.g., not iTunes store IDs).
+    repeated string bapp = 4;
+    // Block list of creative attributes.
+    repeated CreativeAttribute battr = 5;
+    // Optional vendor-specific extensions.
+    repeated google.protobuf.Any ext = 6;
+  }
+  // Restrinctions container
+  Restrictions restrictions = 4;
+  message User {
+    // Vendor-specific ID for the user.
+    string id = 1;
+    // Buyer-specific ID for the user as mapped by an exchange for the buyer.
+    string buyeruid = 2;
+    // Year of birth as a 4-digit integer.
+    uint32 yob = 3;
+    // Gender, where "M" = male, "F" = female, "O" = known to be other.
+    string gender = 4;
+    // Comma separated list of keywords, interests, or intent.
+    string keywords = 5;
+    // GDPR consent string if applicable, complying with the comply with the IAB standard.
+    string consent = 6;
+    // Location of the user's home base
+    Geo geo = 7;
+    // Additional user data
+    repeated Data data = 8;
+    // Optional vendor-specific extensions.
+    repeated google.protobuf.Any ext = 9;
+  }
+  // User container.
+  User user = 5;
+}
+
+message Placement {
+  // Identifier for specific ad placement or ad tag.
+  string tagid = 1;
+  // Indicates if server-side ad insertion is in use and
+  // the impact of this on asset and tracker retrieval
+  uint32 ssai = 2;
+  // Name of ad mediation partner, SDK technology, or player responsible for rendering ad.
+  string sdk = 3;
+  // Version of the SDK specified in the "sdk" attribute.
+  string sdkver = 4;
+  // Indicates if this is a rewarded placement
+  bool reward = 5;
+  // Block list of content categories using IDs.
+  repeated string bcat = 6;
+  // The taxonomy in use for the "bcat" attribute.
+  CategoryTaxonomy cattax = 7;
+  // Block list of advertisers by their domains.
+  repeated string badv = 9;
+  // Block list of apps for which ads are disallowed.
+  repeated string bapp = 10;
+  // Block list of creative attributes.
+  repeated CreativeAttribute battr = 11;
+  // Whitelist of permitted languages of the creative using ISO-639-1-alpha-2.
+  repeated string wlang = 12;
+  // Flag to indicate if the creative is secure.
+  bool secure = 13;
+  // Indicates if including markup is supported.
+  bool admx = 14;
+  // Indicates if retrieving markup via URL reference is supported.
+  bool curlx = 15;
+  message DisplayPlacement {
+    // Placement position on screen.
+    PlacementPosition pos = 1;
+    // Indicates if this is an interstitial placement.
+    bool instl = 2;
+    // Indicates if the placement will be loaded into an iframe or not.
+    bool topframe = 3;
+    // Array of iframe busters supported by this placement.
+    repeated string ifrbust = 4;
+    // Indicates the click type of this placement.
+    ClickType clktype = 5;
+    // AMPHTML rendering treatment for AMP ads in this placement
+    uint32 ampren = 6;
+    // The display placement type.
+    DisplayPlacementType ptype = 7;
+    // The context of the placement.
+    DisplayContextType context = 8;
+    // Array of supported mime types.
+    repeated string mime = 9;
+    // List of supported APIs.
+    repeated ApiFramework api = 10;
+    // Creative subtypes permitted.
+    repeated DisplayCreativeType ctype = 11;
+    // Width of the placement in units specified by "unit".
+    uint32 w = 12;
+    // Height of the placement in units specified by "unit".
+    uint32 h = 13;
+    // Unit of size used for placement size
+    SizeUnit unit = 14;
+    // Indicator of whether or not the placement supports a buyer-specific privacy note.
+    bool priv = 15;
+    // This object represents an allowed set of parameters for a banner display ad and 
+    // often appears as an array when multiple sizes are permitted.
+    message DisplayFormat {
+      // Absolute width of the creative in units specified by "DisplayPlacement.unit".
+      uint32 w = 1;
+      // Absolute height of the creative in units specified by "DisplayPlacement.unit".
+      uint32 h = 2;
+      // Relative width of the creative when expressing size as a ratio.
+      uint32 wratio = 3;
+      // Relative height of the creative when expressing size as a ratio.
+      uint32 hratio = 4;
+      // Directions in which the creative is permitted to expand.
+      repeated ExpandableDirection expdir = 5;
+      // Optional vendor-specific extensions.
+      repeated google.protobuf.Any ext = 6;
+    }
+    // Array of objects that govern the attributes of a banner display placement.
+    repeated DisplayFormat displayfmt = 16;
+    // This object refines a display placement to be specifically a native display placement. 
+    // It serves as the root of a structure that includes the specifications for each
+    // of the assets that comprise the native placement.
+    message NativeFormat {
+      // This object represents the permitted specifications of a single asset of a native ad.
+      // Along with its own attributes, exactly one of the asset subtype objects must be included.
+      // All others must be omitted.
+      message AssetFormat {
+        // Asset ID, unique within the scope of this placement specification.
+        uint32 id = 1;
+        // Indicator of whether or not this asset is required
+        bool req = 2;
+        // This object is used to provide native asset format specifications for a title element.
+        // Title elements are simple strings.
+        message TitleAssetFormat {
+          // The maximum allowed length of the title value.
+          // Recommended lengths are 25, 90, or 140.
+          uint32 len = 1;
+          // Optional vendor-specific extensions.
+          repeated google.protobuf.Any ext = 2;
+        }
+        // Asset Format Subtype Object that indicates this is specifying
+        // a title asset and provides additional detail as such.
+        TitleAssetFormat title = 3;
+        // This object is used to provide native asset format specifications for an image element.
+        // Image elements are typically used for the actual creative image and icons.
+        message ImageAssetFormat {
+          // The type of image asset supported.
+          NativeImageAssetType type = 1;
+          // Array of supported mime types (e.g., "image/jpeg", "image/gif").
+          repeated string mime = 2;
+          // Absolute width of the image asset in device independent pixels (DIPS).
+          uint32 w = 3;
+          // Absolute height of the image asset in device independent pixels (DIPS).
+          uint32 h = 4;
+          // The minimum requested absolute width of the image in device independent pixels (DIPS).
+          // This option should be used for any scaling of images by the client.
+          uint32 wmin = 5;
+          // The minimum requested absolute height of the image in device independent pixels (DIPS).
+          // This option should be used for any scaling of images by the client.
+          uint32 hmin = 6;
+          // Relative width of the image asset when expressing size as a ratio.
+          uint32 wratio = 7;
+          // Relative height of the image asset when expressing size as a ratio.
+          uint32 hratio = 8;
+          // Optional vendor-specific extensions.
+          repeated google.protobuf.Any ext = 9;
+        }
+        // Asset Format Subtype Object that indicates this is specifying
+        // an image asset and provides additional detail as such.
+        ImageAssetFormat img = 4;
+        // Asset Format Subtype Object, which leverages the "VideoPlacement" object,
+        // that indicates this is specifying a video asset and provides additional detail as such.
+        VideoPlacement video = 5;
+        // This object is used to provide native asset format specifications for a data element.
+        // A data asset is used for all miscellaneous elements such as brand name, ratings,
+        // stars, review count, downloads, prices, etc. It is purposefully generic to support
+        // native elements not currently contemplated by this specification.
+        message DataAssetFormat {
+          // The type of data asset supported.
+          NativeDataAssetType type = 1;
+          // The maximum allowed length of the data value.
+          uint32 len = 2;
+          // Optional vendor-specific extensions.
+          repeated google.protobuf.Any ext = 3;
+        }
+        // Asset Format Subtype Object that indicates this is specifying
+        // a data asset and provides additional detail as such.
+        DataAssetFormat data = 6;
+        // Optional vendor-specific extensions.
+        repeated google.protobuf.Any ext = 7;
+      }
+      // Array of objects that specify the set of native assets and their permitted formats. 
+      repeated AssetFormat asset = 1;
+      // Optional vendor-specific extensions.
+      repeated google.protobuf.Any ext = 2;
+    }
+    // This object specified the required and permitted assets
+    // and attributes of a native display placement.
+    NativeFormat nativefmt = 17;
+    message EventSpec {
+      // Type of supported ad tracking event.
+      EventType type = 1;
+      // Array of supported event tracking methods for this event type.
+      repeated EventTrackingMethod method = 2;
+      // Event tracking APIs available for use; only relevant for JavaScript method trackers.
+      repeated ApiFramework api = 3;
+      // Array of domains, top two levels only (e.g., "tracker.com"),
+      // that constitute a restriction list of JavaScript trackers.
+      // The sense of the restrictions is determined by "wjs".
+      repeated string jstrk = 4;
+      // Sense of the "jstrk" restriction list,
+      // where false = block list, true = whitelist.
+      // default true
+      bool wjs = 5;
+      // Array of domains, top two levels only (e.g., "tracker.com"),
+      // that constitute a restriction list of pixel image trackers.
+      // The sense of the restrictions is determined by "wpx".
+      repeated string pxtrk = 6;
+      // Sense of the "pxtrk" restriction list,
+      // where false = block list, true = whitelist.
+      // default true
+      bool wpx = 7;
+      // Optional vendor-specific extensions.
+      repeated google.protobuf.Any ext = 8;
+    }
+    // Array of supported ad tracking events.
+    repeated EventSpec event = 18;
+    // Optional vendor-specific extensions.
+    repeated google.protobuf.Any ext = 19;
+  }
+  // Placement Subtype Object that indicates that this may be a display
+  // placement and provides additional detail related thereto.
+  DisplayPlacement display = 16;
+  message VideoPlacement {
+    // Placement subtype.
+    VideoPlacementType ptype = 1;
+    // Placement position on screen.
+    PlacementPosition pos = 2;
+    // Indicates the start delay in seconds for pre-roll,
+    // mid-roll, or post-roll placements.
+    int32 delay = 3;
+    // Indicates if the placement imposes ad skippability.
+    bool skip = 4;
+    // The placement allows creatives of total duration
+    // greater than this number of seconds to be skipped.
+    uint32 skipmin = 5;
+    // Number of seconds a creative must play before the placement enables skipping;
+    uint32 skipafter = 6;
+    // Playback method in use for this placement.
+    PlaybackMethod playmethod = 7;
+    // The event that causes playback to end for this placement.
+    PlaybackCessationMode playend = 8;
+    // Indicates the click type of the placement.
+    ClickType clktype = 9;
+    // Array of supported mime types
+    repeated string mime = 10;
+    // List of supported APIs for this placement.
+    repeated ApiFramework api = 11;
+    // Creative subtypes permitted for this placement.
+    repeated VideoCreativeType ctype = 12;
+    // Width of the creative in units specified by "unit".
+    uint32 w = 13;
+    // Height of the creative in units specified by "unit".
+    uint32 h = 14;
+    // Units of size used for "w" and "h" attributes.
+    SizeUnit unit = 15;
+    // Minimum creative duration in seconds.
+    uint32 mindur = 16;
+    // Maximum creative duration in seconds.
+    uint32 maxdur = 17;
+    // Maximum extended creative duration if extension is allowed.
+    int32 maxext = 18;
+    // Minimum bit rate of the creative in Kbps.
+    uint32 minbitr = 19;
+    // Maximum bit rate of the creative in Kbps.
+    uint32 maxbitr = 20;
+    // Array of supported creative delivery methods.
+    repeated DeliveryMethod delivery = 21;
+    // The maximum number of ads that can be played in an ad pod.
+    uint32 maxseq = 22;
+    // Indicates if the creative must be linear, nonlinear, etc.
+    LinearityMode linear = 23;
+    // Indicates if letterboxing of 4:3 creatives into a 16:9 window is allowed.
+    bool boxing = 24;
+    message Companion {
+      // Identifier of the companion ad; unique within this placement.
+      string id = 1;
+      // Indicates the companion ad rendering mode relative to the associated video or audio ad,
+      // where 0 = concurrent, 1 = end-card.
+      // For a given placement, typically only one companion at most
+      // should be designated as an end card.
+      uint32 vcm = 2;
+      // Display specification object representing the companion ad.
+      DisplayPlacement display = 3;
+      // Optional vendor-specific extensions.
+      repeated google.protobuf.Any ext = 4;
+    }
+    // Array of objects indicating that companion ads are available
+    // and providing the specifications thereof.
+    repeated Companion comp = 25;
+    // Supported companion ad types.
+    repeated CompanionType comptype = 26;
+    // Optional vendor-specific extensions.
+    repeated google.protobuf.Any ext = 27;
+  }
+  // Placement Subtype Object that indicates that this may be a video
+  // placement and provides additional detail related thereto.
+  VideoPlacement video = 17;
+  // Placement Subtype Object that indicates that this may be an audio
+  // placement and provides additional detail related thereto.
+  // AudioPlacement audio = 18;
+
+  // Optional vendor-specific extensions.
+  repeated google.protobuf.Any ext = 19;
+}
+
+message Ad {
+  // ID of the creative; unique at least throughout the scope of a vendor
+  string id = 1;
+  // Advertiser domain; top two levels only (e.g., "ford.com").
+  repeated string adomain = 2;
+  // When the product of the ad is an app,
+  // the unique ID of that app as a bundle or package name.
+  repeated string bundle = 3;
+  // URL without cache-busting to an image that is representative
+  // of the ad content for cursory level ad quality checking.
+  string iurl = 4;
+  // Array of content categories describing the ad.
+  repeated string cat = 5;
+  // The taxonomy in use for the "cat" attribute.
+  CategoryTaxonomy cattax = 6;
+  // Language of the creative using ISO-639-1-alpha-2.
+  string lang = 7;
+  // Set of attributes describing the creative.
+  // repeated CreativeAttribute attr = 8;
+
+  // Flag to indicate if the creative is secure.
+  bool secure = 9;
+  // Media rating per IQG guidelines.
+  MediaRating mrating = 10;
+  // Date/time of the original instantiation of this ad in the format of ISO-8601; W3C profile.
+  string init = 11;
+  // Date/time of most recent modification to this ad in the format of ISO-8601; W3C profile.
+  string lastmod = 12;
+  message Event {
+    // Type of event to track.
+    EventType type = 1;
+    // Method of tracking requested.
+    EventTrackingMethod method = 2;
+    // The APIs being used by the tracker;
+    // only relevant when the tracking method is JavaScript.
+    repeated ApiFramework api = 3;
+    // The URL of the tracking pixel or JavaScript tag, respectively.
+    string url = 4;
+    // An array of key-value pairs to support vendor-specific data required for custom tracking.
+    map<string, string> cdata = 5;
+    // Optional vendor-specific extensions.
+    repeated google.protobuf.Any ext = 6;
+  }
+  message Display {
+    // Mime type of the ad (e.g., "image/jpeg").
+    repeated string mime = 1;
+    // API required by the ad if applicable.
+    repeated ApiFramework api = 2;
+    // Subtype of display creative.
+    repeated DisplayCreativeType type = 3;
+    // Absolute width of the creative in device independent pixels (DIPS),
+    // typically for non-native ads.
+    uint32 w = 4;
+    // Absolute height of the creative in device independent pixels (DIPS),
+    // typically for non-native ads.
+    uint32 h = 5;
+    // Relative width of the creative when expressing size as a ratio,
+    // typically for non-native ads.
+    uint32 wratio = 6;
+    // Relative height of the creative when expressing size as a ratio,
+    // typically for non-native ads.
+    uint32 hratio = 7;
+    // General display markup (e.g., HTML, AMPHTML) if not using
+    // a structured alternative (e.g., "banner", "native").
+    string adm = 8;
+    // Optional means of retrieving display markup by reference.
+    string curl = 9;
+    message Banner {
+      // A URL that will return the image.
+      string img = 1;
+      // Destination URL if the image is activated (e.g., clicked).
+      string link = 2;
+      // Optional vendor-specific extensions.
+      repeated google.protobuf.Any ext = 3;
+    }
+    // Structured banner image object, recommended for simple banner creatives.
+    Banner banner = 10;
+    message Native {
+      message LinkAsset {
+        // Landing URL of the clickable link.
+        string url = 1;
+        // Fallback URL for deep-link to be used if the URL specified
+        // in "url" is not supported by the device.
+        string urlfb = 2;
+        // List of third-party tracker URLs to be fired on click.
+        repeated string trkr = 3;
+        // Optional vendor-specific extensions.
+        repeated google.protobuf.Any ext = 4;
+      }
+      // Default destination link for the native ad overall;
+      // used if an asset is activated (e.g., clicked)
+      // that does not specify it's own destination link.
+      LinkAsset link = 1;
+      message Asset {
+        // The value of "AssetFormat.id" if this ad references a specific native placement
+        // defined by a "Placement" object and its structure.
+        uint32 id = 1;
+        // Indicates if the asset is required to be displayed.
+        bool req = 2;
+        message TitleAsset {
+          // The text content of the text element.
+          string text = 1;
+          // The length of the contents of the "text" attribute.
+          uint32 len = 2;
+          // Optional vendor-specific extensions.
+          repeated google.protobuf.Any ext = 3;
+        }
+        // Asset Subtype Object that indicates this is a title asset
+        // and provides additional detail as such.
+        TitleAsset title = 3;
+        message ImageAsset {
+          // A URL that returns the image for the asset.
+          string url = 1;
+          // Width of the image asset in device independent pixels (DIPS).
+          uint32 w = 2;
+          // Height of the image asset in device independent pixels (DIPS).
+          uint32 h = 3;
+          // The type of image represented by this asset.
+          NativeImageAssetType type = 4;
+          // Optional vendor-specific extensions.
+          repeated google.protobuf.Any ext = 5;
+        }
+        // Asset Subtype Object that indicates this is an image asset
+        // and provides additional detail as such.
+        ImageAsset image = 4;
+        message VideoAsset {
+          // Video markup (e.g., VAST document) for the asset.
+          string adm = 1;
+          // A URL that returns the video markup (e.g., VAST document) for the asset.
+          string curl = 2;
+          // Optional vendor-specific extensions.
+          repeated google.protobuf.Any ext = 3;
+        }
+        // Asset Subtype Object that indicates this is a video asset
+        // and provides additional detail as such.
+        VideoAsset video = 5;
+        message DataAsset {
+          // A formatted string of data to be displayed (e.g., "5 stars", "3.4 stars out of 5", etc.).
+          string value = 1;
+          // The length of the "value" contents.
+          uint32 len = 2;
+          // The type of data represented by this asset.
+          NativeDataAssetType type = 3;
+          // Optional vendor-specific extensions.
+          repeated google.protobuf.Any ext = 4;
+        }
+        // Asset Subtype Object that indicates this is a data asset
+        // and provides additional detail as such.
+        DataAsset data = 6;
+        // Asset Subtype Object that indicates this is a link asset
+        // and provides additional detail as such.
+        LinkAsset link = 7;
+        // Optional vendor-specific extensions.
+        repeated google.protobuf.Any ext = 8;
+      }
+      // Array of assets that comprise the native ad.
+      repeated Asset asset = 2;
+      // Optional vendor-specific extensions.
+      repeated google.protobuf.Any ext = 3;
+    }
+    // Structured native object, recommended for native ads.
+    Native native = 11;
+    // Array of events that the advertiser or buying platform wants to track.
+    repeated Event event = 12;
+    // Optional vendor-specific extensions.
+    repeated google.protobuf.Any ext = 13;
+  }
+  // Media Subtype Object that indicates this is a display ad and provides additional detail as such.
+  Display display = 13;
+  message Video {
+    // Mime type(s) of the ad creative(s) (e.g., "video/mp4").
+    repeated string mime = 1;
+    // API required by the ad if applicable.
+    repeated ApiFramework api = 2;
+    // Subtype of video creative.
+    repeated VideoCreativeType type = 3;
+    // Video markup (e.g., VAST).
+    string adm = 4;
+    // Optional means of retrieving markup by reference; a URL that returns video markup
+    string curl = 5;
+    // Optional vendor-specific extensions.
+    repeated google.protobuf.Any ext = 6;
+  }
+  // Media Subtype Object that indicates this is a video ad and provides additional detail as such.
+  Video video = 14;
+  // Audio audio = 15;
+
+  message Audit {
+    // The audit status of the ad.
+    AuditStatusCode status = 1;
+    // One or more human-readable explanations as to reasons for rejection
+    // or any changes to fields for ad quality reasons (e.g., "adomain", "cat", "attr", etc.).
+    repeated string feedback = 2;
+    // Date/time of the original instantiation of this object in the format of ISO-8601; W3C profile.
+    string init = 3;
+    // Date/time of most recent modification to this object in the format of ISO-8601; W3C profile.
+    string lastmod = 4;
+    // Correction object wherein the auditor can specify changes to attributes of the "Ad"
+    // object or its children they believe to be proper.
+    Ad corr = 5;
+    // Optional vendor-specific extensions.
+    repeated google.protobuf.Any ext = 6;
+  }
+  Audit audit = 16;
+  // Optional vendor-specific extensions.
+  repeated google.protobuf.Any ext = 17;
+}
+
+enum AuditStatusCode {
+  AUDIT_STATUS_CODE_INVALID = 0;
+  // An audit has not yet been completed on this ad.
+  // A recommendation cannot be made to use this ad, but vendors' policies may override.
+  AUDIT_STATUS_CODE_PENDING_AUDIT = 1;
+  // An audit has not yet been completed on this ad.
+  // Subject to vendors' policies, it can be recommended for use.
+  // However, once the audit has been completed, its status will change
+  // and it may or may not be approved for continued use.
+  AUDIT_STATUS_CODE_PRE_APPROVED = 2;
+  // The audit is complete and the ad is approved for use.
+  // Note, however, that some attributes (e.g., "adomain", "cat", "attr", etc.)
+  // may have been changed in the process by the auditor.
+  AUDIT_STATUS_CODE_APPROVED = 3;
+  // The audit is complete, but the ad has been found
+  // unacceptable in some material aspect and is disapproved for use.
+  AUDIT_STATUS_CODE_DENIED = 4;
+  //  Resubmission Requested: A version of the ad has been detected in use
+  // that is materially different from the version that was previously audited,
+  // which may result in rejection during use until the ad is resubmitted for audit and approved.
+  // Vendors need to communicate offline as to the criteria that constitutes a material change.
+  AUDIT_STATUS_CODE_CHANGED = 5;
+}
+
+enum ApiFramework {
+  API_FRAMEWORK_INVALID = 0;
+  API_FRAMEWORK_VPAID_1_0 = 1;
+  API_FRAMEWORK_VPAID_2_0 = 2;
+  API_FRAMEWORK_MRAID_1_0 = 3;
+  API_FRAMEWORK_ORMMA = 4;
+  API_FRAMEWORK_MRAID_2_0 = 5;
+  API_FRAMEWORK_MRAID_3_0 = 6;
+  API_FRAMEWORK_OMID_1_0 = 7;
+}
+
+enum CategoryTaxonomy {
+  CATEGORY_TAXONOMY_INVALID = 0;
+  CATEGORY_TAXONOMY_IAB_CONTENT_1_0 = 1;
+  CATEGORY_TAXONOMY_IAB_CONTENT_2_0 = 2;
+  CATEGORY_TAXONOMY_IAB_AD_PRODUCT_1_0 = 3;
+}
+
+enum ClickType {
+  CLICK_TYPE_NON_CLICKABLE = 0;
+  CLICK_TYPE_CLICKABLE_UNKNOWN = 1;
+  CLICK_TYPE_CLICKABLE_EMBEDDED_BROWSER = 2;
+  CLICK_TYPE_CLICKABLE_NATIVE_BROWSER = 3;
+}
+
+enum CompanionType {
+  COMPANION_TYPE_INVALID = 0;
+  COMPANION_TYPE_STATIC_RESOURCE = 1;
+  COMPANION_TYPE_HTML_RESOURCE = 2;
+  COMPANION_TYPE_IFRAME_RESOURCE = 3;
+}
+
+enum ConnectionType {
+  CONNECTION_TYPE_INVALID = 0;
+  CONNECTION_TYPE_ETHERNET = 1;
+  CONNECTION_TYPE_WIFI = 2;
+  CONNECTION_TYPE_CELLULAR_NETWORK_UNKNOWN = 3;
+  CONNECTION_TYPE_CELLULAR_NETWORK_2G = 4;
+  CONNECTION_TYPE_CELLULAR_NETWORK_3G = 5;
+  CONNECTION_TYPE_CELLULAR_NETWORK_4G = 6;
+  CONNECTION_TYPE_CELLULAR_NETWORK_5G = 7;
+}
+
+enum ContentContext {
+  CONTENT_CONTEXT_INVALID = 0;
+  CONTENT_CONTEXT_VIDEO = 1;
+  CONTENT_CONTEXT_GAME = 2;
+  CONTENT_CONTEXT_MUSIC = 3;
+  CONTENT_CONTEXT_APPLICATION = 4;
+  CONTENT_CONTEXT_TEXT = 5;
+  CONTENT_CONTEXT_OTHER = 6;
+  CONTENT_CONTEXT_UNKNOWN = 7;
+}
+
+enum CreativeAttribute {
+  CREATIVE_ATTRIBUTE_INVALID = 0;
+  CREATIVE_ATTRIBUTE_AUDIO_AD_AUTOPLAY = 1;
+  CREATIVE_ATTRIBUTE_AUDIO_AD_USER_INITIATED = 2;
+  CREATIVE_ATTRIBUTE_EXPANDABLE_AUTOMATIC = 3;
+  CREATIVE_ATTRIBUTE_EXPANDABLE_USER_INITIATED_CLICK = 4;
+  CREATIVE_ATTRIBUTE_EXPANDABLE_USER_INITIATED_ROLLOVER = 5;
+  CREATIVE_ATTRIBUTE_IN_BANNER_VIDEO_AD_AUTOPLAY = 6;
+  CREATIVE_ATTRIBUTE_IN_BANNER_VIDEO_AD_USER_INITIATED = 7;
+  CREATIVE_ATTRIBUTE_POP = 8;
+  CREATIVE_ATTRIBUTE_PROVOCATIVE_SUGGESTIVE_IMAGERY = 9;
+  CREATIVE_ATTRIBUTE_EXTREME_ANIMATION = 10;
+  CREATIVE_ATTRIBUTE_SURVEYS = 11;
+  CREATIVE_ATTRIBUTE_TEXT_ONLY = 12;
+  CREATIVE_ATTRIBUTE_USER_INTERACTIVE = 13;
+  CREATIVE_ATTRIBUTE_ALERT_STYLE = 14;
+  CREATIVE_ATTRIBUTE_HAS_AUDIO_ON_OFF_BUTTON = 15;
+  CREATIVE_ATTRIBUTE_AD_PROVIDES_SKIP_BUTTON = 16;
+  CREATIVE_ATTRIBUTE_ADOBE_FLASH = 17;
+  CREATIVE_ATTRIBUTE_RESPONSIVE = 18;
+}
+
+enum DeliveryMethod {
+  DELIVERY_METHOD_INVALID = 0;
+  DELIVERY_METHOD_STREAMING = 1;
+  DELIVERY_METHOD_PROGRESSIVE = 2;
+  DELIVERY_METHOD_DOWNLOAD = 3;
+}
+
+enum DeviceType {
+  DEVICE_TYPE_INVALID = 0;
+  DEVICE_TYPE_MOBILE = 1;
+  DEVICE_TYPE_PHONE_DEVICE = 4;
+  DEVICE_TYPE_TABLET = 5;
+}
+
+enum DisplayContextType {
+  DISPLAY_CONTEXT_TYPE_INVALID = 0;
+  DISPLAY_CONTEXT_TYPE_CONTENT_CENTRIC_CONTEXT = 10;
+  DISPLAY_CONTEXT_TYPE_ARTICLE_CONTENT = 11;
+  DISPLAY_CONTEXT_TYPE_VIDEO_CONTENT = 12;
+  DISPLAY_CONTEXT_TYPE_AUDIO_CONTENT = 13;
+  DISPLAY_CONTEXT_TYPE_IMAGE_CONTENT = 14;
+  DISPLAY_CONTEXT_TYPE_USER_GENERATED_CONTENT = 15;
+  DISPLAY_CONTEXT_TYPE_SOCIAL_CENTRIC_CONTEXT = 20;
+  DISPLAY_CONTEXT_TYPE_EMAIL_CONTENT = 21;
+  DISPLAY_CONTEXT_TYPE_CHAT_CONTENT = 22;
+  DISPLAY_CONTEXT_TYPE_PRODUCT_CONTEXT = 30;
+  DISPLAY_CONTEXT_TYPE_APP_STORE = 31;
+  DISPLAY_CONTEXT_TYPE_PRODUCT_REVIEWS = 32;
+}
+
+enum DisplayCreativeType {
+  DISPLAY_CREATIVE_TYPE_INVALID = 0;
+  DISPLAY_CREATIVE_TYPE_HTML = 1;
+  DISPLAY_CREATIVE_TYPE_AMPHTML = 2;
+  DISPLAY_CREATIVE_TYPE_IMAGE_OBJECT = 3;
+  DISPLAY_CREATIVE_TYPE_NATIVE_OBJECT = 4;
+}
+
+enum DisplayPlacementType {
+  DISPLAY_PLACEMENT_TYPE_INVALID = 0;
+  DISPLAY_PLACEMENT_TYPE_IN_FEED_DISPLAY = 1;
+  DISPLAY_PLACEMENT_TYPE_IN_ATOMIC_UNIT = 2;
+  DISPLAY_PLACEMENT_TYPE_OUTSIDE_CORE_CONTENT = 3;
+  DISPLAY_PLACEMENT_TYPE_RECOMMENDATION_WIDGET = 4;
+}
+
+enum ExpandableDirection {
+  EXPANDABLE_DIRECTION_INVALID = 0;
+  EXPANDABLE_DIRECTION_LEFT = 1;
+  EXPANDABLE_DIRECTION_RIGHT = 2;
+  EXPANDABLE_DIRECTION_UP = 3;
+  EXPANDABLE_DIRECTION_DOWN = 4;
+  EXPANDABLE_DIRECTION_FULL_SCREEN = 5;
+}
+
+enum EventTrackingMethod {
+  EVENT_TRACKING_METHOD_INVALID = 0;
+  EVENT_TRACKING_METHOD_IMAGE_PIXEL = 1;
+  EVENT_TRACKING_METHOD_JAVASCRIPT = 2;
+}
+
+enum EventType {
+  EVENT_TYPE_INVALID = 0;
+  EVENT_TYPE_IMPRESSION = 1;
+  EVENT_TYPE_VIEWABLE_MRC_50 = 2;
+  EVENT_TYPE_VIEWABLE_MRC_100 = 3;
+  EVENT_TYPE_VIEWABLE_VIDEO_50 = 4;
+}
+
+enum IpLocationService {
+  IP_LOCATION_SERVICE_INVALID = 0;
+  IP_LOCATION_SERVICE_IP2LOCATION = 1;
+  IP_LOCATION_SERVICE_NEUSTAR = 2;
+  IP_LOCATION_SERVICE_MAXMIND = 3;
+  IP_LOCATION_SERVICE_NETAQUITY = 4;
+}
+
+enum LinearityMode {
+  LINEARITY_MODE_INVALID = 0;
+  LINEARITY_MODE_LINEAR = 1;
+  LINEARITY_MODE_NON_LINEAR = 2;
+}
+
+enum LocationType {
+  LOCATION_TYPE_INVALID = 0;
+  LOCATION_TYPE_GPS = 1;
+  LOCATION_TYPE_IP = 2;
+  LOCATION_TYPE_USER = 3;
+}
+
+enum MediaRating {
+  MEDIA_RATING_INVALID = 0;
+  MEDIA_RATING_ALL_AUDIENCES = 1;
+  MEDIA_RATING_EVERYONE_OVER_AGE_12 = 2;
+  MEDIA_RATING_MATURE_AUDIENCES = 3;
+}
+
+enum NativeDataAssetType {
+  NATIVE_DATA_ASSET_TYPE_INVALID = 0;
+  // "Sponsored By" message which should contain the brand name of the sponsor.
+  // Recommended maximum length of at least 25 characters.
+  NATIVE_DATA_ASSET_TYPE_SPONSORED = 1;
+  // Descriptive text associated with the product or service being advertised.
+  // Long text lengths may be truncated or ellipsed when rendered.
+  // Recommended maximum length of at least 140 characters.
+  NATIVE_DATA_ASSET_TYPE_DESC = 2;
+  // Numeric rating of the product (e.g., an app's rating). Recommended integer range of 0-5.
+  NATIVE_DATA_ASSET_TYPE_RATING = 3;
+  // Number of social ratings or "likes" of the product.
+  NATIVE_DATA_ASSET_TYPE_LIKES = 4;
+  // Number downloads and/or installs of the product.
+  NATIVE_DATA_ASSET_TYPE_DOWNLOADS = 5;
+  // Price of the product, app, or in-app purchase.
+  // Value should include currency symbol in localized format.
+  NATIVE_DATA_ASSET_TYPE_PRICE = 6;
+  // Sale price that can be used together with "price" to indicate a comparative discounted price.
+  // Value should include currency symbol in localized format.
+  NATIVE_DATA_ASSET_TYPE_SALE_PRICE = 7;
+  // A formatted phone number.
+  NATIVE_DATA_ASSET_TYPE_PHONE = 8;
+  // A formatted address.
+  NATIVE_DATA_ASSET_TYPE_ADDRESS = 9;
+  // Additional descriptive text associated with the product.
+  NATIVE_DATA_ASSET_TYPE_DESC2 = 10;
+  // Display URL for the ad. To be used when sponsoring entity does not own the content
+  // (e.g., "Sponsored by Brand on Site", where Site is specified in this data asset).
+  NATIVE_DATA_ASSET_TYPE_DISPLAY_URL = 11;
+  // Description of the call to action (CTA) button for the destination URL.
+  // Recommended maximum length of at least 15 characters.
+  NATIVE_DATA_ASSET_TYPE_CTA_TEXT = 12;
+}
+
+enum NativeImageAssetType {
+  NATIVE_IMAGE_ASSET_TYPE_INVALID = 0;
+  // Icon: Icon image.
+  // Maximum height at least 50 device independent pixels (DIPS); aspect ratio 1:1.
+  NATIVE_IMAGE_ASSET_TYPE_ICON_IMAGE = 1;
+  // Main: Large image preview for the ad.
+  // At least one of 2 size variants required:
+  // Small: Maximum height at least 627 DIPS;
+  // maximum width at least 627, 836, or 1198 DIPS
+  // (i.e., aspect ratios of 1:1, 4:3, or 1.91:1, respectively).
+  // Large: Maximum height at least 200 DIPS;
+  // maximum width at least 200, 267, or 382 DIPS
+  // (i.e., aspect ratios of 1:1, 4:3, or 1.91:1, respectively).
+  NATIVE_IMAGE_ASSET_TYPE_MAIN_IMAGE = 3;
+}
+
+enum OS {
+  OS_INVALID = 0;
+  OS_ANDROID = 2;
+  OS_IOS = 13;
+}
+
+enum PlaybackCessationMode {
+  PLAYBACK_CESSATION_MODE_INVALID = 0;
+  PLAYBACK_CESSATION_MODE_ON_VIDEO_COMPLETION = 1;
+  PLAYBACK_CESSATION_MODE_ON_LEAVING_VIEWPORT = 2;
+  PLAYBACK_CESSATION_MODE_ON_LEAVING_VIEWPORT_CONTINUES_FLOATING = 3;
+}
+
+enum PlaybackMethod {
+  PLAYBACK_METHOD_INVALID = 0;
+  PLAYBACK_METHOD_ON_PAGE_LOAD_SOUND_ON = 1;
+  PLAYBACK_METHOD_ON_PAGE_LOAD_SOUND_OFF = 2;
+  PLAYBACK_METHOD_ON_CLICK_SOUND_ON = 3;
+  PLAYBACK_METHOD_ON_MOUSE_OVER_SOUND_ON = 4;
+  PLAYBACK_METHOD_ON_ENTERING_VIEWPORT_SOUND_ON = 5;
+  PLAYBACK_METHOD_ON_ENTERING_VIEWPORT_SOUND_OFF = 6;
+}
+
+enum PlacementPosition {
+  PLACEMENT_POSITION_INVALID = 0;
+  PLACEMENT_POSITION_ABOVE_THE_FOLD = 1;
+  PLACEMENT_POSITION_LOCKED = 2;
+  PLACEMENT_POSITION_BELOW_THE_FOLD = 3;
+  PLACEMENT_POSITION_HEADER = 4;
+  PLACEMENT_POSITION_FOOTER = 5;
+  PLACEMENT_POSITION_SIDEBAR = 6;
+  PLACEMENT_POSITION_FULLSCREEN = 7;
+}
+
+enum ProductionQuality {
+  PRODUCTION_QUALITY_INVALID = 0;
+  PRODUCTION_QUALITY_PROFESSIONALLY_PRODUCED = 1;
+  PRODUCTION_QUALITY_PROSUMER = 2;
+  PRODUCTION_QUALITY_USER_GENERATED = 3;
+}
+
+enum SizeUnit {
+  SIZE_UNIT_INVALID = 0;
+  SIZE_UNIT_DIPS = 1;
+  SIZE_UNIT_INCHES = 2;
+  SIZE_UNIT_CENTIMETERS = 3;
+}
+
+enum VideoCreativeType {
+  VIDEO_CREATIVE_TYPE_INVALID = 0;
+  VIDEO_CREATIVE_TYPE_VAST_1_0 = 1;
+  VIDEO_CREATIVE_TYPE_VAST_2_0 = 2;
+  VIDEO_CREATIVE_TYPE_VAST_3_0 = 3;
+  VIDEO_CREATIVE_TYPE_VAST_WRAPPER_1_0 = 4;
+  VIDEO_CREATIVE_TYPE_VAST_WRAPPER_2_0 = 5;
+  VIDEO_CREATIVE_TYPE_VAST_WRAPPER_3_0 = 6;
+  VIDEO_CREATIVE_TYPE_VAST_4_0 = 7;
+  VIDEO_CREATIVE_TYPE_VAST_WRAPPER_4_0 = 8;
+  VIDEO_CREATIVE_TYPE_VAST_4_1 = 9;
+  VIDEO_CREATIVE_TYPE_VAST_WRAPPER_4_1 = 10;
+}
+
+enum VideoPlacementType {
+  VIDEO_PLACEMENT_TYPE_INVALID = 0;
+  VIDEO_PLACEMENT_TYPE_IN_STREAM = 1;
+  VIDEO_PLACEMENT_TYPE_IN_BANNER = 2;
+  VIDEO_PLACEMENT_TYPE_IN_ARTICLE = 3;
+  VIDEO_PLACEMENT_TYPE_IN_FEED = 4;
+  VIDEO_PLACEMENT_TYPE_INTERSTITIAL = 5;
+}

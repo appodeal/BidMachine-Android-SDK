@@ -1,0 +1,42 @@
+apply plugin: 'com.android.library'
+apply from: "../config.gradle"
+
+android {
+    defaultConfig {
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+}
+
+dependencies {
+    implementation "com.android.support:support-annotations:$supportVersion"
+
+    testImplementation "junit:junit:$jUnitVersion"
+    testImplementation "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation "org.robolectric:robolectric:$robolectricVersion"
+    testImplementation "com.squareup.okhttp3:mockwebserver:$mockwebserver"
+}
+
+static def getJarFileName() {
+    return "nexage-0.0.1.jar"
+}
+
+task deleteJar(dependsOn: 'bundleRelease', group: 'appodealx') {
+    doFirst {
+        delete "$rootProject.projectDir/SDKs/libs-internal/" + getJarFileName()
+    }
+}
+
+task copyToInternalJar(dependsOn: deleteJar, type: Copy, group: 'appodealx') {
+    from('build/intermediates/packaged-classes/release')
+    into("$rootProject.projectDir/SDKs/libs-internal")
+    include('classes.jar')
+    rename('classes.jar', getJarFileName())
+}

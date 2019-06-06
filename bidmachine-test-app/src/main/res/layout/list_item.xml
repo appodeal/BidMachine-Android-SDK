@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@android:id/text1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_toLeftOf="@+id/btnRemove"
+        android:layout_toStartOf="@+id/btnRemove"
+        android:textAppearance="?android:attr/textAppearanceListItem" />
+
+    <TextView
+        android:id="@android:id/text2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@android:id/text1"
+        android:layout_alignStart="@android:id/text1"
+        android:layout_below="@android:id/text1"
+        android:layout_marginBottom="8dp"
+        android:layout_toLeftOf="@+id/btnRemove"
+        android:layout_toStartOf="@+id/btnRemove"
+        android:textAppearance="?android:attr/textAppearanceListItemSmall" />
+
+    <ImageButton
+        android:id="@+id/btnRemove"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:background="?android:attr/listChoiceBackgroundIndicator"
+        android:src="@drawable/ic_remove" />
+
+</RelativeLayout>

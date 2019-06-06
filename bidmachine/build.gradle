@@ -1,0 +1,67 @@
+apply plugin: 'com.android.library'
+apply plugin: "com.mobbeel.plugin"
+apply from: "../config.gradle"
+apply from: "publish.gradle"
+
+gradle.ext {
+    protoJarPackage = "io.bidmachine.protobuf"
+    protoJavaPackageFrom = "com.appodeal.protobuf"
+    protoJavaPackageTo = "io.bidmachine.protobuf"
+    adsCoreJarPackageName = "io.bidmachine.core"
+}
+
+apply from: "../protobuf/proto.gradle"
+
+android {
+    compileSdkVersion androidCompileSdkVersion
+
+    defaultConfig {
+        minSdkVersion androidMinSdkVersion
+        targetSdkVersion androidTargetSdkVersion
+        versionCode 100100025
+        versionName "1.1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
+    }
+    buildTypes {
+        debug{
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            buildConfigField "String", "BM_API_URL", "\"https://staging.appodealx.com\""
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            buildConfigField "String", "BM_API_URL", "\"https://api.appodealx.com\""
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation fileTree(include: ['*.jar'], dir: 'libs_ext')
+    implementation fileTree(dir: '../protobuf/libs', include: ['*.jar'])
+
+    compileOnly "com.android.support:support-annotations:$supportVersion"
+    androidTestImplementation 'com.android.support:multidex:1.0.3'
+    androidTestImplementation "com.squareup.okhttp3:mockwebserver:$mockwebserver"
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    androidTestImplementation('com.android.support.test:rules:1.0.1') {
+        exclude module: 'support-annotations'
+    }
+    testImplementation "com.android.support:support-annotations:$supportVersion"
+    testImplementation "junit:junit:$jUnitVersion"
+    testImplementation "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation "org.robolectric:robolectric:$robolectricVersion"
+    testImplementation "com.squareup.okhttp3:mockwebserver:$mockwebserver"
+    api project(':nexage')
+}
+
+task createJarAdsCore(type: Copy) {
+    from('../appodeal_ads_core/build/intermediates/intermediate-jars/debug/ads_core.jar')
+    into('../bidmachine/libs_ext')
+}
+
+createJarAdsCore.dependsOn(":appodeal_ads_core:prepareAppodealAdsCore")
+preBuild.dependsOn createJarAdsCore

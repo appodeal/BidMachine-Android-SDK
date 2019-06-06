@@ -1,0 +1,50 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="AppTheme.MainActivity" />
+
+    <style name="MainActionButtonStyle" parent="Widget.AppCompat.Button">
+        <item name="android:background">?attr/listChoiceBackgroundIndicator</item>
+        <item name="android:paddingLeft">12dp</item>
+        <item name="android:paddingRight">12dp</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:gravity">center_vertical|start|left</item>
+    </style>
+
+    <style name="MainActionButtonStyle.Secondary">
+        <item name="android:textColor">?android:textColorSecondary</item>
+    </style>
+
+    <style name="MainRegularButtonStyle" parent="Widget.AppCompat.Button">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:paddingTop">8dp</item>
+        <item name="android:paddingBottom">8dp</item>
+        <item name="android:drawablePadding">8dp</item>
+        <item name="android:background">?attr/listChoiceBackgroundIndicator</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <style name="DividerStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">0.5dp</item>
+        <item name="android:background">?android:attr/dividerHorizontal</item>"
+    </style>
+
+    <style name="MainSettingButtonStyle" parent="Widget.AppCompat.ImageButton">
+        <item name="android:minWidth">48dp</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:background">?android:attr/listChoiceBackgroundIndicator</item>
+        <item name="android:src">@drawable/ic_ads_type_settings</item>
+    </style>
+
+</resources>

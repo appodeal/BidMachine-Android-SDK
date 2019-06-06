@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package bidmachine.protobuf;
+
+option java_multiple_files = true;
+option java_outer_classname = "InitProto";
+option java_package = "io.bidmachine.protobuf";
+option objc_class_prefix = "BDM";
+
+import "bidmachine/protobuf/adcom/adcom.proto";
+
+
+message InitRequest {
+    string seller_id = 1;
+    // Bundle or package name of the app.
+    string bundle = 2;
+    // Device operating system.
+    adcom.OS os = 3;
+    // Device operating system version.
+    string osv = 4;
+    // Location of the device.
+    adcom.Context.Geo geo = 5;
+    // Name of ad mediation partner, SDK technology, or player responsible for rendering ad.
+    string sdk = 6;
+    // Version of the SDK specified in the "sdk" attribute.
+    string sdkver = 7;
+    // ID sanctioned for advertiser use in the clear (i.e., not hashed).
+    string ifa = 8;
+    // The general type of device.
+    adcom.DeviceType device_type = 9;
+    // Network connection type.
+    adcom.ConnectionType contype = 10;
+}
+
+message InitResponse {
+    string endpoint = 1;
+    repeated bidmachine.protobuf.adcom.Ad.Event event = 2;
+}

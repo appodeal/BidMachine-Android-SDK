@@ -1,0 +1,75 @@
+package io.bidmachine;
+
+import android.graphics.Point;
+import android.location.Location;
+import android.os.Build;
+import android.support.annotation.NonNull;
+
+import java.util.Locale;
+
+import io.bidmachine.core.DeviceInfo;
+import io.bidmachine.core.Utils;
+import io.bidmachine.models.RequestParams;
+import io.bidmachine.models.RequestParamsRestrictions;
+import io.bidmachine.protobuf.adcom.DeviceType;
+import io.bidmachine.protobuf.adcom.OS;
+
+final class DeviceParams extends RequestParams {
+
+    private final String[] tmpOperatorInfo = new String[4];
+
+    void build(@NonNull android.content.Context context,
+               @NonNull io.bidmachine.protobuf.adcom.Context.Device.Builder builder,
+               @NonNull TargetingParams targetingParams,
+               @NonNull TargetingParams defaultTargetingParams,
+               @NonNull RequestParamsRestrictions restrictions) {
+        final DeviceInfo deviceInfo = DeviceInfo.obtain(context);
+        builder.setType(deviceInfo.isTablet ? DeviceType.DEVICE_TYPE_TABLET :
+                DeviceType.DEVICE_TYPE_PHONE_DEVICE);
+        if (deviceInfo.httpAgent != null) {
+            builder.setUa(deviceInfo.httpAgent);
+        }
+        builder.setOs(OS.OS_ANDROID);
+        builder.setOsv(Build.VERSION.RELEASE);
+
+        builder.setPxratio(deviceInfo.screenDensity);
+        builder.setPpi(deviceInfo.screenDpi);
+
+        final Point screenSize = Utils.getScreenSize(context);
+        builder.setW(screenSize.x);
+        builder.setH(screenSize.y);
+
+        builder.setIfa(AdvertisingPersonalData.getAdvertisingId(context, !restrictions.canSendIfa()));
+        builder.setLmt(AdvertisingPersonalData.isLimitAdTrackingEnabled());
+
+        if (restrictions.canSendDeviceInfo()) {
+            builder.setContype(OrtbUtils.getConnectionType(context));
+            builder.setMake(Build.MANUFACTURER);
+
+            if (deviceInfo.model != null) {
+                builder.setModel(deviceInfo.model);
+                builder.setHwv(deviceInfo.deviceModel);
+            }
+
+            String lang = Locale.getDefault().getLanguage();
+            if (lang != null) {
+                builder.setLang(lang);
+            }
+            Utils.getOperatorInfo(context, tmpOperatorInfo);
+            if (tmpOperatorInfo[Utils.INDEX_CRR] != null) {
+                builder.setMccmnc(tmpOperatorInfo[Utils.INDEX_CRR]);
+            }
+            if (tmpOperatorInfo[Utils.INDEX_OPERATOR_NAME] != null) {
+                builder.setCarrier(tmpOperatorInfo[Utils.INDEX_OPERATOR_NAME]);
+            }
+        }
+        if (restrictions.canSendGeoPosition()) {
+            Location location = OrtbUtils.obtainBestLocation(context,
+                    targetingParams.getDeviceLocation(),
+                    defaultTargetingParams.getDeviceLocation());
+            builder.setGeo(OrtbUtils.locationToGeo(location, true));
+        }
+
+    }
+
+}

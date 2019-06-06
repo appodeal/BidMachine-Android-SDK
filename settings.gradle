@@ -1,0 +1,1 @@
+include ':bidmachine', ':bidmachine-test-app',':nexage', ':protobuf', ':appodeal_ads_core'

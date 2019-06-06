@@ -1,0 +1,29 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="io.bidmachine">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <application>
+
+        <activity
+            android:name="org.nexage.sourcekit.vast.activity.VASTActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" />
+
+        <activity
+            android:name="org.nexage.sourcekit.vast.activity.VPAIDActivity"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" />
+
+        <activity
+            android:name="io.bidmachine.adapters.mraid.MraidActivity"
+            android:configChanges="orientation|screenSize"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" />
+
+        <activity
+            android:name="io.bidmachine.nativead.view.VideoPlayerActivity"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" />
+
+    </application>
+
+</manifest>
