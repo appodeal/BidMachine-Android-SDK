@@ -18,8 +18,8 @@ android {
     defaultConfig {
         minSdkVersion androidMinSdkVersion
         targetSdkVersion androidTargetSdkVersion
-        versionCode 100100025
-        versionName "1.1.0"
+        versionCode 100100026
+        versionName "1.1.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
     }
@@ -41,7 +41,7 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation fileTree(include: ['*.jar'], dir: 'libs_ext')
     implementation fileTree(dir: '../protobuf/libs', include: ['*.jar'])
-    implementation 'com.explorestack:iab:0.5.0'
+    implementation "com.explorestack:iab:$stackIabVersion"
 
     compileOnly "com.android.support:support-annotations:$supportVersion"
     androidTestImplementation 'com.android.support:multidex:1.0.3'

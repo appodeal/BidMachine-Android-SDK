@@ -2,8 +2,7 @@ package io.bidmachine.nativead.utils;
 
 import android.graphics.Bitmap;
 import android.net.Uri;
-
-import org.nexage.sourcekit.vast.model.VASTModel;
+import com.explorestack.iab.vast.VastRequest;
 
 public interface NativeMediaPrivateData extends NativeMediaPublicData {
 
@@ -17,8 +16,8 @@ public interface NativeMediaPrivateData extends NativeMediaPublicData {
 
     void setVideoUri(Uri uri);
 
-    void setVideoVastModel(VASTModel vastModel);
+    void setVastRequest(VastRequest vastModel);
 
-    VASTModel getVideoVastModel();
+    VastRequest getVastRequest();
 
 }

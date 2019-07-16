@@ -8,14 +8,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RatingBar;
 import android.widget.TextView;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import io.bidmachine.R;
 import io.bidmachine.core.Logger;
 import io.bidmachine.nativead.view.NativeIconView;
 import io.bidmachine.nativead.view.NativeMediaView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class NativeAdContentLayout extends NativeAdContainer {
 

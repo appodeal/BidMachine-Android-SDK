@@ -8,6 +8,7 @@ ext {
     mockitoVersion = '2.0.57-beta'
     jUnitVersion = '4.12'
     mockwebserver = '3.3.0'
+    stackIabVersion = '0.5.0'
 }
 
 android {

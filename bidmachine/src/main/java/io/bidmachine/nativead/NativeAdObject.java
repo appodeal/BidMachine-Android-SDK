@@ -17,15 +17,7 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-
-import org.nexage.sourcekit.vast.model.VASTModel;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.explorestack.iab.vast.VastRequest;
 import io.bidmachine.AdObjectImpl;
 import io.bidmachine.BMException;
 import io.bidmachine.MediaAssetType;
@@ -33,14 +25,16 @@ import io.bidmachine.core.Logger;
 import io.bidmachine.core.Utils;
 import io.bidmachine.core.VisibilityTracker;
 import io.bidmachine.displays.NativeAdObjectParams;
-import io.bidmachine.nativead.utils.ImageHelper;
-import io.bidmachine.nativead.utils.NativeContainer;
-import io.bidmachine.nativead.utils.NativeInteractor;
-import io.bidmachine.nativead.utils.NativeMediaPrivateData;
-import io.bidmachine.nativead.utils.NativePrivateData;
+import io.bidmachine.nativead.utils.*;
 import io.bidmachine.nativead.view.MediaView;
 import io.bidmachine.nativead.view.NativeIconView;
 import io.bidmachine.nativead.view.NativeMediaView;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public abstract class NativeAdObject extends AdObjectImpl<NativeAd, NativeAdObjectParams>
         implements NativePrivateData, NativeMediaPrivateData, NativeContainer, NativeInteractor, View.OnClickListener {
@@ -69,7 +63,7 @@ public abstract class NativeAdObject extends AdObjectImpl<NativeAd, NativeAdObje
     @Nullable
     private Uri videoUri;
     @Nullable
-    private VASTModel videoVastModel;
+    private VastRequest vastRequest;
 
     public NativeAdObject(NativeAdObjectParams adObjectParams) {
         super(adObjectParams);
@@ -195,14 +189,14 @@ public abstract class NativeAdObject extends AdObjectImpl<NativeAd, NativeAdObje
     }
 
     @Override
-    public void setVideoVastModel(@Nullable VASTModel videoVastModel) {
-        this.videoVastModel = videoVastModel;
+    public void setVastRequest(@Nullable VastRequest vastRequest) {
+        this.vastRequest = vastRequest;
     }
 
     @Override
     @Nullable
-    public VASTModel getVideoVastModel() {
-        return videoVastModel;
+    public VastRequest getVastRequest() {
+        return vastRequest;
     }
 
     @Override
