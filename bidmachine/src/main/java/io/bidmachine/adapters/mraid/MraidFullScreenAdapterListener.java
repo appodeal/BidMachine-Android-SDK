@@ -3,12 +3,10 @@ package io.bidmachine.adapters.mraid;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.webkit.WebView;
-
-import org.nexage.sourcekit.mraid.MRAIDInterstitial;
-import org.nexage.sourcekit.mraid.MRAIDInterstitialListener;
-import org.nexage.sourcekit.mraid.MRAIDNativeFeatureListener;
-import org.nexage.sourcekit.util.Utils;
-
+import com.explorestack.iab.mraid.MRAIDInterstitial;
+import com.explorestack.iab.mraid.MRAIDInterstitialListener;
+import com.explorestack.iab.mraid.MRAIDNativeFeatureListener;
+import com.explorestack.iab.utils.Utils;
 import io.bidmachine.utils.BMError;
 
 class MraidFullScreenAdapterListener implements MRAIDInterstitialListener,

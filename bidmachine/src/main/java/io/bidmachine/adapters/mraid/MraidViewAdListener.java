@@ -1,12 +1,10 @@
 package io.bidmachine.adapters.mraid;
 
 import android.webkit.WebView;
-
-import org.nexage.sourcekit.mraid.MRAIDNativeFeatureListener;
-import org.nexage.sourcekit.mraid.MRAIDView;
-import org.nexage.sourcekit.mraid.MRAIDViewListener;
-import org.nexage.sourcekit.util.Utils;
-
+import com.explorestack.iab.mraid.MRAIDNativeFeatureListener;
+import com.explorestack.iab.mraid.MRAIDView;
+import com.explorestack.iab.mraid.MRAIDViewListener;
+import com.explorestack.iab.utils.Utils;
 import io.bidmachine.utils.BMError;
 
 class MraidViewAdListener implements MRAIDViewListener, MRAIDNativeFeatureListener {

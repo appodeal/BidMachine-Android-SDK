@@ -1,13 +1,11 @@
 package io.bidmachine.adapters.vast;
 
-import org.nexage.sourcekit.util.VASTLog;
-import org.nexage.sourcekit.util.Video;
-
+import com.explorestack.iab.utils.Logger;
+import com.explorestack.iab.vast.VastLog;
+import com.explorestack.iab.vast.VideoType;
 import io.bidmachine.FullScreenAdObject;
 import io.bidmachine.adapters.OrtbAdapter;
 import io.bidmachine.displays.FullScreenAdObjectParams;
-import io.bidmachine.displays.VideoAdObjectParams;
-import io.bidmachine.models.AdObjectParams;
 
 public class VastAdapter extends OrtbAdapter {
 
@@ -17,17 +15,17 @@ public class VastAdapter extends OrtbAdapter {
 
     @Override
     public void setLogging(boolean enabled) {
-        VASTLog.setLoggingLevel(enabled ? VASTLog.LOG_LEVEL.verbose : VASTLog.LOG_LEVEL.none);
+        VastLog.setLoggingLevel(enabled ? Logger.LogLevel.debug : Logger.LogLevel.none);
     }
 
     @Override
     public FullScreenAdObject createInterstitialAdObject(FullScreenAdObjectParams adObjectParams) {
-        return new VastFullScreenAdObject<>(Video.Type.NON_REWARDED, adObjectParams);
+        return new VastFullScreenAdObject<>(VideoType.NonRewarded, adObjectParams);
     }
 
     @Override
     public FullScreenAdObject createRewardedAdObject(FullScreenAdObjectParams adObjectParams) {
-        return new VastFullScreenAdObject<>(Video.Type.REWARDED, adObjectParams);
+        return new VastFullScreenAdObject<>(VideoType.Rewarded, adObjectParams);
     }
 
 }

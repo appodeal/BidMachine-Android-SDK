@@ -1,8 +1,9 @@
 package io.bidmachine.adapters.vast;
 
-import org.nexage.sourcekit.util.Video;
-import org.nexage.sourcekit.vast.view.AppodealVASTPlayer;
-
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import com.explorestack.iab.vast.VastRequest;
+import com.explorestack.iab.vast.VideoType;
 import io.bidmachine.FullScreenAdObject;
 import io.bidmachine.OrtbAd;
 import io.bidmachine.displays.FullScreenAdObjectParams;
@@ -11,28 +12,32 @@ import io.bidmachine.utils.BMError;
 class VastFullScreenAdObject<RequestType extends OrtbAd>
         extends FullScreenAdObject<RequestType> {
 
-    private Video.Type videoType;
-    private AppodealVASTPlayer vastPlayer;
+    @NonNull
+    private VideoType videoType;
+    @Nullable
+    private VastRequest vastRequest;
     private VastFullScreenAdapterListener vastListener;
 
-    VastFullScreenAdObject(Video.Type videoType, FullScreenAdObjectParams adObjectParams) {
+    VastFullScreenAdObject(@NonNull VideoType videoType, FullScreenAdObjectParams adObjectParams) {
         super(adObjectParams);
         this.videoType = videoType;
     }
 
     @Override
     public void load() {
-        vastPlayer = new AppodealVASTPlayer(getContext());
-        vastPlayer.setPrecache(true);
-        vastPlayer.setCloseTime(getParams().getSkipAfterTimeSec());
         vastListener = new VastFullScreenAdapterListener(this);
-        vastPlayer.loadVideoWithData(getParams().getCreativeAdm(), vastListener);
+        vastRequest = VastRequest.newBuilder()
+                .setPreCache(true)
+                .setCloseTime(getParams().getSkipAfterTimeSec())
+                .build();
+        assert vastRequest != null;
+        vastRequest.loadVideoWithData(getContext(), getParams().getCreativeAdm(), vastListener);
     }
 
     @Override
     public void show() {
-        if (vastPlayer.checkFile()) {
-            vastPlayer.play(getContext(), videoType, vastListener);
+        if (vastRequest != null && vastRequest.checkFile()) {
+            vastRequest.display(getContext(), videoType, vastListener);
         } else {
             processShowFail(BMError.Internal);
         }
@@ -40,8 +45,8 @@ class VastFullScreenAdObject<RequestType extends OrtbAd>
 
     @Override
     protected void onDestroy() {
-        if (vastPlayer != null) {
-            vastPlayer = null;
+        if (vastRequest != null) {
+            vastRequest = null;
         }
     }
 

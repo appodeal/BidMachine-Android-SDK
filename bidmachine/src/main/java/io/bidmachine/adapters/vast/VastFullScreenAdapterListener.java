@@ -1,15 +1,14 @@
 package io.bidmachine.adapters.vast;
 
-import android.app.Activity;
+import android.content.Context;
 import android.support.annotation.NonNull;
-
-import org.nexage.sourcekit.util.Utils;
-import org.nexage.sourcekit.vast.VASTPlayer;
-import org.nexage.sourcekit.vast.activity.VASTActivity;
-
+import android.support.annotation.Nullable;
+import com.explorestack.iab.utils.Utils;
+import com.explorestack.iab.vast.*;
+import com.explorestack.iab.vast.activity.VastActivity;
 import io.bidmachine.utils.BMError;
 
-class VastFullScreenAdapterListener implements VASTPlayer.VASTPlayerListener {
+class VastFullScreenAdapterListener implements VastRequestListener, VastActivityListener {
 
     private VastFullScreenAdObject adObject;
 
@@ -18,15 +17,15 @@ class VastFullScreenAdapterListener implements VASTPlayer.VASTPlayerListener {
     }
 
     @Override
-    public void vastReady() {
+    public void onVastLoaded(@NonNull VastRequest vastRequest) {
         adObject.processLoadSuccess();
     }
 
     @Override
-    public void vastError(int error) {
+    public void onVastError(@NonNull Context context, @NonNull VastRequest vastRequest, int error) {
         //TODO: implement vast error mapping
         switch (error) {
-            case VASTPlayer.ERROR_NO_NETWORK: {
+            case VastError.ERROR_CODE_NO_NETWORK: {
                 adObject.processLoadFail(BMError.noFillError(BMError.Connection));
                 break;
             }
@@ -38,35 +37,35 @@ class VastFullScreenAdapterListener implements VASTPlayer.VASTPlayerListener {
     }
 
     @Override
-    public void vastShown() {
+    public void onVastShown(@NonNull VastActivity vastActivity, @NonNull VastRequest vastRequest) {
         adObject.processShown();
     }
 
     @Override
-    public void vastClick(String url, final Activity activity) {
+    public void onVastClick(@NonNull VastActivity vastActivity,
+                            @NonNull VastRequest vastRequest,
+                            @NonNull final VastClickCallback vastClickCallback,
+                            @Nullable String url) {
         adObject.processClicked();
         if (url != null) {
-            if (activity instanceof VASTActivity) {
-                ((VASTActivity) activity).showProgressBar();
-            }
-            Utils.openBrowser(activity, url, new Runnable() {
+            Utils.openBrowser(vastActivity, url, new Runnable() {
                 @Override
                 public void run() {
-                    if (activity instanceof VASTActivity) {
-                        ((VASTActivity) activity).hideProgressBar();
-                    }
+                    vastClickCallback.clickHandled();
                 }
             });
+        } else {
+            vastClickCallback.clickHandleCanceled();
         }
     }
 
     @Override
-    public void vastComplete() {
+    public void onVastComplete(@NonNull VastActivity vastActivity, @NonNull VastRequest vastRequest) {
         adObject.processFinished();
     }
 
     @Override
-    public void vastDismiss(boolean finished) {
+    public void onVastDismiss(@NonNull VastActivity vastActivity, @Nullable VastRequest vastRequest, boolean finished) {
         adObject.processClosed(finished);
     }
 

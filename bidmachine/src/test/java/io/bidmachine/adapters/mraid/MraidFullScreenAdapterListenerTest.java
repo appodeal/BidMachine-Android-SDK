@@ -1,21 +1,19 @@
 package io.bidmachine.adapters.mraid;
 
 import android.content.Context;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.nexage.sourcekit.util.Video;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Config;
-
+import com.explorestack.iab.vast.VideoType;
 import io.bidmachine.BidMachine;
 import io.bidmachine.displays.FullScreenAdObjectParams;
 import io.bidmachine.rewarded.RewardedAd;
 import io.bidmachine.rewarded.RewardedListener;
 import io.bidmachine.test_utils.RobolectricHandlerFixer;
 import io.bidmachine.utils.BMError;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
 
 import static org.mockito.Mockito.*;
 
@@ -35,7 +33,7 @@ public class MraidFullScreenAdapterListenerTest {
         rewardedVideoListener = mock(RewardedListener.class);
         rewardedVideoAd = new RewardedAd(context);
         rewardedVideoAd.setListener(rewardedVideoListener);
-        mraidFullScreenAdObject = spy(new MraidFullScreenAdObject<RewardedAd>(Video.Type.REWARDED, mock(FullScreenAdObjectParams.class)));
+        mraidFullScreenAdObject = spy(new MraidFullScreenAdObject<RewardedAd>(VideoType.Rewarded, mock(FullScreenAdObjectParams.class)));
         mraidFullScreenAdObject.attachAd(rewardedVideoAd);
         mraidFullScreenAdapterListener = new MraidFullScreenAdapterListener(mraidFullScreenAdObject);
 

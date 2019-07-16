@@ -1,8 +1,7 @@
 package io.bidmachine.adapters.mraid;
 
-import org.nexage.sourcekit.mraid.MRAIDInterstitial;
-import org.nexage.sourcekit.util.Video;
-
+import com.explorestack.iab.mraid.MRAIDInterstitial;
+import com.explorestack.iab.vast.VideoType;
 import io.bidmachine.FullScreenAdObject;
 import io.bidmachine.OrtbAd;
 import io.bidmachine.displays.FullScreenAdObjectParams;
@@ -12,12 +11,12 @@ import static io.bidmachine.core.Utils.onUiThread;
 class MraidFullScreenAdObject<RequestType extends OrtbAd>
         extends FullScreenAdObject<RequestType> {
 
-    private Video.Type videoType;
+    private VideoType videoType;
     private MRAIDInterstitial mraidInterstitial;
     private MraidActivity showingActivity;
     private MraidFullScreenAdapterListener adapterListener;
 
-    MraidFullScreenAdObject(Video.Type videoType, FullScreenAdObjectParams adObjectParams) {
+    MraidFullScreenAdObject(VideoType videoType, FullScreenAdObjectParams adObjectParams) {
         super(adObjectParams);
         this.videoType = videoType;
     }

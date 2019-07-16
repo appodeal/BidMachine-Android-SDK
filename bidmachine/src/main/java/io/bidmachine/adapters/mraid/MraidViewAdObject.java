@@ -2,9 +2,7 @@ package io.bidmachine.adapters.mraid;
 
 import android.support.annotation.Nullable;
 import android.view.View;
-
-import org.nexage.sourcekit.mraid.MRAIDView;
-
+import com.explorestack.iab.mraid.MRAIDView;
 import io.bidmachine.ViewAd;
 import io.bidmachine.ViewAdObject;
 import io.bidmachine.displays.DisplayAdObjectParams;
