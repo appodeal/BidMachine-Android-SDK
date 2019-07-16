@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Base64;
 
+import com.google.protobuf.AbstractMessage;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -21,8 +22,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
-
-import io.bidmachine.protobuf.AbstractMessage;
 
 public abstract class NetworkRequest<RequestDataType, RequestResultType, ErrorResultType> {
 

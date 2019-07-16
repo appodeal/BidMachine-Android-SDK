@@ -2,23 +2,17 @@ package io.bidmachine.displays;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
-
-import java.util.Arrays;
-
+import com.explorestack.protobuf.adcom.*;
+import com.explorestack.protobuf.openrtb.Response;
+import com.google.protobuf.Message;
 import io.bidmachine.AdContentType;
 import io.bidmachine.Constants;
 import io.bidmachine.MediaAssetType;
 import io.bidmachine.adapters.OrtbAdapter;
 import io.bidmachine.models.AdObjectParams;
 import io.bidmachine.nativead.NativeRequest;
-import io.bidmachine.protobuf.Message;
-import io.bidmachine.protobuf.adcom.Ad;
-import io.bidmachine.protobuf.adcom.NativeDataAssetType;
-import io.bidmachine.protobuf.adcom.NativeImageAssetType;
-import io.bidmachine.protobuf.adcom.Placement;
-import io.bidmachine.protobuf.adcom.SizeUnit;
-import io.bidmachine.protobuf.adcom.VideoCreativeType;
-import io.bidmachine.protobuf.openrtb.Response;
+
+import java.util.Arrays;
 
 public class NativePlacementBuilder extends PlacementBuilder<NativeRequest> {
 

@@ -1,12 +1,10 @@
 package io.bidmachine;
 
 import android.support.annotation.NonNull;
-
+import com.explorestack.protobuf.adcom.Context;
 import io.bidmachine.models.IUserRestrictionsParams;
 import io.bidmachine.models.RequestParams;
 import io.bidmachine.models.RequestParamsRestrictions;
-import io.bidmachine.protobuf.adcom.Context;
-import io.bidmachine.protobuf.adcom.Context.Regs;
 
 import static io.bidmachine.core.Utils.oneOf;
 
@@ -31,7 +29,7 @@ final class UserRestrictionParams extends RequestParams
     }
 
     void build(@NonNull android.content.Context context,
-               @NonNull Regs.Builder builder,
+               @NonNull Context.Regs.Builder builder,
                @NonNull UserRestrictionParams defaults,
                @NonNull RequestParamsRestrictions restrictions) {
         builder.setGdpr(oneOf(subjectToGDPR, defaults.subjectToGDPR, false));

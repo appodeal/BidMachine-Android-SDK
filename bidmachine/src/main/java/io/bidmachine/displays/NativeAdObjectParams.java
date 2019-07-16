@@ -3,11 +3,10 @@ package io.bidmachine.displays;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
-
-import io.bidmachine.nativead.utils.NativePrivateData;
-import io.bidmachine.protobuf.adcom.Ad;
-import io.bidmachine.protobuf.openrtb.Response;
+import com.explorestack.protobuf.adcom.Ad;
+import com.explorestack.protobuf.openrtb.Response;
 import io.bidmachine.TrackEventType;
+import io.bidmachine.nativead.utils.NativePrivateData;
 
 public class NativeAdObjectParams extends DisplayAdObjectParams implements NativePrivateData {
 

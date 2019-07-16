@@ -8,14 +8,14 @@ import android.support.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.explorestack.protobuf.adcom.Ad;
+import com.explorestack.protobuf.openrtb.Response;
 import io.bidmachine.adapters.OrtbAdapter;
 import io.bidmachine.core.Logger;
 import io.bidmachine.core.Utils;
 import io.bidmachine.models.AdObject;
 import io.bidmachine.models.AdObjectParams;
 import io.bidmachine.models.AuctionResult;
-import io.bidmachine.protobuf.adcom.Ad;
-import io.bidmachine.protobuf.openrtb.Response;
 import io.bidmachine.utils.BMError;
 
 public abstract class OrtbAd<

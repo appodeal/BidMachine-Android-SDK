@@ -1,10 +1,9 @@
 package io.bidmachine.displays;
 
 import android.support.annotation.NonNull;
-
+import com.explorestack.protobuf.adcom.Ad;
+import com.explorestack.protobuf.openrtb.Response;
 import io.bidmachine.protobuf.AdExtension;
-import io.bidmachine.protobuf.adcom.Ad;
-import io.bidmachine.protobuf.openrtb.Response;
 
 import static io.bidmachine.Utils.getOrDefault;
 

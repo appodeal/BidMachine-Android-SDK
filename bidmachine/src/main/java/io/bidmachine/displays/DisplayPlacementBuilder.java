@@ -3,22 +3,17 @@ package io.bidmachine.displays;
 import android.content.Context;
 import android.graphics.Point;
 import android.support.annotation.NonNull;
-
-import java.util.Arrays;
-
+import com.explorestack.protobuf.adcom.*;
+import com.explorestack.protobuf.openrtb.Response;
+import com.google.protobuf.Message;
 import io.bidmachine.AdContentType;
 import io.bidmachine.AdRequest;
 import io.bidmachine.Constants;
 import io.bidmachine.adapters.OrtbAdapter;
 import io.bidmachine.core.Utils;
 import io.bidmachine.models.AdObjectParams;
-import io.bidmachine.protobuf.Message;
-import io.bidmachine.protobuf.adcom.Ad;
-import io.bidmachine.protobuf.adcom.ApiFramework;
-import io.bidmachine.protobuf.adcom.Placement;
-import io.bidmachine.protobuf.adcom.PlacementPosition;
-import io.bidmachine.protobuf.adcom.SizeUnit;
-import io.bidmachine.protobuf.openrtb.Response;
+
+import java.util.Arrays;
 
 public class DisplayPlacementBuilder<AdRequestType extends AdRequest>
         extends PlacementBuilder<AdRequestType>

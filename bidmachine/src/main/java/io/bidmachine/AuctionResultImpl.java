@@ -2,10 +2,9 @@ package io.bidmachine;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-
+import com.explorestack.protobuf.adcom.Ad;
+import com.explorestack.protobuf.openrtb.Response;
 import io.bidmachine.models.AuctionResult;
-import io.bidmachine.protobuf.adcom.Ad;
-import io.bidmachine.protobuf.openrtb.Response;
 
 public final class AuctionResultImpl implements AuctionResult {
 

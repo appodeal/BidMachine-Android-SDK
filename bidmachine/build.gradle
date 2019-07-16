@@ -4,13 +4,8 @@ apply from: "../config.gradle"
 apply from: "publish.gradle"
 
 gradle.ext {
-    protoJarPackage = "io.bidmachine.protobuf"
-    protoJavaPackageFrom = "com.appodeal.protobuf"
-    protoJavaPackageTo = "io.bidmachine.protobuf"
     adsCoreJarPackageName = "io.bidmachine.core"
 }
-
-apply from: "../protobuf/proto.gradle"
 
 android {
     compileSdkVersion androidCompileSdkVersion
@@ -24,7 +19,7 @@ android {
         multiDexEnabled true
     }
     buildTypes {
-        debug{
+        debug {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             buildConfigField "String", "BM_API_URL", "\"https://staging.appodealx.com\""
@@ -40,7 +35,8 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation fileTree(include: ['*.jar'], dir: 'libs_ext')
-    implementation fileTree(dir: '../protobuf/libs', include: ['*.jar'])
+
+    implementation "io.bidmachine:protobuf-models:$protobufModelsVersion"
 
     compileOnly "com.android.support:support-annotations:$supportVersion"
     androidTestImplementation 'com.android.support:multidex:1.0.3'
