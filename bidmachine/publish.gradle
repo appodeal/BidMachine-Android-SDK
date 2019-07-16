@@ -22,6 +22,15 @@ publishing {
             artifactId = libArtifactId
             version = android.defaultConfig.versionName
             artifact publishArtifact
+
+            pom.withXml {
+                def dependenciesNode = asNode().appendNode('dependencies')
+                dependenciesNode
+                        .appendNode('dependency')
+                        .appendNode('groupId', 'io.bidmachine')
+                        .appendNode('artifactId', 'protobuf-models')
+                        .appendNode('version', protobufModelsVersion)
+            }
         }
     }
 }

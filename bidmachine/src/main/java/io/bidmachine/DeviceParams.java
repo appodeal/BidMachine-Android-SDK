@@ -4,22 +4,22 @@ import android.graphics.Point;
 import android.location.Location;
 import android.os.Build;
 import android.support.annotation.NonNull;
-
-import java.util.Locale;
-
+import com.explorestack.protobuf.adcom.Context;
+import com.explorestack.protobuf.adcom.DeviceType;
+import com.explorestack.protobuf.adcom.OS;
 import io.bidmachine.core.DeviceInfo;
 import io.bidmachine.core.Utils;
 import io.bidmachine.models.RequestParams;
 import io.bidmachine.models.RequestParamsRestrictions;
-import io.bidmachine.protobuf.adcom.DeviceType;
-import io.bidmachine.protobuf.adcom.OS;
+
+import java.util.Locale;
 
 final class DeviceParams extends RequestParams {
 
     private final String[] tmpOperatorInfo = new String[4];
 
     void build(@NonNull android.content.Context context,
-               @NonNull io.bidmachine.protobuf.adcom.Context.Device.Builder builder,
+               @NonNull Context.Device.Builder builder,
                @NonNull TargetingParams targetingParams,
                @NonNull TargetingParams defaultTargetingParams,
                @NonNull RequestParamsRestrictions restrictions) {

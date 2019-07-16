@@ -3,29 +3,28 @@ package io.bidmachine;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
+import com.explorestack.protobuf.adcom.Ad;
+import com.explorestack.protobuf.adcom.Context;
+import com.explorestack.protobuf.adcom.Placement;
+import com.explorestack.protobuf.openrtb.Request;
+import com.explorestack.protobuf.openrtb.Response;
+import com.google.protobuf.Any;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Message;
 import io.bidmachine.core.Logger;
 import io.bidmachine.core.NetworkRequest;
 import io.bidmachine.displays.PlacementBuilder;
 import io.bidmachine.models.AuctionResult;
 import io.bidmachine.models.RequestBuilder;
 import io.bidmachine.models.RequestParamsRestrictions;
-import io.bidmachine.protobuf.Any;
-import io.bidmachine.protobuf.InvalidProtocolBufferException;
-import io.bidmachine.protobuf.Message;
 import io.bidmachine.protobuf.RequestExtension;
-import io.bidmachine.protobuf.adcom.Ad;
-import io.bidmachine.protobuf.adcom.Context;
-import io.bidmachine.protobuf.adcom.Placement;
-import io.bidmachine.protobuf.openrtb.Request;
-import io.bidmachine.protobuf.openrtb.Response;
 import io.bidmachine.utils.BMError;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import static io.bidmachine.Utils.getOrDefault;
 import static io.bidmachine.core.Utils.oneOf;

@@ -10,7 +10,20 @@ import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ActivityTestRule;
 import android.util.Base64;
-
+import com.explorestack.protobuf.adcom.Ad;
+import com.explorestack.protobuf.openrtb.Openrtb;
+import com.explorestack.protobuf.openrtb.Response;
+import com.google.protobuf.Any;
+import com.google.protobuf.MessageOrBuilder;
+import io.bidmachine.protobuf.AdExtension;
+import io.bidmachine.protobuf.ErrorReason;
+import io.bidmachine.protobuf.InitRequest;
+import io.bidmachine.protobuf.InitResponse;
+import io.bidmachine.test_utils.TestHelper;
+import io.bidmachine.test_utils.ViewAction;
+import io.bidmachine.utils.BMError;
+import okhttp3.mockwebserver.*;
+import okio.Buffer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -21,31 +34,7 @@ import java.net.HttpURLConnection;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import io.bidmachine.protobuf.AdExtension;
-import io.bidmachine.protobuf.Any;
-import io.bidmachine.protobuf.ErrorReason;
-import io.bidmachine.protobuf.InitRequest;
-import io.bidmachine.protobuf.InitResponse;
-import io.bidmachine.protobuf.MessageOrBuilder;
-import io.bidmachine.protobuf.adcom.Ad;
-import io.bidmachine.protobuf.openrtb.Openrtb;
-import io.bidmachine.protobuf.openrtb.Response;
-import io.bidmachine.test_utils.TestHelper;
-import io.bidmachine.test_utils.ViewAction;
-import io.bidmachine.utils.BMError;
-import okhttp3.mockwebserver.Dispatcher;
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
-import okhttp3.mockwebserver.RecordedRequest;
-import okhttp3.mockwebserver.SocketPolicy;
-import okio.Buffer;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public abstract class BaseRequestTestImpl<AdType extends OrtbAd, AdRequestType extends AdRequest>
         implements AdRequestTests, AdListener<AdType>, AdFullScreenListener<AdType>,
@@ -224,8 +213,7 @@ public abstract class BaseRequestTestImpl<AdType extends OrtbAd, AdRequestType e
             }
         }, false);
         assertNotNull(failedState.error.getOriginError());
-        assertSame(failedState.error.getOriginError().getCode(),
-                ErrorReason.ERROR_REASON_HTTP_BAD_REQUEST_VALUE);
+        assertSame(ErrorReason.ERROR_REASON_HTTP_BAD_REQUEST_VALUE, failedState.error.getOriginError().getCode());
     }
 
     @Test
@@ -238,8 +226,7 @@ public abstract class BaseRequestTestImpl<AdType extends OrtbAd, AdRequestType e
                 builder.setAdm(null);
             }
         }), false);
-        assertSame(failedState.error.getCode(),
-                ErrorReason.ERROR_REASON_BAD_CONTENT_VALUE);
+        assertSame(ErrorReason.ERROR_REASON_BAD_CONTENT_VALUE, failedState.error.getCode());
     }
 
     @Test
@@ -252,7 +239,7 @@ public abstract class BaseRequestTestImpl<AdType extends OrtbAd, AdRequestType e
             }
         }, false);
         assertNull(failedState.error.getOriginError());
-        assertSame(failedState.error.getCode(), ErrorReason.ERROR_REASON_NO_CONTENT_VALUE);
+        assertSame(ErrorReason.ERROR_REASON_NO_CONTENT_VALUE, failedState.error.getCode());
     }
 
     @Test
@@ -266,8 +253,7 @@ public abstract class BaseRequestTestImpl<AdType extends OrtbAd, AdRequestType e
             }
         }, false);
         assertNotNull(failedState.error.getOriginError());
-        assertSame(failedState.error.getOriginError().getCode(),
-                ErrorReason.ERROR_REASON_NO_CONNECTION_VALUE);
+        assertSame(ErrorReason.ERROR_REASON_NO_CONNECTION_VALUE, failedState.error.getOriginError().getCode());
     }
 
     @Test
@@ -280,8 +266,7 @@ public abstract class BaseRequestTestImpl<AdType extends OrtbAd, AdRequestType e
             }
         }, false);
         assertNotNull(failedState.error.getOriginError());
-        assertSame(failedState.error.getOriginError().getCode(),
-                ErrorReason.ERROR_REASON_TIMEOUT_VALUE);
+        assertSame(ErrorReason.ERROR_REASON_TIMEOUT_VALUE, failedState.error.getOriginError().getCode());
     }
 
     @Test

@@ -1,7 +1,11 @@
 package io.bidmachine;
 
 import android.support.annotation.Nullable;
-
+import io.bidmachine.core.NetworkRequest;
+import io.bidmachine.utils.BMError;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.SocketPolicy;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -16,12 +20,6 @@ import java.net.URLConnection;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import io.bidmachine.core.NetworkRequest;
-import io.bidmachine.utils.BMError;
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
-import okhttp3.mockwebserver.SocketPolicy;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 16)
@@ -47,9 +45,17 @@ public class ApiRequestTest {
     }
 
     @Test
-    public void request_fail_err400() throws InterruptedException {
-        mockServer.enqueue(new MockResponse().setResponseCode(HttpURLConnection.HTTP_BAD_REQUEST));
+    public void request_fail_err204() throws InterruptedException {
+        mockServer.enqueue(new MockResponse().setResponseCode(HttpURLConnection.HTTP_NO_CONTENT));
         performTest("Request", BMError.NoContent);
+    }
+
+    @Test
+    public void request_fail_err400() throws InterruptedException {
+        mockServer.enqueue(new MockResponse()
+                .setHeader("ad-exchange-error-message", "Test error message")
+                .setResponseCode(HttpURLConnection.HTTP_BAD_REQUEST));
+        performTest("Request", BMError.requestError("Test error message"));
     }
 
     @Test

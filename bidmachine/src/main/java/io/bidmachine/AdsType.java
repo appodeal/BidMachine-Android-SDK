@@ -3,11 +3,9 @@ package io.bidmachine;
 import android.content.Context;
 import android.graphics.Point;
 import android.support.annotation.NonNull;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
+import com.explorestack.protobuf.adcom.Ad;
+import com.explorestack.protobuf.openrtb.Response;
+import com.google.protobuf.Message;
 import io.bidmachine.adapters.OrtbAdapter;
 import io.bidmachine.adapters.mraid.MraidAdapter;
 import io.bidmachine.adapters.nast.NastAdapter;
@@ -15,18 +13,13 @@ import io.bidmachine.adapters.vast.VastAdapter;
 import io.bidmachine.banner.BannerRequest;
 import io.bidmachine.banner.BannerSize;
 import io.bidmachine.core.Logger;
-import io.bidmachine.displays.DisplayAdObjectParams;
-import io.bidmachine.displays.DisplayPlacementBuilder;
-import io.bidmachine.displays.FullScreenAdObjectParams;
-import io.bidmachine.displays.NativeAdObjectParams;
-import io.bidmachine.displays.NativePlacementBuilder;
-import io.bidmachine.displays.PlacementBuilder;
-import io.bidmachine.displays.VideoPlacementBuilder;
+import io.bidmachine.displays.*;
 import io.bidmachine.models.AdObject;
 import io.bidmachine.models.AdObjectParams;
-import io.bidmachine.protobuf.Message;
-import io.bidmachine.protobuf.adcom.Ad;
-import io.bidmachine.protobuf.openrtb.Response;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public enum AdsType {
 

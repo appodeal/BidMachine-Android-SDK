@@ -2,12 +2,11 @@ package io.bidmachine;
 
 import android.location.Location;
 import android.support.annotation.NonNull;
-
+import com.explorestack.protobuf.adcom.Context;
 import io.bidmachine.core.Utils;
 import io.bidmachine.models.ITargetingParams;
 import io.bidmachine.models.RequestParams;
 import io.bidmachine.models.RequestParamsRestrictions;
-import io.bidmachine.protobuf.adcom.Context;
 import io.bidmachine.utils.Gender;
 
 import static io.bidmachine.core.Utils.oneOf;

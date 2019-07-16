@@ -4,7 +4,14 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
-
+import com.explorestack.protobuf.openrtb.Openrtb;
+import com.explorestack.protobuf.openrtb.Request;
+import com.explorestack.protobuf.openrtb.Response;
+import io.bidmachine.core.Logger;
+import io.bidmachine.core.NetworkRequest;
+import io.bidmachine.protobuf.InitRequest;
+import io.bidmachine.protobuf.InitResponse;
+import io.bidmachine.utils.BMError;
 import org.apache.http.conn.ConnectTimeoutException;
 
 import java.io.InputStream;
@@ -12,15 +19,6 @@ import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
-
-import io.bidmachine.core.Logger;
-import io.bidmachine.core.NetworkRequest;
-import io.bidmachine.protobuf.InitRequest;
-import io.bidmachine.protobuf.InitResponse;
-import io.bidmachine.protobuf.openrtb.Openrtb;
-import io.bidmachine.protobuf.openrtb.Request;
-import io.bidmachine.protobuf.openrtb.Response;
-import io.bidmachine.utils.BMError;
 
 public class ApiRequest<RequestDataType, ResponseType>
         extends NetworkRequest<RequestDataType, ResponseType, BMError> {

@@ -4,19 +4,18 @@ import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import com.explorestack.protobuf.adcom.Ad;
+import com.explorestack.protobuf.openrtb.Response;
+import com.google.protobuf.InvalidProtocolBufferException;
+import io.bidmachine.TrackEventType;
+import io.bidmachine.models.AdObjectParams;
+import io.bidmachine.protobuf.AdExtension;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import io.bidmachine.TrackEventType;
-import io.bidmachine.models.AdObjectParams;
-import io.bidmachine.protobuf.AdExtension;
-import io.bidmachine.protobuf.InvalidProtocolBufferException;
-import io.bidmachine.protobuf.adcom.Ad;
-import io.bidmachine.protobuf.openrtb.Response;
 
 import static io.bidmachine.Utils.getOrDefault;
 

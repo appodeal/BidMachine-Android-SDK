@@ -1,11 +1,11 @@
 package io.bidmachine;
 
-import java.util.ArrayList;
-
+import com.explorestack.protobuf.adcom.Context;
 import io.bidmachine.models.IBlockedParams;
 import io.bidmachine.models.RequestParams;
 import io.bidmachine.models.RequestParamsRestrictions;
-import io.bidmachine.protobuf.adcom.Context;
+
+import java.util.ArrayList;
 
 import static io.bidmachine.core.Utils.resolveList;
 
