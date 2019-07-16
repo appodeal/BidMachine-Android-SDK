@@ -3,7 +3,6 @@ package io.bidmachine.banner;
 import android.support.test.filters.LargeTest;
 import android.support.test.runner.AndroidJUnit4;
 
-import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import io.bidmachine.BaseViewAdRequestTest;
@@ -29,9 +28,4 @@ public class BannerRequestTest extends BaseViewAdRequestTest<BannerAd, BannerReq
         return new MraidDisplayBuilder().setSize(size.width, size.height);
     }
 
-    @Test
-    @Override
-    public void testLoadFailBadRequest() {
-        super.testLoadFailBadRequest();
-    }
 }
