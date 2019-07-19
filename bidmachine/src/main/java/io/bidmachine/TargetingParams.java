@@ -6,7 +6,7 @@ import com.explorestack.protobuf.adcom.Context;
 import io.bidmachine.core.Utils;
 import io.bidmachine.models.ITargetingParams;
 import io.bidmachine.models.RequestParams;
-import io.bidmachine.models.RequestParamsRestrictions;
+import io.bidmachine.models.DataRestrictions;
 import io.bidmachine.utils.Gender;
 
 import static io.bidmachine.core.Utils.oneOf;
@@ -37,7 +37,7 @@ public final class TargetingParams extends RequestParams implements ITargetingPa
     void build(android.content.Context context,
                Context.App.Builder builder,
                @NonNull TargetingParams defaults,
-               RequestParamsRestrictions restrictions) {
+               DataRestrictions restrictions) {
         final String storeUrl = oneOf(this.storeUrl, defaults.storeUrl);
         if (storeUrl != null) {
             builder.setStoreurl(storeUrl);
@@ -63,7 +63,7 @@ public final class TargetingParams extends RequestParams implements ITargetingPa
     void build(android.content.Context context,
                Context.User.Builder builder,
                @NonNull TargetingParams defaults,
-               RequestParamsRestrictions restrictions) {
+               DataRestrictions restrictions) {
         //User id
         final String userId = oneOf(this.userId, defaults.userId);
         if (userId != null) {
@@ -99,7 +99,7 @@ public final class TargetingParams extends RequestParams implements ITargetingPa
     void build(android.content.Context context,
                Context.Geo.Builder builder,
                @NonNull TargetingParams defaults,
-               RequestParamsRestrictions restrictions) {
+               DataRestrictions restrictions) {
         final String country = oneOf(this.country, defaults.country);
         if (country != null) {
             builder.setCountry(country);

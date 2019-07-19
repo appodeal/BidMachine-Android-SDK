@@ -1,48 +1,64 @@
 package io.bidmachine.adapters.vast;
 
+import android.content.Context;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.text.TextUtils;
+import io.bidmachine.unified.UnifiedFullscreenAd;
+import io.bidmachine.unified.UnifiedFullscreenAdCallback;
+import io.bidmachine.unified.UnifiedFullscreenAdRequestParams;
+import io.bidmachine.unified.UnifiedMediationParams;
+import io.bidmachine.utils.BMError;
+import io.bidmachine.utils.IabUtils;
 import org.nexage.sourcekit.util.Video;
 import org.nexage.sourcekit.vast.view.AppodealVASTPlayer;
 
-import io.bidmachine.FullScreenAdObject;
-import io.bidmachine.OrtbAd;
-import io.bidmachine.displays.FullScreenAdObjectParams;
-import io.bidmachine.utils.BMError;
+import java.util.Map;
 
-class VastFullScreenAdObject<RequestType extends OrtbAd>
-        extends FullScreenAdObject<RequestType> {
+class VastFullScreenAdObject implements UnifiedFullscreenAd {
 
     private Video.Type videoType;
+    @Nullable
     private AppodealVASTPlayer vastPlayer;
+    @Nullable
     private VastFullScreenAdapterListener vastListener;
 
-    VastFullScreenAdObject(Video.Type videoType, FullScreenAdObjectParams adObjectParams) {
-        super(adObjectParams);
+    VastFullScreenAdObject(Video.Type videoType) {
         this.videoType = videoType;
     }
 
     @Override
-    public void load() {
-        vastPlayer = new AppodealVASTPlayer(getContext());
+    public void load(@NonNull Context context,
+                     @NonNull UnifiedFullscreenAdCallback callback,
+                     @NonNull UnifiedFullscreenAdRequestParams requestParams,
+                     @NonNull UnifiedMediationParams mediationParams,
+                     @Nullable Map<String, Object> localExtra) {
+        final String creativeAdm = mediationParams.getString(IabUtils.KEY_CREATIVE_ADM);
+        if (TextUtils.isEmpty(creativeAdm)) {
+            callback.onAdLoadFailed(BMError.IncorrectAdUnit);
+            return;
+        }
+        int skipAfterTimeSec = mediationParams.getInt(IabUtils.KEY_SKIP_AFTER_TIME_SEC);
+        vastPlayer = new AppodealVASTPlayer(context);
         vastPlayer.setPrecache(true);
-        vastPlayer.setCloseTime(getParams().getSkipAfterTimeSec());
-        vastListener = new VastFullScreenAdapterListener(this);
-        vastPlayer.loadVideoWithData(getParams().getCreativeAdm(), vastListener);
+        vastPlayer.setCloseTime(skipAfterTimeSec);
+        vastListener = new VastFullScreenAdapterListener(callback);
+        vastPlayer.loadVideoWithData(creativeAdm, vastListener);
     }
 
     @Override
-    public void show() {
-        if (vastPlayer.checkFile()) {
-            vastPlayer.play(getContext(), videoType, vastListener);
+    public void show(@NonNull Context context, @NonNull UnifiedFullscreenAdCallback callback) {
+        if (vastPlayer != null && vastPlayer.checkFile()) {
+            vastPlayer.play(context, videoType, vastListener);
         } else {
-            processShowFail(BMError.Internal);
+            callback.onAdShowFailed(BMError.NotLoaded);
         }
     }
 
     @Override
-    protected void onDestroy() {
+    public void onDestroy() {
         if (vastPlayer != null) {
             vastPlayer = null;
         }
     }
-
 }

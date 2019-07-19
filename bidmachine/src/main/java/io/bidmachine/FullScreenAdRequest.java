@@ -1,12 +1,12 @@
 package io.bidmachine;
 
 import android.support.annotation.NonNull;
-
 import io.bidmachine.displays.PlacementBuilder;
 import io.bidmachine.models.RequestBuilder;
+import io.bidmachine.unified.UnifiedFullscreenAdRequestParams;
 
 public abstract class FullScreenAdRequest<SelfType extends FullScreenAdRequest>
-        extends AdRequest<SelfType> {
+        extends AdRequest<SelfType, UnifiedFullscreenAdRequestParams> {
 
     AdContentType adContentType = AdContentType.All;
 
@@ -20,6 +20,11 @@ public abstract class FullScreenAdRequest<SelfType extends FullScreenAdRequest>
                 && super.isPlacementBuilderMatch(placementBuilder);
     }
 
+    @Override
+    public UnifiedFullscreenAdRequestParams getUnifiedRequestParams() {
+        return new FullscreenUnifiedAdRequestParams();
+    }
+
     protected abstract static class FullScreenRequestBuilder<
             SelfType extends RequestBuilder,
             ReturnType extends FullScreenAdRequest>
@@ -31,7 +36,16 @@ public abstract class FullScreenAdRequest<SelfType extends FullScreenAdRequest>
             params.adContentType = adContentType;
             return (SelfType) this;
         }
+    }
 
+    private class FullscreenUnifiedAdRequestParams
+            extends BaseUnifiedRequestParams
+            implements UnifiedFullscreenAdRequestParams {
+        @Override
+        public boolean isContentTypeMatch(@NonNull AdContentType adContentType) {
+            return FullScreenAdRequest.this.adContentType == AdContentType.All
+                    || FullScreenAdRequest.this.adContentType == adContentType;
+        }
     }
 
 }

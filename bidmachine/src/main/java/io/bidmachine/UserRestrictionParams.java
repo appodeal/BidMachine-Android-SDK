@@ -2,9 +2,9 @@ package io.bidmachine;
 
 import android.support.annotation.NonNull;
 import com.explorestack.protobuf.adcom.Context;
+import io.bidmachine.models.DataRestrictions;
 import io.bidmachine.models.IUserRestrictionsParams;
 import io.bidmachine.models.RequestParams;
-import io.bidmachine.models.RequestParamsRestrictions;
 
 import static io.bidmachine.core.Utils.oneOf;
 
@@ -31,7 +31,7 @@ final class UserRestrictionParams extends RequestParams
     void build(@NonNull android.content.Context context,
                @NonNull Context.Regs.Builder builder,
                @NonNull UserRestrictionParams defaults,
-               @NonNull RequestParamsRestrictions restrictions) {
+               @NonNull DataRestrictions restrictions) {
         builder.setGdpr(oneOf(subjectToGDPR, defaults.subjectToGDPR, false));
         builder.setCoppa(oneOf(hasCoppa, defaults.hasCoppa, false));
     }
@@ -39,7 +39,7 @@ final class UserRestrictionParams extends RequestParams
     void build(@NonNull android.content.Context context,
                @NonNull Context.User.Builder builder,
                @NonNull UserRestrictionParams defaults,
-               @NonNull RequestParamsRestrictions restrictions) {
+               @NonNull DataRestrictions restrictions) {
         final String gdprConsentString = oneOf(this.gdprConsentString, defaults.gdprConsentString);
         if (gdprConsentString != null) {
             builder.setConsent(gdprConsentString);
@@ -65,7 +65,7 @@ final class UserRestrictionParams extends RequestParams
         return this;
     }
 
-    static RequestParamsRestrictions createRestrictions(final UserRestrictionParams userRestrictionParams) {
+    static DataRestrictions createRestrictions(final UserRestrictionParams userRestrictionParams) {
         final boolean hasCoppa = oneOf(userRestrictionParams.hasCoppa(),
                 BidMachineImpl.get().getUserRestrictionParams().hasCoppa(), false);
 
@@ -77,7 +77,7 @@ final class UserRestrictionParams extends RequestParams
 
         final boolean underGdprRestrictions = subjectToGDPR && !hasConsent;
 
-        return new RequestParamsRestrictions() {
+        return new DataRestrictions() {
             @Override
             public boolean canSendGeoPosition() {
                 return !hasCoppa && !underGdprRestrictions;
@@ -96,6 +96,26 @@ final class UserRestrictionParams extends RequestParams
             @Override
             public boolean canSendIfa() {
                 return !underGdprRestrictions;
+            }
+
+            @Override
+            public boolean isUserInGdprScope() {
+                return subjectToGDPR;
+            }
+
+            @Override
+            public boolean isUserHasConsent() {
+                return hasConsent;
+            }
+
+            @Override
+            public boolean isUserGdprProtected() {
+                return underGdprRestrictions;
+            }
+
+            @Override
+            public boolean isUserAgeRestricted() {
+                return hasCoppa;
             }
         };
     }

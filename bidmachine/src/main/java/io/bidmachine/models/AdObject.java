@@ -1,21 +1,26 @@
 package io.bidmachine.models;
 
-import io.bidmachine.AdProcessCallback;
-import io.bidmachine.IAd;
+import android.content.Context;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
-public interface AdObject<
-        AdType extends IAd,
-        AdObjectParamsType extends AdObjectParams>
-        extends AdProcessCallback {
+import java.util.Map;
 
-    void attachAd(AdType ad);
-
-    AdType getAd();
+public interface AdObject<AdObjectParamsType extends AdObjectParams> {
 
     AdObjectParamsType getParams();
 
-    void load();
+    void load(@NonNull Context context, @Nullable Map<String, Object> extra);
 
-    void destroy();
+    void onShown();
 
+    void onImpression();
+
+    void onClicked();
+
+    void onFinished();
+
+    void onClosed();
+
+    void onDestroy();
 }

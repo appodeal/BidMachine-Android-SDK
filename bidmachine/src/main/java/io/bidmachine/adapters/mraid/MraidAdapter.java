@@ -1,20 +1,16 @@
 package io.bidmachine.adapters.mraid;
 
+import io.bidmachine.AdsType;
+import io.bidmachine.BidMachineAdapter;
+import io.bidmachine.unified.UnifiedBannerAd;
+import io.bidmachine.unified.UnifiedFullscreenAd;
 import org.nexage.sourcekit.mraid.internal.MRAIDLog;
 import org.nexage.sourcekit.util.Video;
 
-import io.bidmachine.FullScreenAdObject;
-import io.bidmachine.ViewAdObject;
-import io.bidmachine.adapters.OrtbAdapter;
-import io.bidmachine.displays.DisplayAdObjectParams;
-import io.bidmachine.displays.FullScreenAdObjectParams;
-import io.bidmachine.displays.VideoAdObjectParams;
-import io.bidmachine.models.AdObjectParams;
-
-public class MraidAdapter extends OrtbAdapter {
+public class MraidAdapter extends BidMachineAdapter {
 
     public MraidAdapter() {
-        super("mraid", "2.0");
+        super("mraid", "2.0", new AdsType[]{AdsType.Banner, AdsType.Interstitial, AdsType.Rewarded});
     }
 
     @Override
@@ -23,18 +19,18 @@ public class MraidAdapter extends OrtbAdapter {
     }
 
     @Override
-    public ViewAdObject createBannerAdObject(DisplayAdObjectParams adObjectParams) {
-        return new MraidViewAdObject(adObjectParams);
+    public UnifiedBannerAd createBanner() {
+        return new MraidBannerAd();
     }
 
     @Override
-    public FullScreenAdObject createInterstitialAdObject(FullScreenAdObjectParams adObjectParams) {
-        return new MraidFullScreenAdObject<>(Video.Type.NON_REWARDED, adObjectParams);
+    public UnifiedFullscreenAd createInterstitial() {
+        return new MraidFullScreenAd(Video.Type.NON_REWARDED);
     }
 
     @Override
-    public FullScreenAdObject createRewardedAdObject(FullScreenAdObjectParams adObjectParams) {
-        return new MraidFullScreenAdObject<>(Video.Type.REWARDED, adObjectParams);
+    public UnifiedFullscreenAd createRewarded() {
+        return new MraidFullScreenAd(Video.Type.REWARDED);
     }
 
 }

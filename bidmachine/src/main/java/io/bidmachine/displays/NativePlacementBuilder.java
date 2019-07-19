@@ -4,17 +4,16 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import com.explorestack.protobuf.adcom.*;
 import com.explorestack.protobuf.openrtb.Response;
+import com.google.protobuf.Any;
 import com.google.protobuf.Message;
-import io.bidmachine.AdContentType;
-import io.bidmachine.Constants;
-import io.bidmachine.MediaAssetType;
-import io.bidmachine.adapters.OrtbAdapter;
+import io.bidmachine.*;
 import io.bidmachine.models.AdObjectParams;
-import io.bidmachine.nativead.NativeRequest;
+import io.bidmachine.unified.UnifiedNativeAdRequestParams;
 
 import java.util.Arrays;
+import java.util.Collection;
 
-public class NativePlacementBuilder extends PlacementBuilder<NativeRequest> {
+public class NativePlacementBuilder extends PlacementBuilder<UnifiedNativeAdRequestParams> {
 
     static final int TITLE_ASSET_ID = 0;
     static final int ICON_ASSET_ID = 1;
@@ -116,12 +115,15 @@ public class NativePlacementBuilder extends PlacementBuilder<NativeRequest> {
         return asset.build();
     }
 
-    public NativePlacementBuilder() {
-        super(AdContentType.All);
+    public NativePlacementBuilder(boolean supportHeaderBidding) {
+        super(AdContentType.All, supportHeaderBidding);
     }
 
     @Override
-    public Message.Builder buildPlacement(android.content.Context context, NativeRequest adRequest, OrtbAdapter adapter) {
+    public Message.Builder createPlacement(@NonNull Context context,
+                                           @NonNull UnifiedNativeAdRequestParams adRequestParams,
+                                           @NonNull AdsType adsType,
+                                           @NonNull Collection<NetworkConfig> networkConfigs) {
         Placement.DisplayPlacement.Builder builder = Placement.DisplayPlacement.newBuilder();
         builder.setInstl(false);
         builder.setUnit(SizeUnit.SIZE_UNIT_DIPS);
@@ -133,11 +135,11 @@ public class NativePlacementBuilder extends PlacementBuilder<NativeRequest> {
         formatBuilder.addAsset(ctaAsset);
         formatBuilder.addAsset(ratingAsset);
         formatBuilder.addAsset(sponsoredAsset);
-        if (adRequest.containsAssetType(MediaAssetType.Icon)) {
+        if (adRequestParams.containsAssetType(MediaAssetType.Icon)) {
             formatBuilder.addAsset(iconAsset);
         }
-        boolean imageRequired = adRequest.containsAssetType(MediaAssetType.Image);
-        boolean videoRequired = adRequest.containsAssetType(MediaAssetType.Video);
+        boolean imageRequired = adRequestParams.containsAssetType(MediaAssetType.Image);
+        boolean videoRequired = adRequestParams.containsAssetType(MediaAssetType.Video);
         if (imageRequired) {
             formatBuilder.addAsset(createImageAsset(!videoRequired));
             builder.addAllMime(Arrays.asList(Constants.IMAGE_MIME_TYPES));
@@ -146,28 +148,25 @@ public class NativePlacementBuilder extends PlacementBuilder<NativeRequest> {
             formatBuilder.addAsset(createVideoAsset(!imageRequired));
             builder.addAllMime(Arrays.asList(Constants.VIDEO_MIME_TYPES));
         }
-
         builder.setNativefmt(formatBuilder);
-
+        Message.Builder headerBiddingPlacement =
+                createHeaderBiddingPlacement(context, adRequestParams, adsType, AdContentType.Static, networkConfigs);
+        if (headerBiddingPlacement != null) {
+            builder.addExt(Any.pack(headerBiddingPlacement.build()));
+        }
         return builder;
     }
 
     @Override
-    public boolean isMatch(Ad ad) {
-        return ad.hasDisplay() && ad.getDisplay().hasNative();
-    }
-
-    @Override
     public AdObjectParams createAdObjectParams(@NonNull Context context,
-                                               @NonNull NativeRequest adRequest,
+                                               @NonNull UnifiedNativeAdRequestParams adRequest,
                                                @NonNull Response.Seatbid seatbid,
                                                @NonNull Response.Seatbid.Bid bid,
                                                @NonNull Ad ad) {
-        Ad.Display display = ad.getDisplay();
-        NativeAdObjectParams params = new NativeAdObjectParams(seatbid, bid, ad);
-        params.setCreativeAdm(display.getAdm());
-        params.setWidth(display.getW());
-        params.setHeight(display.getH());
+        AdObjectParams params = createHeaderBiddingAdObjectParams(context, adRequest, seatbid, bid, ad);
+        if (params == null && (ad.hasDisplay() && ad.getDisplay().hasNative())) {
+            params = new NativeAdObjectParams(seatbid, bid, ad);
+        }
         return params;
     }
 

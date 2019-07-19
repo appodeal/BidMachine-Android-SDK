@@ -165,7 +165,7 @@ public class RequestHelper {
 
     public void showInterstitial() {
         if (currentInterstitialAd != null) {
-            currentInterstitialAd.show();
+            currentInterstitialAd.show(peekContext());
         } else {
             Utils.showToast(peekContext(), "Interstitial load not triggered");
         }
@@ -198,7 +198,7 @@ public class RequestHelper {
                 .setListener(new InterstitialListener() {
                     @Override
                     public void onAdLoaded(@NonNull InterstitialAd ad) {
-                        if (show) ad.show();
+                        if (show) ad.show(peekContext());
                         Utils.showToast(peekContext(), "onAdLoaded");
                     }
 
@@ -274,7 +274,7 @@ public class RequestHelper {
 
     public void showRewarded() {
         if (currentRewardedAd != null) {
-            currentRewardedAd.show();
+            currentRewardedAd.show(peekContext());
         } else {
             Utils.showToast(peekContext(), "Rewarded load not triggered");
         }
@@ -300,11 +300,11 @@ public class RequestHelper {
         if (currentRewardedAd != null) {
             currentRewardedAd.destroy();
         }
-        currentRewardedAd = new RewardedAd(context)
+        currentRewardedAd = new RewardedAd(peekContext())
                 .setListener(new RewardedListener() {
                     @Override
                     public void onAdLoaded(@NonNull RewardedAd ad) {
-                        if (show) ad.show();
+                        if (show) ad.show(peekContext());
                         Utils.showToast(peekContext(), "onAdLoaded");
                     }
 

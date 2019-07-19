@@ -10,7 +10,7 @@ import com.explorestack.protobuf.adcom.OS;
 import io.bidmachine.core.DeviceInfo;
 import io.bidmachine.core.Utils;
 import io.bidmachine.models.RequestParams;
-import io.bidmachine.models.RequestParamsRestrictions;
+import io.bidmachine.models.DataRestrictions;
 
 import java.util.Locale;
 
@@ -22,7 +22,7 @@ final class DeviceParams extends RequestParams {
                @NonNull Context.Device.Builder builder,
                @NonNull TargetingParams targetingParams,
                @NonNull TargetingParams defaultTargetingParams,
-               @NonNull RequestParamsRestrictions restrictions) {
+               @NonNull DataRestrictions restrictions) {
         final DeviceInfo deviceInfo = DeviceInfo.obtain(context);
         builder.setType(deviceInfo.isTablet ? DeviceType.DEVICE_TYPE_TABLET :
                 DeviceType.DEVICE_TYPE_PHONE_DEVICE);

@@ -3,7 +3,7 @@ package io.bidmachine.displays;
 import com.explorestack.protobuf.adcom.Ad;
 import com.explorestack.protobuf.openrtb.Response;
 
-public class VideoAdObjectParams extends FullScreenAdObjectParams {
+public final class VideoAdObjectParams extends IabAdObjectParams {
 
     VideoAdObjectParams(Response.Seatbid seatbid, Response.Seatbid.Bid bid, Ad ad) {
         super(seatbid, bid, ad);

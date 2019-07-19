@@ -3,7 +3,7 @@ package io.bidmachine;
 import com.explorestack.protobuf.adcom.Context;
 import io.bidmachine.models.IBlockedParams;
 import io.bidmachine.models.RequestParams;
-import io.bidmachine.models.RequestParamsRestrictions;
+import io.bidmachine.models.DataRestrictions;
 
 import java.util.ArrayList;
 
@@ -18,7 +18,7 @@ public final class BlockedParams extends RequestParams implements IBlockedParams
     void build(android.content.Context context,
                Context.Restrictions.Builder builder,
                BlockedParams defaults,
-               RequestParamsRestrictions restrictions) {
+               DataRestrictions restrictions) {
         builder.addAllBcat(resolveList(blockedCategories, defaults != null ? defaults.blockedCategories : null));
         builder.addAllBadv(resolveList(blockedDomains, defaults != null ? defaults.blockedDomains : null));
         builder.addAllBapp(resolveList(blockedApplications, defaults != null ? defaults.blockedApplications : null));

@@ -1,18 +1,130 @@
 package io.bidmachine;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-
+import io.bidmachine.core.Logger;
 import io.bidmachine.core.Utils;
 import io.bidmachine.core.VisibilityTracker;
-import io.bidmachine.displays.DisplayAdObjectParams;
+import io.bidmachine.models.AdObjectParams;
+import io.bidmachine.unified.UnifiedAd;
+import io.bidmachine.unified.UnifiedAdRequestParams;
+import io.bidmachine.unified.UnifiedBannerAdCallback;
 import io.bidmachine.utils.BMError;
+import io.bidmachine.utils.ContextProvider;
 
-public abstract class ViewAdObject<AdType extends ViewAd>
-        extends AdObjectImpl<AdType, DisplayAdObjectParams> {
+public final class ViewAdObject<
+        AdRequestType extends AdRequest<AdRequestType, UnifiedAdRequestParamsType>,
+        UnifiedAdType extends UnifiedAd<UnifiedBannerAdCallback, UnifiedAdRequestParamsType>,
+        UnifiedAdRequestParamsType extends UnifiedAdRequestParams>
+        extends AdObjectImpl<AdRequestType, AdObjectParams, UnifiedAdType, UnifiedBannerAdCallback, UnifiedAdRequestParamsType> {
+
+    private View adView;
+
+    private MeasureMode widthMeasureMode = MeasureMode.Direct;
+    private MeasureMode heightMeasureMode = MeasureMode.Direct;
+
+    private int width;
+    private int height;
+
+    public ViewAdObject(@NonNull ContextProvider contextProvider,
+                        @NonNull AdProcessCallback processCallback,
+                        @NonNull AdRequestType adRequest,
+                        @NonNull AdObjectParams adObjectParams,
+                        @NonNull UnifiedAdType unifiedAd) {
+        super(contextProvider, processCallback, adRequest, adObjectParams, unifiedAd);
+    }
+
+    @NonNull
+    @Override
+    public UnifiedBannerAdCallback createUnifiedCallback(@NonNull final AdProcessCallback processCallback) {
+        return new UnifiedViewAdCallbackImpl(processCallback);
+    }
+
+    void show(@Nullable ViewGroup container) {
+        if (container == null) {
+            getUnifiedAdCallback().onAdShowFailed(BMError.Internal);
+            return;
+        }
+        if (getWidth() == 0 || getHeight() == 0) {
+            Logger.log("Width or height not provided");
+            getUnifiedAdCallback().onAdShowFailed(BMError.Internal);
+            return;
+        }
+        Context context = container.getContext();
+        if (adView != null) {
+            VisibilityTracker.stopTracking(adView);
+        }
+        container.removeAllViews();
+        final ViewGroup.LayoutParams params;
+        if (container instanceof FrameLayout) {
+            params = new FrameLayout.LayoutParams(
+                    getScaledWidth(context), getScaledHeight(context), Gravity.CENTER);
+        } else {
+            params = new ViewGroup.LayoutParams(getScaledWidth(context), getScaledHeight(context));
+        }
+        container.addView(adView, params);
+        VisibilityTracker.startTracking(
+                adView,
+                getParams().getViewabilityTimeThresholdMs(),
+                getParams().getViewabilityPixelThreshold(),
+                new VisibilityTracker.VisibilityChangeCallback() {
+                    @Override
+                    public void onViewShown() {
+                        getProcessCallback().processShown();
+                    }
+
+                    @Override
+                    public void onViewTrackingFinished() {
+                        getProcessCallback().processImpression();
+                    }
+                });
+    }
+
+    @Override
+    public void onImpression() {
+        super.onImpression();
+        VisibilityTracker.stopTracking(adView);
+    }
+
+    @Override
+    public void onDestroy() {
+        if (adView != null) {
+            if (adView.getParent() instanceof ViewGroup) {
+                ((ViewGroup) adView.getParent()).removeView(adView);
+            }
+            VisibilityTracker.stopTracking(adView);
+        }
+        super.onDestroy();
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    private int getWidth() {
+        return width;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+    private int getHeight() {
+        return height;
+    }
+
+    private int getScaledWidth(@NonNull Context context) {
+        return widthMeasureMode.getSize(context, getWidth());
+    }
+
+    private int getScaledHeight(@NonNull Context context) {
+        return heightMeasureMode.getSize(context, getHeight());
+    }
 
     protected enum MeasureMode {
         Match, Wrap, Direct;
@@ -31,82 +143,20 @@ public abstract class ViewAdObject<AdType extends ViewAd>
         }
     }
 
-    private View bannerView;
+    private class UnifiedViewAdCallbackImpl extends BaseUnifiedAdCallback implements UnifiedBannerAdCallback {
 
-    private MeasureMode widthMeasureMode = MeasureMode.Direct;
-    private MeasureMode heightMeasureMode = MeasureMode.Direct;
-
-    public ViewAdObject(DisplayAdObjectParams adDisplay) {
-        super(adDisplay);
-    }
-
-    void show(ViewGroup container) {
-        if (container == null) {
-            processLoadFail(BMError.Internal);
-            return;
+        UnifiedViewAdCallbackImpl(@NonNull AdProcessCallback processCallback) {
+            super(processCallback);
         }
-        if (bannerView != null) {
-            VisibilityTracker.stopTracking(bannerView);
-        }
-        container.removeAllViews();
-        bannerView = obtainBannerView();
-        final ViewGroup.LayoutParams params;
-        if (container instanceof FrameLayout) {
-            params = new FrameLayout.LayoutParams(getScaledWidth(), getScaledHeight(), Gravity.CENTER);
-        } else {
-            params = new ViewGroup.LayoutParams(getScaledWidth(), getScaledHeight());
-        }
-        container.addView(bannerView, params);
-        VisibilityTracker.startTracking(
-                bannerView,
-                getParams().getViewabilityTimeThresholdMs(),
-                getParams().getViewabilityPixelThreshold(),
-                new VisibilityTracker.VisibilityChangeCallback() {
-                    @Override
-                    public void onViewShown() {
-                        processShown();
-                    }
 
-                    @Override
-                    public void onViewTrackingFinished() {
-                        processImpression();
-                    }
-                });
-    }
-
-    @Override
-    protected void onImpression() {
-        super.onImpression();
-        VisibilityTracker.stopTracking(bannerView);
-    }
-
-    @Override
-    public void processDestroy() {
-        if (bannerView != null) {
-            if (bannerView.getParent() instanceof ViewGroup) {
-                ((ViewGroup) bannerView.getParent()).removeView(bannerView);
+        @Override
+        public void onAdLoaded(@Nullable View adView) {
+            if (ViewAdObject.this.adView != null) {
+                VisibilityTracker.stopTracking(ViewAdObject.this.adView);
             }
-            VisibilityTracker.stopTracking(bannerView);
+            ViewAdObject.this.adView = adView;
+            processCallback.processLoadSuccess();
         }
-        super.processDestroy();
     }
-
-    public int getWidth() {
-        return getParams().getWidth();
-    }
-
-    public int getHeight() {
-        return getParams().getHeight();
-    }
-
-    private int getScaledWidth() {
-        return widthMeasureMode.getSize(getContext(), getWidth());
-    }
-
-    private int getScaledHeight() {
-        return heightMeasureMode.getSize(getContext(), getHeight());
-    }
-
-    protected abstract View obtainBannerView();
 
 }

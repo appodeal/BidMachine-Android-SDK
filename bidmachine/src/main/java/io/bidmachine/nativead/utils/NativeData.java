@@ -2,7 +2,7 @@ package io.bidmachine.nativead.utils;
 
 import android.support.annotation.Nullable;
 
-public interface NativePrivateData extends NativePublicData {
+public interface NativeData extends NativePublicData {
     @Nullable
     String getIconUrl();
 

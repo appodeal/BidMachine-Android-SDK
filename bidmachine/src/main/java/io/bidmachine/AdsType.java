@@ -3,97 +3,115 @@ package io.bidmachine;
 import android.content.Context;
 import android.graphics.Point;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import com.explorestack.protobuf.adcom.Ad;
 import com.explorestack.protobuf.openrtb.Response;
+import com.google.protobuf.Any;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
-import io.bidmachine.adapters.OrtbAdapter;
 import io.bidmachine.adapters.mraid.MraidAdapter;
 import io.bidmachine.adapters.nast.NastAdapter;
 import io.bidmachine.adapters.vast.VastAdapter;
-import io.bidmachine.banner.BannerRequest;
 import io.bidmachine.banner.BannerSize;
 import io.bidmachine.core.Logger;
-import io.bidmachine.displays.*;
-import io.bidmachine.models.AdObject;
+import io.bidmachine.displays.DisplayPlacementBuilder;
+import io.bidmachine.displays.NativePlacementBuilder;
+import io.bidmachine.displays.PlacementBuilder;
+import io.bidmachine.displays.VideoPlacementBuilder;
 import io.bidmachine.models.AdObjectParams;
+import io.bidmachine.protobuf.headerbidding.HeaderBiddingAd;
+import io.bidmachine.unified.UnifiedBannerAdRequestParams;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public enum AdsType {
 
     Banner(new ApiRequest.ApiAuctionDataBinder(),
-            new String[]{AdapterRegistry.Mraid},
-            new PlacementBuilder[]{new DisplayPlacementBuilder<BannerRequest>(false) {
-                @Override
-                public Point getSize(Context context, BannerRequest bannerRequest) {
-                    BannerSize bannerSize = bannerRequest.getSize();
-                    return new Point(bannerSize.width, bannerSize.height);
-                }
-
-                @Override
-                public AdObjectParams createAdObjectParams(@NonNull Context context,
-                                                           @NonNull BannerRequest adRequest,
-                                                           @NonNull Response.Seatbid seatbid,
-                                                           @NonNull Response.Seatbid.Bid bid,
-                                                           @NonNull Ad ad) {
-                    //TODO пересмотреть место проверки т.к. валидность проверяется в AdObjectParams.isValid()
-                    AdObjectParams params = super.createAdObjectParams(context, adRequest, seatbid, bid, ad);
-                    if (params.getWidth() > 0 && params.getHeight() > 0) {
-                        return params;
-                    }
-                    return null;
-                }
-            }}),
-
-    Interstitial(new ApiRequest.ApiAuctionDataBinder(),
-            new String[]{
-                    AdapterRegistry.Mraid,
-                    AdapterRegistry.Vast},
             new PlacementBuilder[]{
-                    new DisplayPlacementBuilder(true),
-                    new VideoPlacementBuilder(true)}),
-
+                    new DisplayPlacementBuilder<UnifiedBannerAdRequestParams>(false, true) {
+                        @Override
+                        public Point getSize(Context context, UnifiedBannerAdRequestParams bannerRequest) {
+                            BannerSize bannerSize = bannerRequest.getBannerSize();
+                            return new Point(bannerSize.width, bannerSize.height);
+                        }
+                    }}),
+    Interstitial(new ApiRequest.ApiAuctionDataBinder(),
+            new PlacementBuilder[]{
+                    new DisplayPlacementBuilder(true, true),
+                    new VideoPlacementBuilder(true, true)}),
     Rewarded(new ApiRequest.ApiAuctionDataBinder(),
-            new String[]{
-                    AdapterRegistry.Mraid,
-                    AdapterRegistry.Vast},
-            new PlacementBuilder[]{new DisplayPlacementBuilder(true),
-                    new VideoPlacementBuilder(false)}),
-
+            new PlacementBuilder[]{
+                    new DisplayPlacementBuilder(true, true),
+                    new VideoPlacementBuilder(false, true)}),
     Native(new ApiRequest.ApiAuctionDataBinder(),
-            new String[]{AdapterRegistry.Nast},
-            new PlacementBuilder[]{new NativePlacementBuilder()});
+            new PlacementBuilder[]{
+                    new NativePlacementBuilder(false)});
 
     private final ApiRequest.ApiAuctionDataBinder binder;
     private final PlacementBuilder[] placementBuilders;
-    private final Map<String, OrtbAdapter> adapters = new HashMap<>();
+    private final Map<String, NetworkConfig> networkConfigs = new HashMap<>();
 
     AdsType(@NonNull ApiRequest.ApiAuctionDataBinder binder,
-            @NonNull String[] adaptersNames,
             @NonNull PlacementBuilder[] placementBuilders) {
         this.binder = binder;
-        for (String adapterName : adaptersNames) {
-            adapters.put(adapterName, AdapterRegistry.findAdapter(adapterName));
-        }
         this.placementBuilders = placementBuilders;
     }
 
-    OrtbAdapter findAdapter(@NonNull Context context, @NonNull Ad ad) {
-        switch (this) {
-            case Native: {
-                return findAdapter(context, AdapterRegistry.Nast);
-            }
-            default: {
-                if (ad.hasDisplay()) {
-                    return findAdapter(context, AdapterRegistry.Mraid);
-                } else if (ad.hasVideo()) {
-                    return findAdapter(context, AdapterRegistry.Vast);
-                }
-                return null;
+    NetworkConfig obtainNetworkConfig(@NonNull Context context, @NonNull Ad ad) {
+        NetworkConfig networkConfig = obtainHeaderBiddingAdNetworkConfig(context, ad);
+        if (networkConfig == null) {
+            if (this == AdsType.Native) {
+                networkConfig = obtainNetworkConfig(context, AdapterRegistry.Nast);
+            } else if (ad.hasDisplay()) {
+                networkConfig = obtainNetworkConfig(context, AdapterRegistry.Mraid);
+            } else if (ad.hasVideo()) {
+                networkConfig = obtainNetworkConfig(context, AdapterRegistry.Vast);
             }
         }
+        return networkConfig;
+    }
+
+    @Nullable
+    private NetworkConfig obtainHeaderBiddingAdNetworkConfig(@NonNull Context context, @NonNull Ad ad) {
+        NetworkConfig result = null;
+        if (ad.hasDisplay()) {
+            result = obtainHeaderBiddingAdNetworkConfig(context, ad.getDisplay().getExtList());
+        }
+        if (result == null && ad.hasVideo()) {
+            result = obtainHeaderBiddingAdNetworkConfig(context, ad.getVideo().getExtList());
+        }
+        return result;
+    }
+
+    @Nullable
+    private NetworkConfig obtainHeaderBiddingAdNetworkConfig(@NonNull Context context, @NonNull List<Any> extensions) {
+        for (Any extension : extensions) {
+            if (extension.is(HeaderBiddingAd.class)) {
+                try {
+                    HeaderBiddingAd headerBiddingAd = extension.unpack(HeaderBiddingAd.class);
+                    return obtainNetworkConfig(context, headerBiddingAd.getBidder());
+                } catch (InvalidProtocolBufferException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return null;
+    }
+
+    private NetworkConfig obtainNetworkConfig(@NonNull Context context, @NonNull String networkName) {
+        NetworkConfig networkConfig = AdapterRegistry.getConfig(networkName);
+        if (networkConfig != null) {
+            try {
+                networkConfig.getAdapter().initialize(context, networkConfig.getNetworkConfig());
+            } catch (Throwable throwable) {
+                Logger.log(throwable);
+                networkConfig = null;
+            }
+        }
+        return networkConfig;
     }
 
     ApiRequest.ApiAuctionDataBinder getBinder() {
@@ -107,71 +125,62 @@ public enum AdsType {
                                         @NonNull Ad ad,
                                         @Deprecated AdRequest adRequest) {
         for (PlacementBuilder builder : placementBuilders) {
-            if (builder.isMatch(ad)) {
-                return builder.createAdObjectParams(context, adRequest, seatbid, bid, ad);
+            AdObjectParams params = builder.createAdObjectParams(
+                    context, adRequest.getUnifiedRequestParams(), seatbid, bid, ad);
+            if (params != null) {
+                return params;
             }
         }
         return null;
     }
 
     @SuppressWarnings("unchecked")
-    OrtbAdapter findAdapter(Context context, String key) {
-        OrtbAdapter adapter = adapters.get(key);
-        if (adapter != null) {
-            try {
-                adapter.initialize(context);
-            } catch (Throwable throwable) {
-                Logger.log(throwable);
-                adapter = null;
-            }
-        }
-        return adapter;
-    }
-
-    @SuppressWarnings("unchecked")
     void collectDisplayPlacements(Context context, AdRequest adRequest, ArrayList<Message.Builder> outList) {
-        for (OrtbAdapter adapter : adapters.values()) {
-            for (PlacementBuilder builder : placementBuilders) {
-                if (adRequest.isPlacementBuilderMatch(builder)) {
-                    outList.add(builder.buildPlacement(context, adRequest, adapter));
+        for (PlacementBuilder placementBuilder : placementBuilders) {
+            if (adRequest.isPlacementBuilderMatch(placementBuilder)) {
+                Message.Builder buildResult = placementBuilder.createPlacement(
+                        context, adRequest.getUnifiedRequestParams(), this, networkConfigs.values());
+                if (buildResult != null) {
+                    outList.add(buildResult);
                 }
             }
         }
     }
 
-    AdObject createAdObject(@NonNull OrtbAdapter adapter,
-                            @NonNull AdObjectParams adObjectParams) {
-        switch (this) {
-            case Native:
-                return adapter.createNativeAdObject((NativeAdObjectParams) adObjectParams);
-            case Banner:
-                return adapter.createBannerAdObject((DisplayAdObjectParams) adObjectParams);
-            case Interstitial:
-                return adapter.createInterstitialAdObject((FullScreenAdObjectParams) adObjectParams);
-            case Rewarded:
-                return adapter.createRewardedAdObject((FullScreenAdObjectParams) adObjectParams);
-        }
-        throw new IllegalArgumentException();
+    static {
+        AdapterRegistry.registerAdapter(new NetworkConfig(new MraidAdapter()));
+        AdapterRegistry.registerAdapter(new NetworkConfig(new VastAdapter()));
+        AdapterRegistry.registerAdapter(new NetworkConfig(new NastAdapter()));
     }
 
-    private static class AdapterRegistry {
+    static class AdapterRegistry {
 
         static final String Mraid = "mraid";
         static final String Vast = "vast";
         static final String Nast = "nast";
 
-        private static final HashMap<String, OrtbAdapter> cache = new HashMap<>();
+        private static final HashMap<String, NetworkConfig> cache = new HashMap<>();
 
-        static {
-            cache.put(Mraid, new MraidAdapter());
-            cache.put(Vast, new VastAdapter());
-            cache.put(Nast, new NastAdapter());
-        }
-
-        static OrtbAdapter findAdapter(String key) {
+        @Nullable
+        static NetworkConfig getConfig(String key) {
             return cache.get(key);
         }
 
+        static void registerAdapter(NetworkConfig networkConfig) {
+            BidMachineAdapter adapter = networkConfig.getAdapter();
+            if (!cache.containsKey(adapter.getKey())) {
+                cache.put(adapter.getKey(), networkConfig);
+            }
+            for (AdsType type : networkConfig.getSupportedAdsTypes()) {
+                type.networkConfigs.put(adapter.getKey(), networkConfig);
+            }
+        }
+
+        static void setLoggingEnabled(boolean enabled) {
+            for (Map.Entry<String, NetworkConfig> entry : cache.entrySet()) {
+                entry.getValue().getAdapter().setLogging(enabled);
+            }
+        }
     }
 
 }

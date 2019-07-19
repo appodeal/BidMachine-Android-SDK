@@ -12,7 +12,7 @@ import com.explorestack.protobuf.adcom.*;
 import com.google.protobuf.*;
 import io.bidmachine.core.Logger;
 import io.bidmachine.core.Utils;
-import io.bidmachine.models.RequestParamsRestrictions;
+import io.bidmachine.models.DataRestrictions;
 import io.bidmachine.protobuf.InitRequest;
 
 import java.io.IOException;
@@ -104,7 +104,7 @@ class OrtbUtils {
     static InitRequest obtainInitRequest(@NonNull android.content.Context context,
                                          @NonNull String sellerId,
                                          @Nullable TargetingParams targetingParams,
-                                         @NonNull RequestParamsRestrictions paramsRestrictions) {
+                                         @NonNull DataRestrictions paramsRestrictions) {
         final InitRequest.Builder initRequest = InitRequest.newBuilder();
         final String packageName = context.getPackageName();
         if (packageName != null) {
@@ -294,7 +294,7 @@ class OrtbUtils {
 
                     //TODO: optimize for different packages support
                     try {
-                        OrtbUtils.print(any.unpack((Class<Message>) Class.forName("io." + type)), tmp);
+                        OrtbUtils.print(any.unpack((Class<Message>) Class.forName(type)), tmp);
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();
                     }

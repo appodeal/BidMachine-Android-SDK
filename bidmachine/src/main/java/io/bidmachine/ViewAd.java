@@ -2,15 +2,14 @@ package io.bidmachine;
 
 import android.content.Context;
 import android.view.ViewGroup;
-
-import io.bidmachine.displays.DisplayAdObjectParams;
+import io.bidmachine.models.AdObjectParams;
 
 public abstract class ViewAd<
         AdType extends ViewAd<AdType, AdRequestType, AdObjectType, AdListenerType>,
-        AdRequestType extends AdRequest<AdRequestType>,
-        AdObjectType extends ViewAdObject<AdType>,
+        AdRequestType extends AdRequest<AdRequestType, ?>,
+        AdObjectType extends ViewAdObject<AdRequestType, ?, ?>,
         AdListenerType extends AdListener<AdType>>
-        extends OrtbAd<AdType, AdRequestType, AdObjectType, DisplayAdObjectParams, AdListenerType> {
+        extends BidMachineAd<AdType, AdRequestType, AdObjectType, AdObjectParams, AdListenerType> {
 
     public ViewAd(Context context) {
         super(context);

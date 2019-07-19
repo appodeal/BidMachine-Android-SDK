@@ -3,35 +3,63 @@ package io.bidmachine;
 import android.content.Context;
 import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
-
+import android.support.annotation.Nullable;
 import io.bidmachine.models.AdObject;
 import io.bidmachine.models.AdObjectParams;
+import io.bidmachine.unified.UnifiedAd;
+import io.bidmachine.unified.UnifiedAdCallback;
+import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.utils.BMError;
+import io.bidmachine.utils.ContextProvider;
+
+import java.util.Map;
 
 public abstract class AdObjectImpl<
-        AdType extends OrtbAd,
-        AdObjectParamsType extends AdObjectParams>
-        implements AdObject<AdType, AdObjectParamsType> {
+        AdRequestType extends AdRequest<AdRequestType, UnifiedAdRequestParamsType>,
+        AdObjectParamsType extends AdObjectParams,
+        UnifiedAdType extends UnifiedAd<UnifiedAdCallbackType, UnifiedAdRequestParamsType>,
+        UnifiedAdCallbackType extends UnifiedAdCallback,
+        UnifiedAdRequestParamsType extends UnifiedAdRequestParams>
+        implements AdObject<AdObjectParamsType>, ContextProvider {
 
     @NonNull
+    private final ContextProvider contextProvider;
+    @NonNull
+    private final AdProcessCallback processCallback;
+    @NonNull
+    private final AdRequestType adRequest;
+    @NonNull
     private final AdObjectParamsType adObjectParams;
+    @NonNull
+    private final UnifiedAdType unifiedAd;
+    @NonNull
+    private final UnifiedAdCallbackType unifiedAdCallback;
 
-    private AdType ad;
-
-    private boolean isShownTracked;
-    private boolean isImpressionTracked;
-
-    public AdObjectImpl(@NonNull AdObjectParamsType adObjectParams) {
+    public AdObjectImpl(@NonNull ContextProvider contextProvider,
+                        @NonNull AdProcessCallback processCallback,
+                        @NonNull AdRequestType adRequest,
+                        @NonNull AdObjectParamsType adObjectParams,
+                        @NonNull UnifiedAdType unifiedAd) {
+        this.contextProvider = contextProvider;
+        this.processCallback = processCallback;
+        this.adRequest = adRequest;
         this.adObjectParams = adObjectParams;
+        this.unifiedAd = unifiedAd;
+        this.unifiedAdCallback = createUnifiedCallback(processCallback);
     }
 
-    public Context getContext() {
-        return ad.getContext();
-    }
-
+    @Nullable
     @Override
-    public AdType getAd() {
-        return ad;
+    public Context getContext() {
+        return contextProvider.getContext();
+    }
+
+    @NonNull
+    public abstract UnifiedAdCallbackType createUnifiedCallback(@NonNull AdProcessCallback processCallback);
+
+    @NonNull
+    public AdRequestType getAdRequest() {
+        return adRequest;
     }
 
     @NonNull
@@ -40,90 +68,87 @@ public abstract class AdObjectImpl<
         return adObjectParams;
     }
 
+    @NonNull
+    public UnifiedAdType getUnifiedAd() {
+        return unifiedAd;
+    }
+
+    @NonNull
+    public UnifiedAdCallbackType getUnifiedAdCallback() {
+        return unifiedAdCallback;
+    }
+
+    @NonNull
+    public AdProcessCallback getProcessCallback() {
+        return processCallback;
+    }
+
     @Override
-    public void attachAd(AdType ad) {
-        this.ad = ad;
+    public void load(@NonNull Context context, @Nullable Map<String, Object> extra) {
+        unifiedAd.load(context,
+                unifiedAdCallback,
+                adRequest.getUnifiedRequestParams(),
+                adObjectParams.toMediationParams(),
+                extra);
     }
 
     @CallSuper
     @Override
-    public void processLoadSuccess() {
-        ad.processCallback.processLoadSuccess();
+    public void onShown() {
     }
 
     @CallSuper
     @Override
-    public void processLoadFail(BMError error) {
-        ad.processCallback.processLoadFail(error);
+    public void onImpression() {
     }
 
     @CallSuper
     @Override
-    public void processShown() {
-        if (!isShownTracked) {
-            isShownTracked = true;
+    public void onClicked() {
+    }
 
-            onShown();
-            ad.processCallback.processShown();
+    @CallSuper
+    @Override
+    public void onFinished() {
+    }
+
+    @CallSuper
+    @Override
+    public void onClosed() {
+    }
+
+    @CallSuper
+    @Override
+    public void onDestroy() {
+    }
+
+    protected static class BaseUnifiedAdCallback implements UnifiedAdCallback {
+
+        @NonNull
+        AdProcessCallback processCallback;
+
+        public BaseUnifiedAdCallback(@NonNull AdProcessCallback processCallback) {
+            this.processCallback = processCallback;
+        }
+
+        @Override
+        public void onAdLoadFailed(BMError error) {
+            processCallback.processLoadFail(error);
+        }
+
+        @Override
+        public void onAdClicked() {
+            processCallback.processClicked();
+        }
+
+        @Override
+        public void onAdShowFailed(BMError error) {
+            processCallback.processShowFail(error);
+        }
+
+        @Override
+        public void onAdExpired() {
+            processCallback.processExpired();
         }
     }
-
-    @CallSuper
-    protected void onShown() {
-    }
-
-    @CallSuper
-    @Override
-    public void processShowFail(BMError error) {
-        ad.processCallback.processShowFail(error);
-    }
-
-    @CallSuper
-    @Override
-    public void processClicked() {
-        ad.processCallback.processClicked();
-    }
-
-    @Override
-    public void processImpression() {
-        if (!isImpressionTracked) {
-            isImpressionTracked = true;
-
-            onImpression();
-            ad.processCallback.processImpression();
-        }
-    }
-
-    @CallSuper
-    protected void onImpression() {
-    }
-
-    @CallSuper
-    @Override
-    public void processFinished() {
-        ad.processCallback.processFinished();
-    }
-
-    @CallSuper
-    @Override
-    public void processClosed(boolean finished) {
-        ad.processCallback.processClosed(finished);
-    }
-
-    @Override
-    public void processDestroy() {
-        ad.processCallback.processDestroy();
-    }
-
-    @Override
-    public void processExpired() {
-    }
-
-    @Override
-    public void destroy() {
-        onDestroy();
-    }
-
-    protected abstract void onDestroy();
-
 }

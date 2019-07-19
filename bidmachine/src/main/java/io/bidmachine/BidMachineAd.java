@@ -2,29 +2,29 @@ package io.bidmachine;
 
 import android.app.Activity;
 import android.content.Context;
+import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import com.explorestack.protobuf.adcom.Ad;
 import com.explorestack.protobuf.openrtb.Response;
-import io.bidmachine.adapters.OrtbAdapter;
 import io.bidmachine.core.Logger;
 import io.bidmachine.core.Utils;
 import io.bidmachine.models.AdObject;
 import io.bidmachine.models.AdObjectParams;
 import io.bidmachine.models.AuctionResult;
 import io.bidmachine.utils.BMError;
+import io.bidmachine.utils.ContextProvider;
 
-public abstract class OrtbAd<
+import java.util.ArrayList;
+import java.util.List;
+
+public abstract class BidMachineAd<
         SelfType extends IAd,
-        AdRequestType extends AdRequest<AdRequestType>,
-        AdObjectType extends AdObject<SelfType, AdObjectParamsType>,
+        AdRequestType extends AdRequest<AdRequestType, ?>,
+        AdObjectType extends AdObject<AdObjectParamsType>,
         AdObjectParamsType extends AdObjectParams,
         AdListenerType extends AdListener<SelfType>>
-        implements IAd<SelfType, AdRequestType>, TrackingObject {
+        implements IAd<SelfType, AdRequestType>, TrackingObject, ContextProvider {
 
     @NonNull
     private Context context;
@@ -37,13 +37,15 @@ public abstract class OrtbAd<
     @NonNull
     private State currentState = State.Idle;
 
-    private boolean wasShown = false;
+    private boolean isShownTracked;
+    private boolean isImpressionTracked;
+    private boolean isFinishTracked;
 
-    public OrtbAd(@NonNull Context context) {
+    public BidMachineAd(@NonNull Context context) {
         this.context = context;
     }
 
-    @NonNull
+    @Nullable
     public Context getContext() {
         if (context instanceof Activity) {
             return context;
@@ -143,7 +145,7 @@ public abstract class OrtbAd<
         } else if (!isLoaded() || loadedObject == null) {
             processCallback.processShowFail(BMError.NotLoaded);
             return false;
-        } else if (wasShown) {
+        } else if (isShownTracked) {
             processCallback.processShowFail(BMError.AlreadyShown);
             return false;
         }
@@ -163,9 +165,9 @@ public abstract class OrtbAd<
                 processRequestFail(BMError.Expired);
             } else {
                 processRequestSuccess(request,
-                                      request.seatBidResult,
-                                      request.bidResult,
-                                      request.adResult);
+                        request.seatBidResult,
+                        request.bidResult,
+                        request.adResult);
             }
             return;
         }
@@ -203,20 +205,21 @@ public abstract class OrtbAd<
     }
 
     @Nullable
-    @SuppressWarnings("unchecked")
     private BMError processResponseSuccess(@NonNull Response.Seatbid seatbid,
                                            @NonNull Response.Seatbid.Bid bid,
                                            @NonNull Ad ad,
                                            @NonNull @Deprecated AdRequestType adRequest) {
-        OrtbAdapter adapter = getType().findAdapter(context, ad);
-        if (adapter != null) {
-            AdObjectParams adObjectParams = getType().createAdObjectParams(getContext(), seatbid,
-                                                                           bid, ad, adRequest);
+        Context context = getContext();
+        if (context == null) {
+            return BMError.Internal;
+        }
+        NetworkConfig networkConfig = getType().obtainNetworkConfig(context, ad);
+        if (networkConfig != null) {
+            AdObjectParams adObjectParams = getType().createAdObjectParams(getContext(), seatbid, bid, ad, adRequest);
             if (adObjectParams != null && adObjectParams.isValid()) {
-                loadedObject = (AdObjectType) getType().createAdObject(adapter, adObjectParams);
+                loadedObject = createAdObject(this, adRequest, networkConfig.getAdapter(), adObjectParams, processCallback);
                 if (loadedObject != null) {
-                    loadedObject.attachAd((SelfType) this);
-                    adapter.load(loadedObject);
+                    networkConfig.getAdapter().load(context, loadedObject, null);
                     return null;
                 }
             }
@@ -224,6 +227,12 @@ public abstract class OrtbAd<
         }
         return BMError.adapterNotFoundError("for Ad with id: " + ad.getId());
     }
+
+    protected abstract AdObjectType createAdObject(@NonNull ContextProvider contextProvider,
+                                                   @NonNull AdRequestType adRequest,
+                                                   @NonNull BidMachineAdapter adapter,
+                                                   @NonNull AdObjectParams adObjectParams,
+                                                   @NonNull AdProcessCallback processCallback);
 
     private void processRequestFail(BMError error) {
         if (currentState.ordinal() > State.Loading.ordinal()) return;
@@ -238,9 +247,9 @@ public abstract class OrtbAd<
                                              @NonNull AuctionResult auctionResult) {
                     if (request == adRequest) {
                         processRequestSuccess(request,
-                                              request.seatBidResult,
-                                              request.bidResult,
-                                              request.adResult);
+                                request.seatBidResult,
+                                request.bidResult,
+                                request.adResult);
                     }
                 }
 
@@ -260,6 +269,14 @@ public abstract class OrtbAd<
                 }
             };
 
+    @CallSuper
+    protected void onImpression() {
+    }
+
+    @CallSuper
+    protected void onDestroy() {
+    }
+
     final AdProcessCallback processCallback = new AdProcessCallback() {
 
         @Override
@@ -275,7 +292,8 @@ public abstract class OrtbAd<
                 @Override
                 public void run() {
                     if (listener != null) {
-                        listener.onAdLoaded((SelfType) OrtbAd.this);
+                        Logger.log(toStringShort() + ": notify AdLoaded");
+                        listener.onAdLoaded((SelfType) BidMachineAd.this);
                     }
                 }
             });
@@ -291,7 +309,8 @@ public abstract class OrtbAd<
                 @Override
                 public void run() {
                     if (listener != null) {
-                        listener.onAdLoadFailed((SelfType) OrtbAd.this, error);
+                        Logger.log(toStringShort() + ": notify AdLoadFailed");
+                        listener.onAdLoadFailed((SelfType) BidMachineAd.this, error);
                     }
                 }
             });
@@ -303,9 +322,15 @@ public abstract class OrtbAd<
             if (currentState.ordinal() > State.Success.ordinal()) {
                 return;
             }
-            wasShown = true;
+            if (isShownTracked) {
+                return;
+            }
+            isShownTracked = true;
             if (adRequest != null) {
                 adRequest.processShown();
+            }
+            if (loadedObject != null) {
+                loadedObject.onShown();
             }
             Logger.log(toStringShort() + ": processShown");
             trackEvent(TrackEventType.Show, null);
@@ -313,7 +338,8 @@ public abstract class OrtbAd<
                 @Override
                 public void run() {
                     if (listener != null) {
-                        listener.onAdShown((SelfType) OrtbAd.this);
+                        Logger.log(toStringShort() + ": notify AdShown");
+                        listener.onAdShown((SelfType) BidMachineAd.this);
                     }
                 }
             });
@@ -328,7 +354,8 @@ public abstract class OrtbAd<
                 @Override
                 public void run() {
                     if (listener instanceof AdFullScreenListener) {
-                        ((AdFullScreenListener) listener).onAdShowFailed(OrtbAd.this, error);
+                        Logger.log(toStringShort() + ": notify AdShowFailed");
+                        ((AdFullScreenListener) listener).onAdShowFailed(BidMachineAd.this, error);
                     }
                 }
             });
@@ -340,13 +367,17 @@ public abstract class OrtbAd<
             if (currentState.ordinal() > State.Success.ordinal()) {
                 return;
             }
+            if (loadedObject != null) {
+                loadedObject.onClicked();
+            }
             Logger.log(toStringShort() + ": processClicked");
             trackEvent(TrackEventType.Click, null);
             Utils.onUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (listener != null) {
-                        listener.onAdClicked((SelfType) OrtbAd.this);
+                        Logger.log(toStringShort() + ": notify AdClicked");
+                        listener.onAdClicked((SelfType) BidMachineAd.this);
                     }
                 }
             });
@@ -358,13 +389,22 @@ public abstract class OrtbAd<
             if (currentState.ordinal() > State.Success.ordinal()) {
                 return;
             }
+            if (isImpressionTracked) {
+                return;
+            }
+            isImpressionTracked = true;
+            if (loadedObject != null) {
+                loadedObject.onImpression();
+            }
+            onImpression();
             Logger.log(toStringShort() + ": processImpression");
             trackEvent(TrackEventType.Impression, null);
             Utils.onUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (listener != null) {
-                        listener.onAdImpression((SelfType) OrtbAd.this);
+                        Logger.log(toStringShort() + ": notify AdImpression");
+                        listener.onAdImpression((SelfType) BidMachineAd.this);
                     }
                 }
             });
@@ -376,12 +416,14 @@ public abstract class OrtbAd<
             if (currentState.ordinal() > State.Success.ordinal()) {
                 return;
             }
+            isFinishTracked = true;
             Logger.log(toStringShort() + ": processFinished");
             Utils.onUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (listener instanceof AdRewardedListener) {
-                        ((AdRewardedListener) listener).onAdRewarded(OrtbAd.this);
+                        Logger.log(toStringShort() + ": notify AdRewarded");
+                        ((AdRewardedListener) listener).onAdRewarded(BidMachineAd.this);
                     }
                 }
             });
@@ -389,17 +431,18 @@ public abstract class OrtbAd<
 
         @Override
         @SuppressWarnings("unchecked")
-        public void processClosed(final boolean finished) {
+        public void processClosed() {
             if (currentState.ordinal() > State.Success.ordinal()) {
                 return;
             }
-            Logger.log(toStringShort() + ": processClosed(" + finished + ")");
+            Logger.log(toStringShort() + ": processClosed(" + isFinishTracked + ")");
             trackEvent(TrackEventType.Close, null);
             Utils.onUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (listener instanceof AdFullScreenListener) {
-                        ((AdFullScreenListener) listener).onAdClosed(OrtbAd.this, finished);
+                        Logger.log(toStringShort() + ": notify AdClosed");
+                        ((AdFullScreenListener) listener).onAdClosed(BidMachineAd.this, isFinishTracked);
                     }
                 }
             });
@@ -418,7 +461,8 @@ public abstract class OrtbAd<
                 @Override
                 public void run() {
                     if (listener != null) {
-                        listener.onAdExpired((SelfType) OrtbAd.this);
+                        Logger.log(toStringShort() + ": notify AdExpired");
+                        listener.onAdExpired((SelfType) BidMachineAd.this);
                     }
                 }
             });
@@ -434,8 +478,9 @@ public abstract class OrtbAd<
                 detachRequest(adRequest);
             }
             if (loadedObject != null) {
-                loadedObject.destroy();
+                loadedObject.onDestroy();
             }
+            onDestroy();
         }
     };
 
@@ -465,7 +510,7 @@ public abstract class OrtbAd<
     }
 
     private void trackEvent(TrackEventType eventType, @Nullable BMError error) {
-        SessionTracker.eventFinish(OrtbAd.this, eventType, getType(), error);
+        SessionTracker.eventFinish(BidMachineAd.this, eventType, getType(), error);
     }
 
     @NonNull

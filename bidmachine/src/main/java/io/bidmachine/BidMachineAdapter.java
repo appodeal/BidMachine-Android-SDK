@@ -1,30 +1,30 @@
-package io.bidmachine.adapters;
+package io.bidmachine;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
-
-import io.bidmachine.FullScreenAdObject;
-import io.bidmachine.ViewAdObject;
-import io.bidmachine.core.Logger;
-import io.bidmachine.displays.DisplayAdObjectParams;
-import io.bidmachine.displays.FullScreenAdObjectParams;
-import io.bidmachine.displays.NativeAdObjectParams;
+import android.support.annotation.Nullable;
 import io.bidmachine.models.AdObject;
-import io.bidmachine.nativead.NativeAdObject;
+import io.bidmachine.unified.UnifiedBannerAd;
+import io.bidmachine.unified.UnifiedFullscreenAd;
+import io.bidmachine.unified.UnifiedNativeAd;
+
+import java.util.Map;
 
 /**
  * All adapters must extends this class
  */
-public abstract class OrtbAdapter {
+public abstract class BidMachineAdapter {
 
     private final String key;
     private final String version;
+    private final AdsType[] supportedTypes;
 
     private boolean isInitialized;
 
-    public OrtbAdapter(String key, String version) {
+    public BidMachineAdapter(@NonNull String key, @NonNull String version, @NonNull AdsType[] supportedTypes) {
         this.key = key;
         this.version = version;
+        this.supportedTypes = supportedTypes;
     }
 
     public String getKey() {
@@ -35,42 +35,44 @@ public abstract class OrtbAdapter {
         return version;
     }
 
+    AdsType[] getSupportedTypes() {
+        return supportedTypes;
+    }
+
     /**
      * Call for initialize BidMachine
      */
-    public void initialize(@NonNull Context context) throws Throwable {
+    public final void initialize(@NonNull Context context, @Nullable Map<String, Object> config) throws Throwable {
         if (!isInitialized) {
-            onInitialize(context);
+            onInitialize(context, config);
             isInitialized = true;
-        } else {
-            Logger.log(getClass().getSimpleName() + " already initialized");
         }
     }
 
-    protected void onInitialize(@NonNull Context context) {
+    protected void onInitialize(@NonNull Context context, @Nullable Map<String, Object> config) {
     }
 
-    public ViewAdObject createBannerAdObject(DisplayAdObjectParams adObjectParams) {
+    public UnifiedBannerAd createBanner() {
         throw new IllegalArgumentException(getKey() + " adapter not supported banner");
     }
 
-    public FullScreenAdObject createInterstitialAdObject(FullScreenAdObjectParams adObjectParams) {
+    public UnifiedFullscreenAd createInterstitial() {
         throw new IllegalArgumentException(getKey() + " adapter not supported static interstitial");
     }
 
-    public FullScreenAdObject createRewardedAdObject(FullScreenAdObjectParams adObjectParams) {
+    public UnifiedFullscreenAd createRewarded() {
         throw new IllegalArgumentException(getKey() + " adapter not supported rewarded interstitial");
     }
 
-    public NativeAdObject createNativeAdObject(NativeAdObjectParams adObjectParams) {
+    public UnifiedNativeAd createNativeAd() {
         throw new IllegalArgumentException(getKey() + " adapter not supported native");
     }
 
     /**
      * Load ad with server response
      */
-    public void load(AdObject response) {
-        response.load();
+    public void load(@NonNull Context context, @NonNull AdObject response, @Nullable Map<String, String> extra) {
+        response.load(context, extra);
     }
 
     /**

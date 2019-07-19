@@ -17,7 +17,23 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-
+import io.bidmachine.AdObjectImpl;
+import io.bidmachine.AdProcessCallback;
+import io.bidmachine.BMException;
+import io.bidmachine.MediaAssetType;
+import io.bidmachine.core.Logger;
+import io.bidmachine.core.Utils;
+import io.bidmachine.core.VisibilityTracker;
+import io.bidmachine.models.AdObjectParams;
+import io.bidmachine.nativead.utils.*;
+import io.bidmachine.nativead.view.MediaView;
+import io.bidmachine.nativead.view.NativeIconView;
+import io.bidmachine.nativead.view.NativeMediaView;
+import io.bidmachine.unified.UnifiedNativeAd;
+import io.bidmachine.unified.UnifiedNativeAdCallback;
+import io.bidmachine.unified.UnifiedNativeAdRequestParams;
+import io.bidmachine.utils.BMError;
+import io.bidmachine.utils.ContextProvider;
 import org.nexage.sourcekit.vast.model.VASTModel;
 
 import java.io.File;
@@ -26,24 +42,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.bidmachine.AdObjectImpl;
-import io.bidmachine.BMException;
-import io.bidmachine.MediaAssetType;
-import io.bidmachine.core.Logger;
-import io.bidmachine.core.Utils;
-import io.bidmachine.core.VisibilityTracker;
-import io.bidmachine.displays.NativeAdObjectParams;
-import io.bidmachine.nativead.utils.ImageHelper;
-import io.bidmachine.nativead.utils.NativeContainer;
-import io.bidmachine.nativead.utils.NativeInteractor;
-import io.bidmachine.nativead.utils.NativeMediaPrivateData;
-import io.bidmachine.nativead.utils.NativePrivateData;
-import io.bidmachine.nativead.view.MediaView;
-import io.bidmachine.nativead.view.NativeIconView;
-import io.bidmachine.nativead.view.NativeMediaView;
-
-public abstract class NativeAdObject extends AdObjectImpl<NativeAd, NativeAdObjectParams>
-        implements NativePrivateData, NativeMediaPrivateData, NativeContainer, NativeInteractor, View.OnClickListener {
+public final class NativeAdObject
+        extends AdObjectImpl<NativeRequest, AdObjectParams, UnifiedNativeAd, UnifiedNativeAdCallback, UnifiedNativeAdRequestParams>
+        implements NativeData, NativeMediaPrivateData, NativeContainer, NativeInteractor, View.OnClickListener {
 
     private static final String INSTALL = "Install";
     private static final float DEFAULT_RATING = 5;
@@ -70,73 +71,84 @@ public abstract class NativeAdObject extends AdObjectImpl<NativeAd, NativeAdObje
     private Uri videoUri;
     @Nullable
     private VASTModel videoVastModel;
+    @Nullable
+    private NativeData nativeData;
 
-    public NativeAdObject(NativeAdObjectParams adObjectParams) {
-        super(adObjectParams);
+    public NativeAdObject(@NonNull ContextProvider contextProvider,
+                          @NonNull AdProcessCallback processCallback,
+                          @NonNull NativeRequest adRequest,
+                          @NonNull AdObjectParams adObjectParams,
+                          @NonNull UnifiedNativeAd unifiedAd) {
+        super(contextProvider, processCallback, adRequest, adObjectParams, unifiedAd);
     }
 
-    @NonNull
+    @Nullable
     @Override
     public String getTitle() {
-        return getParams().getTitle();
+        return nativeData != null ? nativeData.getTitle() : null;
     }
 
-    @NonNull
+    @Nullable
     @Override
     public String getDescription() {
-        return getParams().getTitle();
+        return nativeData != null ? nativeData.getDescription() : null;
     }
 
     @Nullable
     @Override
     public String getCallToAction() {
-        String callToAction = getParams().getCallToAction();
+        String callToAction = nativeData != null ? nativeData.getCallToAction() : null;
         return TextUtils.isEmpty(callToAction) ? INSTALL : callToAction;
     }
 
+    @Nullable
     @Override
     public String getSponsored() {
-        return getParams().getSponsored();
+        return nativeData != null ? nativeData.getSponsored() : null;
     }
 
+    @Nullable
     @Override
     public String getAgeRestrictions() {
-        return getParams().getAgeRestrictions();
+        return nativeData != null ? nativeData.getAgeRestrictions() : null;
     }
 
     @Override
     public float getRating() {
-        return Math.max(DEFAULT_RATING, getParams().getRating());
+        if (nativeData == null || nativeData.getRating() == 0) {
+            return DEFAULT_RATING;
+        }
+        return nativeData.getRating();
     }
 
     @Nullable
     @Override
     public String getIconUrl() {
-        return getParams().getIconUrl();
+        return nativeData != null ? nativeData.getIconUrl() : null;
     }
 
     @Nullable
     @Override
     public String getImageUrl() {
-        return getParams().getImageUrl();
+        return nativeData != null ? nativeData.getImageUrl() : null;
     }
 
     @Nullable
     @Override
     public String getClickUrl() {
-        return getParams().getClickUrl();
+        return nativeData != null ? nativeData.getClickUrl() : null;
     }
 
     @Nullable
     @Override
     public String getVideoUrl() {
-        return getParams().getVideoUrl();
+        return nativeData != null ? nativeData.getVideoUrl() : null;
     }
 
     @Nullable
     @Override
     public String getVideoAdm() {
-        return getParams().getVideoAdm();
+        return nativeData != null ? nativeData.getVideoAdm() : null;
     }
 
     @Override
@@ -208,12 +220,19 @@ public abstract class NativeAdObject extends AdObjectImpl<NativeAd, NativeAdObje
     @Override
     public boolean hasVideo() {
         return videoUri != null
-                || !TextUtils.isEmpty(getParams().getVideoUrl())
-                || !TextUtils.isEmpty(getParams().getVideoAdm());
+                || !TextUtils.isEmpty(getVideoUrl())
+                || !TextUtils.isEmpty(getVideoAdm());
+    }
+
+    @NonNull
+    @Override
+    public UnifiedNativeAdCallback createUnifiedCallback(@NonNull AdProcessCallback processCallback) {
+        return new UnifiedNativeAdCallbackImpl(processCallback);
     }
 
     @Override
-    protected void onDestroy() {
+    public void onDestroy() {
+        super.onDestroy();
         unregisterViewForInteraction();
         if (iconBitmap != null) {
             if (!iconBitmap.isRecycled()) {
@@ -254,13 +273,13 @@ public abstract class NativeAdObject extends AdObjectImpl<NativeAd, NativeAdObje
                         @Override
                         public void onViewShown() {
                             impressionTracked = true;
-                            processShown();
+                            getProcessCallback().processShown();
                             checkRequiredAssets(container);
                         }
 
                         @Override
                         public void onViewTrackingFinished() {
-                            processImpression();
+                            getProcessCallback().processImpression();
                         }
                     });
         }
@@ -322,9 +341,8 @@ public abstract class NativeAdObject extends AdObjectImpl<NativeAd, NativeAdObje
     private View createIconView(Context context) {
         final ImageView iconView = new ImageView(context);
         iconView.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        final NativeRequest request = getAd().getAdRequest();
-        if (request != null && request.containsAssetType(MediaAssetType.Icon)) {
-            ImageHelper.fillImageView(getContext(), iconView, iconUri, iconBitmap);
+        if (getAdRequest().containsAssetType(MediaAssetType.Icon)) {
+            ImageHelper.fillImageView(context, iconView, iconUri, iconBitmap);
         }
         return iconView;
     }
@@ -335,10 +353,8 @@ public abstract class NativeAdObject extends AdObjectImpl<NativeAd, NativeAdObje
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
         mediaView = new MediaView(nativeMediaView.getContext());
-        final NativeRequest request = getAd().getAdRequest();
-        if (request != null
-                && (request.containsAssetType(MediaAssetType.Image)
-                || request.containsAssetType(MediaAssetType.Video))) {
+        final NativeRequest request = getAdRequest();
+        if (request.containsAssetType(MediaAssetType.Image) || request.containsAssetType(MediaAssetType.Video)) {
             mediaView.setNativeAdObject(this);
         }
         nativeMediaView.removeAllViews();
@@ -413,16 +429,13 @@ public abstract class NativeAdObject extends AdObjectImpl<NativeAd, NativeAdObje
         if (nativeAdContentLayout.getIconView() == null && nativeAdContentLayout.getMediaView() == null) {
             notAddedViews.add("NativeIconView/NativeMediaView");
         } else {
-            final NativeRequest request = getAd().getAdRequest();
-            if (request != null && request.containsAssetType(MediaAssetType.Icon)) {
+            final NativeRequest request = getAdRequest();
+            if (request.containsAssetType(MediaAssetType.Icon)) {
                 requiredViews.put(nativeAdContentLayout.getIconView(), "NativeIconView");
             } else if (nativeAdContentLayout.getIconView() != null) {
                 nonNecessaryView.add("NativeIconView");
             }
-
-            if (request != null
-                    && (request.containsAssetType(MediaAssetType.Image)
-                    || request.containsAssetType(MediaAssetType.Video))) {
+            if (request.containsAssetType(MediaAssetType.Image) || request.containsAssetType(MediaAssetType.Video)) {
                 requiredViews.put(nativeAdContentLayout.getMediaView(), "NativeMediaView");
             } else if (nativeAdContentLayout.getMediaView() != null) {
                 nonNecessaryView.add("NativeMediaView");
@@ -465,11 +478,9 @@ public abstract class NativeAdObject extends AdObjectImpl<NativeAd, NativeAdObje
         return requiredViews;
     }
 
-    protected void loadAsset() {
-        NativeRequest adRequest = getAd().getAdRequest();
-        if (adRequest != null) {
-            (new AssetLoader(getContext(), adRequest, this, getParams(), this)).downloadNativeAdsImages();
-        }
+    protected void loadAsset(@NonNull Context context, @NonNull NativeData nativeData) {
+        (new AssetLoader(context, getAdRequest(), getProcessCallback(), nativeData, this))
+                .downloadNativeAdsImages();
     }
 
     @Override
@@ -479,29 +490,69 @@ public abstract class NativeAdObject extends AdObjectImpl<NativeAd, NativeAdObje
 
     @Override
     public void dispatchShown() {
-        processShown();
+        getProcessCallback().processShown();
     }
 
     @Override
     public void onClick(View view) {
-        onClicked(view.getContext());
-        processClicked();
+        getProcessCallback().processClicked();
+    }
+
+    @Override
+    public void onClicked() {
+        super.onClicked();
+        Context context = getContext();
+        if (context == null) {
+            return;
+        }
+        String clickUrl = getClickUrl();
+        if (TextUtils.isEmpty(clickUrl)) {
+            return;
+        }
+        showProgressDialog(context);
+        Utils.openBrowser(context, clickUrl, NativeNetworkExecutor.getInstance(),
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        hideProgressDialog();
+                    }
+                });
     }
 
     @Override
     public void dispatchClick() {
-        onClicked(getContext());
-        processClicked();
+        getProcessCallback().processClicked();
     }
 
     @Override
     public void dispatchImpression() {
-        processImpression();
+        getProcessCallback().processImpression();
     }
 
     @Override
     public void dispatchVideoPlayFinished() {
     }
 
-    protected abstract void onClicked(Context context);
+    private class UnifiedNativeAdCallbackImpl extends BaseUnifiedAdCallback implements UnifiedNativeAdCallback {
+
+        UnifiedNativeAdCallbackImpl(@NonNull AdProcessCallback processCallback) {
+            super(processCallback);
+        }
+
+        @Override
+        public void onAdLoaded(@NonNull NativeData nativeData) {
+            Context context = getContext();
+            if (context == null) {
+                getProcessCallback().processLoadFail(BMError.Internal);
+                return;
+            }
+            NativeAdObject.this.nativeData = nativeData;
+            try {
+                loadAsset(getContext(), nativeData);
+            } catch (Exception e) {
+                Logger.log(e);
+                getProcessCallback().processLoadFail(BMError.Internal);
+            }
+        }
+    }
 }

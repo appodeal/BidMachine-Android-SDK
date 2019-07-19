@@ -1,17 +1,17 @@
 package io.bidmachine.nativead;
 
 import android.support.annotation.NonNull;
+import io.bidmachine.AdRequest;
+import io.bidmachine.AdsType;
+import io.bidmachine.MediaAssetType;
+import io.bidmachine.models.INativeRequestBuilder;
+import io.bidmachine.unified.UnifiedNativeAdRequestParams;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import io.bidmachine.AdRequest;
-import io.bidmachine.AdsType;
-import io.bidmachine.MediaAssetType;
-import io.bidmachine.models.INativeRequestBuilder;
-
-public final class NativeRequest extends AdRequest<NativeRequest> {
+public final class NativeRequest extends AdRequest<NativeRequest, UnifiedNativeAdRequestParams> {
 
     private List<MediaAssetType> mediaAssetTypes = new ArrayList<>(MediaAssetType.values().length);
 
@@ -25,6 +25,11 @@ public final class NativeRequest extends AdRequest<NativeRequest> {
     @Override
     protected AdsType getType() {
         return AdsType.Native;
+    }
+
+    @Override
+    public UnifiedNativeAdRequestParams getUnifiedRequestParams() {
+        return new NativeUnifiedRequestParams();
     }
 
     public static final class Builder extends AdRequestBuilderImpl<Builder, NativeRequest>
@@ -45,7 +50,11 @@ public final class NativeRequest extends AdRequest<NativeRequest> {
 
     }
 
-    public interface AdRequestListener extends AdRequest.AdRequestListener<NativeRequest> {
+    private class NativeUnifiedRequestParams extends BaseUnifiedRequestParams implements UnifiedNativeAdRequestParams {
+        @Override
+        public boolean containsAssetType(MediaAssetType assetType) {
+            return NativeRequest.this.containsAssetType(assetType);
+        }
     }
 
 }

@@ -1,25 +1,26 @@
 package io.bidmachine.adapters.mraid;
 
 import android.webkit.WebView;
-
+import io.bidmachine.unified.UnifiedBannerAdCallback;
+import io.bidmachine.utils.BMError;
 import org.nexage.sourcekit.mraid.MRAIDNativeFeatureListener;
 import org.nexage.sourcekit.mraid.MRAIDView;
 import org.nexage.sourcekit.mraid.MRAIDViewListener;
 import org.nexage.sourcekit.util.Utils;
 
-import io.bidmachine.utils.BMError;
+class MraidBannerAdListener implements MRAIDViewListener, MRAIDNativeFeatureListener {
 
-class MraidViewAdListener implements MRAIDViewListener, MRAIDNativeFeatureListener {
+    private MraidBannerAd adObject;
+    private UnifiedBannerAdCallback callback;
 
-    private MraidViewAdObject adObject;
-
-    MraidViewAdListener(MraidViewAdObject adObject) {
+    MraidBannerAdListener(MraidBannerAd adObject, UnifiedBannerAdCallback callback) {
         this.adObject = adObject;
+        this.callback = callback;
     }
 
     @Override
     public void mraidViewLoaded(MRAIDView mraidView) {
-        adObject.processMraidViewLoaded();
+        adObject.processMraidViewLoaded(callback);
     }
 
     @Override
@@ -37,7 +38,7 @@ class MraidViewAdListener implements MRAIDViewListener, MRAIDNativeFeatureListen
 
     @Override
     public void mraidViewNoFill(MRAIDView mraidView) {
-        adObject.processLoadFail(BMError.noFillError(null));
+        callback.onAdLoadFailed(BMError.noFillError(null));
     }
 
     @Override
@@ -54,13 +55,13 @@ class MraidViewAdListener implements MRAIDViewListener, MRAIDNativeFeatureListen
 
     @Override
     public void mraidNativeFeatureOpenBrowser(String url, WebView view) {
-        adObject.processClicked();
-        if (url != null && adObject.obtainBannerView() != null) {
-            Utils.addBannerSpinnerView(adObject.obtainBannerView());
-            Utils.openBrowser(adObject.obtainBannerView().getContext(), url, new Runnable() {
+        callback.onAdClicked();
+        if (url != null && adObject.mraidView != null) {
+            Utils.addBannerSpinnerView(adObject.mraidView);
+            Utils.openBrowser(adObject.mraidView.getContext(), url, new Runnable() {
                 @Override
                 public void run() {
-                    Utils.hideBannerSpinnerView(adObject.obtainBannerView());
+                    Utils.hideBannerSpinnerView(adObject.mraidView);
                 }
             });
         }

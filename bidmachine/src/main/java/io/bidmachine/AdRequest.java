@@ -15,21 +15,27 @@ import io.bidmachine.core.Logger;
 import io.bidmachine.core.NetworkRequest;
 import io.bidmachine.displays.PlacementBuilder;
 import io.bidmachine.models.AuctionResult;
+import io.bidmachine.models.DataRestrictions;
 import io.bidmachine.models.RequestBuilder;
-import io.bidmachine.models.RequestParamsRestrictions;
 import io.bidmachine.protobuf.RequestExtension;
+import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.utils.BMError;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static io.bidmachine.Utils.getOrDefault;
 import static io.bidmachine.core.Utils.oneOf;
 
-public abstract class AdRequest<SelfType extends AdRequest> implements TrackingObject {
+public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestParamsType extends UnifiedAdRequestParams>
+        implements TrackingObject {
+
+    private static final Executor buildExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
 
     private static final long DEF_EXPIRATION_TIME = TimeUnit.MINUTES.toSeconds(29);
 
@@ -50,7 +56,6 @@ public abstract class AdRequest<SelfType extends AdRequest> implements TrackingO
 
     @Nullable
     private AuctionResult auctionResult;
-
     @Nullable
     private ApiRequest<Request, Response> currentApiRequest;
     @Nullable
@@ -76,6 +81,8 @@ public abstract class AdRequest<SelfType extends AdRequest> implements TrackingO
         if (TextUtils.isEmpty(sellerId)) {
             return BMError.paramError("Seller Id not provided");
         }
+        assert sellerId != null;
+
         BMError implVerifyError = verifyRequest();
         if (implVerifyError != null) {
             return implVerifyError;
@@ -85,12 +92,12 @@ public abstract class AdRequest<SelfType extends AdRequest> implements TrackingO
 
         final Request.Builder requestBuilder = Request.newBuilder();
         final TargetingParams targetingParams = oneOf(this.targetingParams, bidMachine.getTargetingParams());
-        final UserRestrictionParams userRestrictionParams = this.userRestrictionParams != null
-                ? this.userRestrictionParams : bidMachine.getUserRestrictionParams();
         final BlockedParams blockedParams = targetingParams.getBlockedParams() != null
                 ? targetingParams.getBlockedParams()
                 : bidMachine.getTargetingParams().getBlockedParams();
-        final RequestParamsRestrictions restrictions = UserRestrictionParams.createRestrictions(userRestrictionParams);
+        final UserRestrictionParams userRestrictionParams = this.userRestrictionParams != null
+                ? this.userRestrictionParams : bidMachine.getUserRestrictionParams();
+        final DataRestrictions restrictions = UserRestrictionParams.createRestrictions(userRestrictionParams);
 
         //PriceFloor params
         final ArrayList<Message.Builder> placements = new ArrayList<>();
@@ -130,7 +137,6 @@ public abstract class AdRequest<SelfType extends AdRequest> implements TrackingO
             } else {
                 throw new IllegalArgumentException("Unsupported display type: " + displayBuilder);
             }
-
         }
 
         onBuildPlacement(placementBuilder);
@@ -214,6 +220,7 @@ public abstract class AdRequest<SelfType extends AdRequest> implements TrackingO
     }
 
     @Nullable
+    @SuppressWarnings("WeakerAccess")
     public AuctionResult getAuctionResult() {
         return auctionResult;
     }
@@ -228,48 +235,53 @@ public abstract class AdRequest<SelfType extends AdRequest> implements TrackingO
             if (currentApiRequest != null) {
                 currentApiRequest.cancel();
             }
-            final Object requestBuildResult = build(context, getType());
-            if (requestBuildResult instanceof Request) {
-                Logger.log(toString() + ": api request start");
-                currentApiRequest = new ApiRequest.Builder<Request, Response>()
-                        .url(BidMachineImpl.get().getAuctionUrl())
-                        .setRequestData((Request) requestBuildResult)
-                        .setDataBinder(getType().getBinder())
-                        .setCallback(new NetworkRequest.Callback<Response, BMError>() {
-                            @Override
-                            public void onSuccess(@Nullable Response result) {
-                                Logger.log(toString() + ": api request success");
-                                currentApiRequest = null;
-                                processRequestSuccess(result);
-                            }
+            Logger.log(toString() + ": api request start");
+            buildExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    Object requestBuildResult = build(context, getType());
+                    if (requestBuildResult instanceof Request) {
+                        currentApiRequest = new ApiRequest.Builder<Request, Response>()
+                                .url(BidMachineImpl.get().getAuctionUrl())
+                                .setRequestData((Request) requestBuildResult)
+                                .setDataBinder(getType().getBinder())
+                                .setCallback(new NetworkRequest.Callback<Response, BMError>() {
+                                    @Override
+                                    public void onSuccess(@Nullable Response result) {
+                                        Logger.log(toString() + ": api request success");
+                                        currentApiRequest = null;
+                                        processRequestSuccess(result);
+                                    }
 
-                            @Override
-                            public void onFail(@Nullable BMError result) {
-                                result = BMError.noFillError(result);
-                                Logger.log(toString() + ": api request fail - " + result);
-                                currentApiRequest = null;
-                                processRequestFail(result);
-                            }
-                        })
-                        .setCancelCallback(new NetworkRequest.CancelCallback() {
-                            @Override
-                            public void onCanceled() {
-                                SessionTracker.eventFinish(
-                                        AdRequest.this,
-                                        TrackEventType.AuctionRequestCancel,
-                                        getType(),
-                                        null);
-                                SessionTracker.clearEvent(
-                                        AdRequest.this,
-                                        TrackEventType.AuctionRequest);
-                            }
-                        })
-                        .request();
-            } else {
-                processRequestFail(requestBuildResult instanceof BMError
-                        ? (BMError) requestBuildResult
-                        : BMError.Internal);
-            }
+                                    @Override
+                                    public void onFail(@Nullable BMError result) {
+                                        result = BMError.noFillError(result);
+                                        Logger.log(toString() + ": api request fail - " + result);
+                                        currentApiRequest = null;
+                                        processRequestFail(result);
+                                    }
+                                })
+                                .setCancelCallback(new NetworkRequest.CancelCallback() {
+                                    @Override
+                                    public void onCanceled() {
+                                        SessionTracker.eventFinish(
+                                                AdRequest.this,
+                                                TrackEventType.AuctionRequestCancel,
+                                                getType(),
+                                                null);
+                                        SessionTracker.clearEvent(
+                                                AdRequest.this,
+                                                TrackEventType.AuctionRequest);
+                                    }
+                                })
+                                .request();
+                    } else {
+                        processRequestFail(requestBuildResult instanceof BMError
+                                ? (BMError) requestBuildResult
+                                : BMError.Internal);
+                    }
+                }
+            });
         } catch (Exception e) {
             Logger.log(e);
             processRequestFail(BMError.Internal);
@@ -297,10 +309,12 @@ public abstract class AdRequest<SelfType extends AdRequest> implements TrackingO
     /**
      * @return true if Ads was expired
      */
+    @SuppressWarnings("WeakerAccess")
     public boolean isExpired() {
         return isExpired;
     }
 
+    @SuppressWarnings("WeakerAccess")
     public void addListener(@Nullable AdRequestListener<SelfType> listener) {
         if (adRequestListeners == null) {
             adRequestListeners = new ArrayList<>(2);
@@ -310,12 +324,14 @@ public abstract class AdRequest<SelfType extends AdRequest> implements TrackingO
         }
     }
 
+    @SuppressWarnings("WeakerAccess")
     public void removeListener(@Nullable AdRequestListener<SelfType> listener) {
         if (adRequestListeners != null && listener != null) {
             adRequestListeners.remove(listener);
         }
     }
 
+    @SuppressWarnings("WeakerAccess")
     public void processShown() {
         unsubscribeExpireTracker();
     }
@@ -412,6 +428,8 @@ public abstract class AdRequest<SelfType extends AdRequest> implements TrackingO
         return BidMachineImpl.get().getTrackingUrls(eventType);
     }
 
+    public abstract UnifiedAdRequestParamsType getUnifiedRequestParams();
+
     @NonNull
     @Override
     public String toString() {
@@ -503,6 +521,20 @@ public abstract class AdRequest<SelfType extends AdRequest> implements TrackingO
 
         protected abstract ReturnType createRequest();
 
+    }
+
+    protected class BaseUnifiedRequestParams implements UnifiedAdRequestParams {
+        @Override
+        public DataRestrictions getDataRestrictions() {
+            final UserRestrictionParams userRestrictionParams = AdRequest.this.userRestrictionParams != null
+                    ? AdRequest.this.userRestrictionParams : BidMachineImpl.get().getUserRestrictionParams();
+            return UserRestrictionParams.createRestrictions(userRestrictionParams);
+        }
+
+        @Override
+        public TargetingParams getTargetingParams() {
+            return oneOf(AdRequest.this.targetingParams, BidMachineImpl.get().getTargetingParams());
+        }
     }
 
 }

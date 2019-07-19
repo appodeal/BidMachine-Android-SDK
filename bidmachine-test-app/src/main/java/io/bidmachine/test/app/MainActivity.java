@@ -24,25 +24,10 @@ import android.text.style.StyleSpan;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.CompoundButton;
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
-import android.widget.RatingBar;
-import android.widget.TextView;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Iterator;
-
-import io.bidmachine.AdContentType;
-import io.bidmachine.BidMachine;
+import android.widget.*;
 import io.bidmachine.BuildConfig;
-import io.bidmachine.MediaAssetType;
+import io.bidmachine.*;
+import io.bidmachine.adapters.my_target.MyTargetAdapter;
 import io.bidmachine.banner.BannerSize;
 import io.bidmachine.banner.BannerView;
 import io.bidmachine.nativead.NativeAd;
@@ -51,13 +36,16 @@ import io.bidmachine.nativead.NativeListener;
 import io.bidmachine.nativead.NativeRequest;
 import io.bidmachine.nativead.view.NativeIconView;
 import io.bidmachine.nativead.view.NativeMediaView;
-import io.bidmachine.test.app.params.AdsParamsFragment;
-import io.bidmachine.test.app.params.AppParamsFragment;
-import io.bidmachine.test.app.params.ExtraParamsFragment;
-import io.bidmachine.test.app.params.TargetingParamsFragment;
-import io.bidmachine.test.app.params.UserRestrictionsParamsFragment;
+import io.bidmachine.test.app.params.*;
 import io.bidmachine.test.app.utils.TestActivityWrapper;
 import io.bidmachine.utils.BMError;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -84,6 +72,15 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        BidMachine.registerAdapter(
+                new NetworkConfig(new MyTargetAdapter())
+                        .withMediationConfig(AdsFormat.Banner, new HashMap<String, Object>() {{
+                            put("slot_id", "437933");
+                        }})
+                        .withMediationConfig(AdsFormat.RewardedVideo, new HashMap<String, Object>() {{
+                            put("slot_id", "482205");
+                        }}));
 
         final SpannableStringBuilder appInfoBuilder = new SpannableStringBuilder();
         appInfoBuilder.append("Version: ");

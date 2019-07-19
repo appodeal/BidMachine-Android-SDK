@@ -2,7 +2,6 @@ package io.bidmachine;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
-
 import io.bidmachine.core.Logger;
 
 public class BidMachine {
@@ -10,6 +9,10 @@ public class BidMachine {
     public static final String NAME = "BidMachine SDK";
     public static final String VERSION = BuildConfig.VERSION_NAME;
     public static final int VERSION_CODE = BuildConfig.VERSION_CODE;
+
+    static {
+        Logger.setTag(NAME);
+    }
 
     /**
      * Initialize BidMachine SDK
@@ -28,6 +31,7 @@ public class BidMachine {
      */
     public static void setLoggingEnabled(boolean enabled) {
         Logger.setLoggingEnabled(enabled);
+        AdsType.AdapterRegistry.setLoggingEnabled(enabled);
     }
 
     /**
@@ -74,6 +78,10 @@ public class BidMachine {
      */
     public static void setCoppa(Boolean coppa) {
         BidMachineImpl.get().getUserRestrictionParams().setCoppa(coppa);
+    }
+
+    public static void registerAdapter(NetworkConfig networkConfig) {
+        AdsType.AdapterRegistry.registerAdapter(networkConfig);
     }
 
 }

@@ -1,18 +1,18 @@
 package io.bidmachine.adapters.nast;
 
-import io.bidmachine.adapters.OrtbAdapter;
-import io.bidmachine.displays.NativeAdObjectParams;
-import io.bidmachine.nativead.NativeAdObject;
+import io.bidmachine.AdsType;
+import io.bidmachine.BidMachineAdapter;
+import io.bidmachine.unified.UnifiedNativeAd;
 
-public class NastAdapter extends OrtbAdapter {
+public class NastAdapter extends BidMachineAdapter {
 
     public NastAdapter() {
-        super("nast", "1.0");
+        super("nast", "1.0", new AdsType[]{AdsType.Native});
     }
 
     @Override
-    public NativeAdObject createNativeAdObject(NativeAdObjectParams adObjectParams) {
-        return new NastNativeAdObject(adObjectParams);
+    public UnifiedNativeAd createNativeAd() {
+        return new NastNativeAdObject();
     }
 
 }
