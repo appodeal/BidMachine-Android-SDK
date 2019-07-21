@@ -13,7 +13,7 @@ import io.bidmachine.utils.BMError;
 
 import java.util.Map;
 
-class MyTargetViewAd implements UnifiedBannerAd {
+class MyTargetBanner implements UnifiedBannerAd {
 
     @Nullable
     private MyTargetView adView;
@@ -51,6 +51,7 @@ class MyTargetViewAd implements UnifiedBannerAd {
         adView = new MyTargetView(context);
         adView.init(params.slotId, adSize, false);
         adView.setListener(new MyTargetListener(callback));
+        MyTargetAdapter.updateTargeting(requestParams, adView.getCustomParams());
         adView.loadFromBid(params.bidId);
     }
 

@@ -113,7 +113,7 @@ class OrtbUtils {
         if (paramsRestrictions.canSendGeoPosition()) {
             final Context.Geo.Builder geoBuilder = Context.Geo.newBuilder();
             if (targetingParams != null) {
-                targetingParams.build(context, geoBuilder, targetingParams, paramsRestrictions);
+                targetingParams.build(geoBuilder);
             }
             OrtbUtils.locationToGeo(geoBuilder,
                     obtainBestLocation(context, targetingParams != null

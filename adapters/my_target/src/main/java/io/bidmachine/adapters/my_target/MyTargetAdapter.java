@@ -2,16 +2,20 @@ package io.bidmachine.adapters.my_target;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import com.my.target.common.CustomParams;
 import com.my.target.common.MyTargetPrivacy;
 import io.bidmachine.AdsType;
 import io.bidmachine.BidMachineAdapter;
 import io.bidmachine.HeaderBiddingAdapter;
 import io.bidmachine.HeaderBiddingCollectParamsCallback;
 import io.bidmachine.models.DataRestrictions;
+import io.bidmachine.models.TargetingInfo;
 import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.unified.UnifiedBannerAd;
 import io.bidmachine.unified.UnifiedFullscreenAd;
 import io.bidmachine.utils.BMError;
+import io.bidmachine.utils.Gender;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +28,7 @@ public class MyTargetAdapter extends BidMachineAdapter implements HeaderBiddingA
 
     @Override
     public UnifiedBannerAd createBanner() {
-        return new MyTargetViewAd();
+        return new MyTargetBanner();
     }
 
     @Override
@@ -35,6 +39,13 @@ public class MyTargetAdapter extends BidMachineAdapter implements HeaderBiddingA
     @Override
     public UnifiedFullscreenAd createRewarded() {
         return new MyTargetFullscreenAd();
+    }
+
+    @Override
+    protected void onInitialize(@NonNull Context context,
+                                @NonNull UnifiedAdRequestParams adRequestParams,
+                                @Nullable Map<String, Object> config) {
+        updateRestrictions(adRequestParams);
     }
 
     @Override
@@ -53,12 +64,35 @@ public class MyTargetAdapter extends BidMachineAdapter implements HeaderBiddingA
         callback.onCollectFinished(params);
     }
 
-    private void updateRestrictions(@NonNull UnifiedAdRequestParams requestParams) {
-        DataRestrictions dataRestrictions = requestParams.getDataRestrictions();
+    private void updateRestrictions(@NonNull UnifiedAdRequestParams adRequestParams) {
+        DataRestrictions dataRestrictions = adRequestParams.getDataRestrictions();
         if (dataRestrictions.isUserInGdprScope()) {
             MyTargetPrivacy.setUserConsent(dataRestrictions.isUserHasConsent());
         }
         MyTargetPrivacy.setUserAgeRestricted(dataRestrictions.isUserAgeRestricted());
+    }
+
+    static void updateTargeting(@NonNull UnifiedAdRequestParams adRequestParams, @NonNull CustomParams customParams) {
+        TargetingInfo targetingInfo = adRequestParams.getTargetingParams();
+        Integer age = targetingInfo.getUserAge();
+        if (age != null) {
+            customParams.setAge(age);
+        }
+        Gender gender = targetingInfo.getGender();
+        if (gender != null) {
+            customParams.setGender(transformGender(gender));
+        }
+    }
+
+    private static int transformGender(@NonNull Gender gender) {
+        switch (gender) {
+            case Female:
+                return CustomParams.Gender.FEMALE;
+            case Male:
+                return CustomParams.Gender.MALE;
+            default:
+                return CustomParams.Gender.UNKNOWN;
+        }
     }
 
 }

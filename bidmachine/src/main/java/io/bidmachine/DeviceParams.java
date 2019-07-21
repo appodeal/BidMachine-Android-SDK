@@ -9,8 +9,8 @@ import com.explorestack.protobuf.adcom.DeviceType;
 import com.explorestack.protobuf.adcom.OS;
 import io.bidmachine.core.DeviceInfo;
 import io.bidmachine.core.Utils;
-import io.bidmachine.models.RequestParams;
 import io.bidmachine.models.DataRestrictions;
+import io.bidmachine.models.RequestParams;
 
 import java.util.Locale;
 
@@ -69,7 +69,10 @@ final class DeviceParams extends RequestParams {
                     defaultTargetingParams.getDeviceLocation());
             builder.setGeo(OrtbUtils.locationToGeo(location, true));
         }
-
     }
 
+    @Override
+    public void merge(@NonNull RequestParams instance) {
+        // ignore
+    }
 }

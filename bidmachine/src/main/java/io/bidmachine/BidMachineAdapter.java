@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import io.bidmachine.models.AdObject;
+import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.unified.UnifiedBannerAd;
 import io.bidmachine.unified.UnifiedFullscreenAd;
 import io.bidmachine.unified.UnifiedNativeAd;
@@ -42,14 +43,18 @@ public abstract class BidMachineAdapter {
     /**
      * Call for initialize BidMachine
      */
-    public final void initialize(@NonNull Context context, @Nullable Map<String, Object> config) throws Throwable {
+    public final void initialize(@NonNull Context context,
+                                 @NonNull UnifiedAdRequestParams adRequestParams,
+                                 @Nullable Map<String, Object> config) throws Throwable {
         if (!isInitialized) {
-            onInitialize(context, config);
+            onInitialize(context, adRequestParams, config);
             isInitialized = true;
         }
     }
 
-    protected void onInitialize(@NonNull Context context, @Nullable Map<String, Object> config) {
+    protected void onInitialize(@NonNull Context context,
+                                @NonNull UnifiedAdRequestParams adRequestParams,
+                                @Nullable Map<String, Object> config) {
     }
 
     public UnifiedBannerAd createBanner() {

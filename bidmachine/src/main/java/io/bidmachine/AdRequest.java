@@ -17,6 +17,7 @@ import io.bidmachine.displays.PlacementBuilder;
 import io.bidmachine.models.AuctionResult;
 import io.bidmachine.models.DataRestrictions;
 import io.bidmachine.models.RequestBuilder;
+import io.bidmachine.models.TargetingInfo;
 import io.bidmachine.protobuf.RequestExtension;
 import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.utils.BMError;
@@ -30,7 +31,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static io.bidmachine.Utils.getOrDefault;
-import static io.bidmachine.core.Utils.oneOf;
 
 public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestParamsType extends UnifiedAdRequestParams>
         implements TrackingObject {
@@ -91,13 +91,21 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
         final BidMachineImpl bidMachine = BidMachineImpl.get();
 
         final Request.Builder requestBuilder = Request.newBuilder();
-        final TargetingParams targetingParams = oneOf(this.targetingParams, bidMachine.getTargetingParams());
-        final BlockedParams blockedParams = targetingParams.getBlockedParams() != null
-                ? targetingParams.getBlockedParams()
-                : bidMachine.getTargetingParams().getBlockedParams();
-        final UserRestrictionParams userRestrictionParams = this.userRestrictionParams != null
-                ? this.userRestrictionParams : bidMachine.getUserRestrictionParams();
-        final DataRestrictions restrictions = UserRestrictionParams.createRestrictions(userRestrictionParams);
+        final TargetingParams targetingParams;
+        if (this.targetingParams == null) {
+            targetingParams = bidMachine.getTargetingParams();
+        } else {
+            targetingParams = this.targetingParams;
+            targetingParams.merge(bidMachine.getTargetingParams());
+        }
+        final BlockedParams blockedParams = targetingParams.getBlockedParams();
+        final UserRestrictionParams userRestrictionParams;
+        if (this.userRestrictionParams == null) {
+            userRestrictionParams = bidMachine.getUserRestrictionParams();
+        } else {
+            userRestrictionParams = this.userRestrictionParams;
+            userRestrictionParams.merge(bidMachine.getUserRestrictionParams());
+        }
 
         //PriceFloor params
         final ArrayList<Message.Builder> placements = new ArrayList<>();
@@ -149,40 +157,34 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
 
         //Context -> App
         final Context.App.Builder appBuilder = Context.App.newBuilder();
-        targetingParams.build(context, appBuilder, bidMachine.getTargetingParams(), restrictions);
+        targetingParams.build(context, appBuilder);
 
         contextBuilder.setApp(appBuilder);
 
         //Context -> Restrictions
         if (blockedParams != null) {
             final Context.Restrictions.Builder restrictionsBuilder = Context.Restrictions.newBuilder();
-            blockedParams.build(context,
-                    restrictionsBuilder,
-                    bidMachine.getTargetingParams().getBlockedParams(),
-                    restrictions);
+            blockedParams.build(restrictionsBuilder);
             contextBuilder.setRestrictions(restrictionsBuilder);
         }
 
         //Context -> User
         final Context.User.Builder userBuilder = Context.User.newBuilder();
-        userRestrictionParams.build(context, userBuilder, bidMachine.getUserRestrictionParams(), restrictions);
-        if (restrictions.canSendUserInfo()) {
-            targetingParams.build(context, userBuilder, bidMachine.getTargetingParams(), restrictions);
+        userRestrictionParams.build(userBuilder);
+        if (userRestrictionParams.canSendUserInfo()) {
+            targetingParams.build(userBuilder);
         }
         contextBuilder.setUser(userBuilder);
 
         //Context -> Regs
         final Context.Regs.Builder regsBuilder = Context.Regs.newBuilder();
-        userRestrictionParams.build(context, regsBuilder, bidMachine.getUserRestrictionParams(),
-                restrictions);
+        userRestrictionParams.build(regsBuilder);
         contextBuilder.setRegs(regsBuilder);
 
         //Context -> Device
         final Context.Device.Builder deviceBuilder = Context.Device.newBuilder();
         bidMachine.getDeviceParams().build(context, deviceBuilder, targetingParams,
-                bidMachine.getTargetingParams(), restrictions);
-        userRestrictionParams.build(context, regsBuilder, bidMachine.getUserRestrictionParams(),
-                restrictions);
+                bidMachine.getTargetingParams(), userRestrictionParams);
         contextBuilder.setDevice(deviceBuilder);
 
         requestBuilder.setContext(Any.pack(contextBuilder.build()));
@@ -526,14 +528,28 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
     protected class BaseUnifiedRequestParams implements UnifiedAdRequestParams {
         @Override
         public DataRestrictions getDataRestrictions() {
-            final UserRestrictionParams userRestrictionParams = AdRequest.this.userRestrictionParams != null
-                    ? AdRequest.this.userRestrictionParams : BidMachineImpl.get().getUserRestrictionParams();
-            return UserRestrictionParams.createRestrictions(userRestrictionParams);
+            final UserRestrictionParams userRestrictionParams;
+            final UserRestrictionParams defaultUserRestrictionParams = BidMachineImpl.get().getUserRestrictionParams();
+            if (AdRequest.this.userRestrictionParams == null) {
+                userRestrictionParams = defaultUserRestrictionParams;
+            } else {
+                userRestrictionParams = AdRequest.this.userRestrictionParams;
+                userRestrictionParams.merge(defaultUserRestrictionParams);
+            }
+            return userRestrictionParams;
         }
 
         @Override
-        public TargetingParams getTargetingParams() {
-            return oneOf(AdRequest.this.targetingParams, BidMachineImpl.get().getTargetingParams());
+        public TargetingInfo getTargetingParams() {
+            final TargetingParams targetingParams;
+            final TargetingParams defaultTargetingParams = BidMachineImpl.get().getTargetingParams();
+            if (AdRequest.this.targetingParams == null) {
+                targetingParams = defaultTargetingParams;
+            } else {
+                targetingParams = AdRequest.this.targetingParams;
+                targetingParams.merge(defaultTargetingParams);
+            }
+            return new TargetingInfoImpl(getDataRestrictions(), targetingParams);
         }
     }
 

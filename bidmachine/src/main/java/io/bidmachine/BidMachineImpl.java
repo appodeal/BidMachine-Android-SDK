@@ -10,13 +10,6 @@ import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
 import android.util.Base64;
-
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
 import io.bidmachine.core.AdvertisingIdClientInfo;
 import io.bidmachine.core.Logger;
 import io.bidmachine.core.NetworkRequest;
@@ -25,6 +18,12 @@ import io.bidmachine.protobuf.InitRequest;
 import io.bidmachine.protobuf.InitResponse;
 import io.bidmachine.utils.ActivityHelper;
 import io.bidmachine.utils.BMError;
+
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 final class BidMachineImpl implements TrackingObject {
 
@@ -129,8 +128,7 @@ final class BidMachineImpl implements TrackingObject {
         currentInitRequest = new ApiRequest.Builder<InitRequest, InitResponse>()
                 .url(DEF_INIT_URL)
                 .setDataBinder(new ApiRequest.ApiInitDataBinder())
-                .setRequestData(OrtbUtils.obtainInitRequest(context, sellerId, targetingParams,
-                        UserRestrictionParams.createRestrictions(userRestrictionParams)))
+                .setRequestData(OrtbUtils.obtainInitRequest(context, sellerId, targetingParams, userRestrictionParams))
                 .setCallback(new NetworkRequest.Callback<InitResponse, BMError>() {
                     @Override
                     public void onSuccess(@Nullable InitResponse result) {

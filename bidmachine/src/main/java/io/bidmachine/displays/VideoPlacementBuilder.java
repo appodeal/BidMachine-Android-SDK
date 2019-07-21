@@ -73,12 +73,12 @@ public class VideoPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAdR
                                                @NonNull Response.Seatbid seatbid,
                                                @NonNull Response.Seatbid.Bid bid,
                                                @NonNull Ad ad) {
-        Ad.Video video = ad.getVideo();
-        if (video == null) {
+        if (!ad.hasVideo()) {
             return null;
         }
         AdObjectParams params = createHeaderBiddingAdObjectParams(context, adRequestParams, seatbid, bid, ad);
         if (params == null) {
+            Ad.Video video = ad.getVideo();
             VideoAdObjectParams videoParams = new VideoAdObjectParams(seatbid, bid, ad);
             videoParams.setCreativeAdm(video.getAdm());
             params = videoParams;

@@ -33,6 +33,7 @@ public class MyTargetFullscreenAd implements UnifiedFullscreenAd {
         }
         interstitialAd = new InterstitialAd(params.slotId, context);
         interstitialAd.setListener(new MyTargetFullscreenListener(callback));
+        MyTargetAdapter.updateTargeting(requestParams, interstitialAd.getCustomParams());
         interstitialAd.loadFromBid(params.bidId);
     }
 

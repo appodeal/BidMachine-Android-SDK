@@ -66,12 +66,15 @@ public class DisplayPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedA
                                                @NonNull Response.Seatbid seatbid,
                                                @NonNull Response.Seatbid.Bid bid,
                                                @NonNull Ad ad) {
-        Ad.Display display = ad.getDisplay();
-        if (display == null || TextUtils.isEmpty(display.getAdm())) {
+        if (!ad.hasDisplay()) {
             return null;
         }
         AdObjectParams params = createHeaderBiddingAdObjectParams(context, adRequest, seatbid, bid, ad);
         if (params == null) {
+            Ad.Display display = ad.getDisplay();
+            if (TextUtils.isEmpty(display.getAdm())) {
+                return null;
+            }
             DisplayAdObjectParams displayParams = new DisplayAdObjectParams(seatbid, bid, ad);
             displayParams.setCreativeAdm(display.getAdm());
             displayParams.setWidth(display.getW());

@@ -208,12 +208,12 @@ public abstract class BidMachineAd<
     private BMError processResponseSuccess(@NonNull Response.Seatbid seatbid,
                                            @NonNull Response.Seatbid.Bid bid,
                                            @NonNull Ad ad,
-                                           @NonNull @Deprecated AdRequestType adRequest) {
+                                           @NonNull AdRequestType adRequest) {
         Context context = getContext();
         if (context == null) {
             return BMError.Internal;
         }
-        NetworkConfig networkConfig = getType().obtainNetworkConfig(context, ad);
+        NetworkConfig networkConfig = getType().obtainNetworkConfig(context, ad, adRequest.getUnifiedRequestParams());
         if (networkConfig != null) {
             AdObjectParams adObjectParams = getType().createAdObjectParams(getContext(), seatbid, bid, ad, adRequest);
             if (adObjectParams != null && adObjectParams.isValid()) {

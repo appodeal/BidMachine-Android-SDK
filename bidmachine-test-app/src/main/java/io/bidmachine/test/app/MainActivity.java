@@ -67,8 +67,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         try {
-            setFinalStatic(Class.forName("io.bidmachine.BuildConfig").getDeclaredField("DEBUG"),
-                    true);
+            setFinalStatic(Class.forName("io.bidmachine.BuildConfig").getDeclaredField("DEBUG"), true);
         } catch (Exception e) {
             e.printStackTrace();
         }

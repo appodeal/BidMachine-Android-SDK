@@ -20,6 +20,7 @@ import io.bidmachine.displays.PlacementBuilder;
 import io.bidmachine.displays.VideoPlacementBuilder;
 import io.bidmachine.models.AdObjectParams;
 import io.bidmachine.protobuf.headerbidding.HeaderBiddingAd;
+import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.unified.UnifiedBannerAdRequestParams;
 
 import java.util.ArrayList;
@@ -60,39 +61,45 @@ public enum AdsType {
         this.placementBuilders = placementBuilders;
     }
 
-    NetworkConfig obtainNetworkConfig(@NonNull Context context, @NonNull Ad ad) {
-        NetworkConfig networkConfig = obtainHeaderBiddingAdNetworkConfig(context, ad);
+    NetworkConfig obtainNetworkConfig(@NonNull Context context,
+                                      @NonNull Ad ad,
+                                      @NonNull UnifiedAdRequestParams adRequestParams) {
+        NetworkConfig networkConfig = obtainHeaderBiddingAdNetworkConfig(context, ad, adRequestParams);
         if (networkConfig == null) {
             if (this == AdsType.Native) {
-                networkConfig = obtainNetworkConfig(context, AdapterRegistry.Nast);
+                networkConfig = obtainNetworkConfig(context, AdapterRegistry.Nast, adRequestParams);
             } else if (ad.hasDisplay()) {
-                networkConfig = obtainNetworkConfig(context, AdapterRegistry.Mraid);
+                networkConfig = obtainNetworkConfig(context, AdapterRegistry.Mraid, adRequestParams);
             } else if (ad.hasVideo()) {
-                networkConfig = obtainNetworkConfig(context, AdapterRegistry.Vast);
+                networkConfig = obtainNetworkConfig(context, AdapterRegistry.Vast, adRequestParams);
             }
         }
         return networkConfig;
     }
 
     @Nullable
-    private NetworkConfig obtainHeaderBiddingAdNetworkConfig(@NonNull Context context, @NonNull Ad ad) {
+    private NetworkConfig obtainHeaderBiddingAdNetworkConfig(@NonNull Context context,
+                                                             @NonNull Ad ad,
+                                                             @NonNull UnifiedAdRequestParams adRequestParams) {
         NetworkConfig result = null;
         if (ad.hasDisplay()) {
-            result = obtainHeaderBiddingAdNetworkConfig(context, ad.getDisplay().getExtList());
+            result = obtainHeaderBiddingAdNetworkConfig(context, adRequestParams, ad.getDisplay().getExtList());
         }
         if (result == null && ad.hasVideo()) {
-            result = obtainHeaderBiddingAdNetworkConfig(context, ad.getVideo().getExtList());
+            result = obtainHeaderBiddingAdNetworkConfig(context, adRequestParams, ad.getVideo().getExtList());
         }
         return result;
     }
 
     @Nullable
-    private NetworkConfig obtainHeaderBiddingAdNetworkConfig(@NonNull Context context, @NonNull List<Any> extensions) {
+    private NetworkConfig obtainHeaderBiddingAdNetworkConfig(@NonNull Context context,
+                                                             @NonNull UnifiedAdRequestParams adRequestParams,
+                                                             @NonNull List<Any> extensions) {
         for (Any extension : extensions) {
             if (extension.is(HeaderBiddingAd.class)) {
                 try {
                     HeaderBiddingAd headerBiddingAd = extension.unpack(HeaderBiddingAd.class);
-                    return obtainNetworkConfig(context, headerBiddingAd.getBidder());
+                    return obtainNetworkConfig(context, headerBiddingAd.getBidder(), adRequestParams);
                 } catch (InvalidProtocolBufferException e) {
                     e.printStackTrace();
                 }
@@ -101,11 +108,13 @@ public enum AdsType {
         return null;
     }
 
-    private NetworkConfig obtainNetworkConfig(@NonNull Context context, @NonNull String networkName) {
+    private NetworkConfig obtainNetworkConfig(@NonNull Context context,
+                                              @NonNull String networkName,
+                                              @NonNull UnifiedAdRequestParams adRequestParams) {
         NetworkConfig networkConfig = AdapterRegistry.getConfig(networkName);
         if (networkConfig != null) {
             try {
-                networkConfig.getAdapter().initialize(context, networkConfig.getNetworkConfig());
+                networkConfig.getAdapter().initialize(context, adRequestParams, networkConfig.getNetworkConfig());
             } catch (Throwable throwable) {
                 Logger.log(throwable);
                 networkConfig = null;

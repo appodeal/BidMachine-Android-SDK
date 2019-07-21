@@ -1,54 +1,75 @@
 package io.bidmachine;
 
+import android.support.annotation.NonNull;
 import com.explorestack.protobuf.adcom.Context;
 import io.bidmachine.models.IBlockedParams;
 import io.bidmachine.models.RequestParams;
-import io.bidmachine.models.DataRestrictions;
 
-import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
-import static io.bidmachine.core.Utils.resolveList;
+public final class BlockedParams
+        extends RequestParams<BlockedParams>
+        implements IBlockedParams<BlockedParams> {
 
-public final class BlockedParams extends RequestParams implements IBlockedParams<BlockedParams> {
+    private Set<String> blockedDomains;
+    private Set<String> blockedCategories;
+    private Set<String> blockedApplications;
 
-    private ArrayList<String> blockedCategories;
-    private ArrayList<String> blockedDomains;
-    private ArrayList<String> blockedApplications;
-
-    void build(android.content.Context context,
-               Context.Restrictions.Builder builder,
-               BlockedParams defaults,
-               DataRestrictions restrictions) {
-        builder.addAllBcat(resolveList(blockedCategories, defaults != null ? defaults.blockedCategories : null));
-        builder.addAllBadv(resolveList(blockedDomains, defaults != null ? defaults.blockedDomains : null));
-        builder.addAllBapp(resolveList(blockedApplications, defaults != null ? defaults.blockedApplications : null));
-    }
-
-    @Override
-    public BlockedParams addBlockedAdvertiserIABCategory(String category) {
-        if (blockedCategories == null) {
-            blockedCategories = new ArrayList<>();
+    void build(Context.Restrictions.Builder builder) {
+        if (blockedDomains != null) {
+            builder.addAllBadv(blockedDomains);
         }
-        blockedCategories.add(category);
-        return this;
+        if (blockedCategories != null) {
+            builder.addAllBcat(blockedCategories);
+        }
+        if (blockedApplications != null) {
+            builder.addAllBapp(blockedApplications);
+        }
     }
 
     @Override
     public BlockedParams addBlockedAdvertiserDomain(String domain) {
         if (blockedDomains == null) {
-            blockedDomains = new ArrayList<>();
+            blockedDomains = new HashSet<>();
         }
         blockedDomains.add(domain);
         return this;
     }
 
     @Override
+    public BlockedParams addBlockedAdvertiserIABCategory(String category) {
+        if (blockedCategories == null) {
+            blockedCategories = new HashSet<>();
+        }
+        blockedCategories.add(category);
+        return this;
+    }
+
+    @Override
     public BlockedParams addBlockedApplication(String bundleOrPackage) {
         if (blockedApplications == null) {
-            blockedApplications = new ArrayList<>();
+            blockedApplications = new HashSet<>();
         }
         blockedApplications.add(bundleOrPackage);
         return this;
     }
 
+    @Override
+    public void merge(@NonNull BlockedParams instance) {
+        blockedDomains = updateList(instance.blockedDomains, blockedDomains);
+        blockedCategories = updateList(instance.blockedCategories, blockedCategories);
+        blockedApplications = updateList(instance.blockedApplications, blockedApplications);
+    }
+
+    private <T> Set<T> updateList(Set<T> input, Set<T> output) {
+        if (input != null) {
+            if (output == null) {
+                output = new HashSet<>(input);
+            } else {
+                output.addAll(input);
+            }
+        }
+        return output;
+    }
 }

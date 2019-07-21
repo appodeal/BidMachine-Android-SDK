@@ -6,12 +6,11 @@ import com.explorestack.protobuf.adcom.Context;
 import io.bidmachine.core.Utils;
 import io.bidmachine.models.ITargetingParams;
 import io.bidmachine.models.RequestParams;
-import io.bidmachine.models.DataRestrictions;
 import io.bidmachine.utils.Gender;
 
 import static io.bidmachine.core.Utils.oneOf;
 
-public final class TargetingParams extends RequestParams implements ITargetingParams<TargetingParams> {
+public final class TargetingParams extends RequestParams<TargetingParams> implements ITargetingParams<TargetingParams> {
 
     private String userId;
     private Gender gender;
@@ -23,10 +22,9 @@ public final class TargetingParams extends RequestParams implements ITargetingPa
     private Location deviceLocation;
     private String storeUrl;
     private Boolean isPaid;
-
     private BlockedParams blockedParams;
 
-    public Location getDeviceLocation() {
+    Location getDeviceLocation() {
         return deviceLocation;
     }
 
@@ -34,22 +32,31 @@ public final class TargetingParams extends RequestParams implements ITargetingPa
         return blockedParams;
     }
 
-    void build(android.content.Context context,
-               Context.App.Builder builder,
-               @NonNull TargetingParams defaults,
-               DataRestrictions restrictions) {
-        final String storeUrl = oneOf(this.storeUrl, defaults.storeUrl);
-        if (storeUrl != null) {
-            builder.setStoreurl(storeUrl);
+    @Override
+    public void merge(@NonNull TargetingParams instance) {
+        userId = oneOf(userId, instance.userId);
+        gender = oneOf(gender, instance.gender);
+        birthdayYear = oneOf(birthdayYear, instance.birthdayYear);
+        keywords = oneOf(keywords, instance.keywords);
+        country = oneOf(country, instance.country);
+        city = oneOf(city, instance.city);
+        zip = oneOf(zip, instance.zip);
+        deviceLocation = oneOf(deviceLocation, instance.deviceLocation);
+        storeUrl = oneOf(storeUrl, instance.storeUrl);
+        isPaid = oneOf(isPaid, instance.isPaid);
+        if (instance.blockedParams != null) {
+            if (blockedParams == null) {
+                blockedParams = new BlockedParams();
+            }
+            blockedParams.merge(instance.blockedParams);
         }
-        final Boolean isPaid = oneOf(this.isPaid, defaults.isPaid);
-        builder.setPaid(isPaid != null && isPaid);
+    }
 
-        final String packageName = context.getPackageName();
+    void build(android.content.Context context, Context.App.Builder builder) {
+        String packageName = context.getPackageName();
         if (packageName != null) {
             builder.setBundle(packageName);
         }
-
         String appVersion = Utils.getAppVersion(context);
         if (appVersion != null) {
             builder.setVer(appVersion);
@@ -58,29 +65,26 @@ public final class TargetingParams extends RequestParams implements ITargetingPa
         if (appName != null) {
             builder.setName(appName);
         }
+        if (storeUrl != null) {
+            builder.setStoreurl(storeUrl);
+        }
+        builder.setPaid(isPaid != null && isPaid);
     }
 
-    void build(android.content.Context context,
-               Context.User.Builder builder,
-               @NonNull TargetingParams defaults,
-               DataRestrictions restrictions) {
+    void build(Context.User.Builder builder) {
         //User id
-        final String userId = oneOf(this.userId, defaults.userId);
         if (userId != null) {
             builder.setId(userId);
         }
         //Birthday year
-        final Integer birthdayYear = oneOf(this.birthdayYear, defaults.birthdayYear);
         if (birthdayYear != null) {
             builder.setYob(birthdayYear);
         }
         //Gender
-        final Gender gender = oneOf(this.gender, defaults.gender);
         if (gender != null) {
             builder.setGender(gender.getOrtbValue());
         }
         //Keywords
-        final String[] keywords = oneOf(this.keywords, defaults.keywords);
         if (keywords != null && keywords.length > 0) {
             final StringBuilder keywordsBuilder = new StringBuilder();
             for (String keyword : keywords) {
@@ -91,24 +95,18 @@ public final class TargetingParams extends RequestParams implements ITargetingPa
         }
         //Geo
         final Context.Geo.Builder geoBuilder = Context.Geo.newBuilder();
-        build(context, geoBuilder, defaults, restrictions);
+        build(geoBuilder);
         OrtbUtils.locationToGeo(geoBuilder, null, false);
         builder.setGeo(geoBuilder);
     }
 
-    void build(android.content.Context context,
-               Context.Geo.Builder builder,
-               @NonNull TargetingParams defaults,
-               DataRestrictions restrictions) {
-        final String country = oneOf(this.country, defaults.country);
+    void build(Context.Geo.Builder builder) {
         if (country != null) {
             builder.setCountry(country);
         }
-        final String city = oneOf(this.city, defaults.city);
         if (city != null) {
             builder.setCity(city);
         }
-        final String zip = oneOf(this.zip, defaults.zip);
         if (zip != null) {
             builder.setZip(zip);
         }
@@ -196,6 +194,42 @@ public final class TargetingParams extends RequestParams implements ITargetingPa
         prepareBlockParams();
         blockedParams.addBlockedAdvertiserDomain(domain);
         return this;
+    }
+
+    String getUserId() {
+        return userId;
+    }
+
+    Gender getGender() {
+        return gender;
+    }
+
+    Integer getBirthdayYear() {
+        return birthdayYear;
+    }
+
+    String[] getKeywords() {
+        return keywords;
+    }
+
+    String getCountry() {
+        return country;
+    }
+
+    String getCity() {
+        return city;
+    }
+
+    String getZip() {
+        return zip;
+    }
+
+    String getStoreUrl() {
+        return storeUrl;
+    }
+
+    Boolean getPaid() {
+        return isPaid;
     }
 
     private void prepareBlockParams() {
