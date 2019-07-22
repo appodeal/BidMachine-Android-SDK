@@ -60,7 +60,7 @@ public class MyTargetAdapter extends BidMachineAdapter implements HeaderBiddingA
         }
         updateRestrictions(requestParams);
         HashMap<String, String> params = new HashMap<>();
-        params.put("mailru_slot_id", (String) slotId);
+        params.put("slot_id", (String) slotId);
         callback.onCollectFinished(params);
     }
 

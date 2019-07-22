@@ -81,14 +81,22 @@ public enum AdsType {
     private NetworkConfig obtainHeaderBiddingAdNetworkConfig(@NonNull Context context,
                                                              @NonNull Ad ad,
                                                              @NonNull UnifiedAdRequestParams adRequestParams) {
-        NetworkConfig result = null;
+        List<Any> extensions = null;
         if (ad.hasDisplay()) {
-            result = obtainHeaderBiddingAdNetworkConfig(context, adRequestParams, ad.getDisplay().getExtList());
+            Ad.Display display = ad.getDisplay();
+            if (display.hasBanner()) {
+                extensions = display.getBanner().getExtList();
+            } else if (display.hasNative()) {
+                extensions = display.getNative().getExtList();
+            }
         }
-        if (result == null && ad.hasVideo()) {
-            result = obtainHeaderBiddingAdNetworkConfig(context, adRequestParams, ad.getVideo().getExtList());
+        if ((extensions == null || extensions.isEmpty()) && ad.hasVideo()) {
+            extensions = ad.getVideo().getExtList();
         }
-        return result;
+        if (extensions != null) {
+            return obtainHeaderBiddingAdNetworkConfig(context, adRequestParams, extensions);
+        }
+        return null;
     }
 
     @Nullable
