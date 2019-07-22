@@ -25,8 +25,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
-import io.bidmachine.BuildConfig;
+import com.appodeal.ads.core.BuildConfig;
 import io.bidmachine.*;
+import io.bidmachine.adapters.adcolony.AdColonyAdapter;
 import io.bidmachine.adapters.my_target.MyTargetAdapter;
 import io.bidmachine.banner.BannerSize;
 import io.bidmachine.banner.BannerView;
@@ -80,6 +81,14 @@ public class MainActivity extends AppCompatActivity {
                         .withMediationConfig(AdsFormat.RewardedVideo, new HashMap<String, Object>() {{
                             put("slot_id", "482205");
                         }}));
+        BidMachine.registerAdapter(
+                new NetworkConfig(new AdColonyAdapter())
+                        .withMediationConfig(AdsFormat.RewardedVideo, new HashMap<String, Object>() {{
+                            put("app_id", "app185a7e71e1714831a49ec7");
+                            put("zone_id", "vz1fd5a8b2bf6841a0a4b826");
+                            put("store_id", "google");
+                        }})
+        );
 
         final SpannableStringBuilder appInfoBuilder = new SpannableStringBuilder();
         appInfoBuilder.append("Version: ");
