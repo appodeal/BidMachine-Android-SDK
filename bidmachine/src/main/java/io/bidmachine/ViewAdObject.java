@@ -47,6 +47,7 @@ public final class ViewAdObject<
 
     void show(@Nullable ViewGroup container) {
         if (container == null) {
+            Logger.log("Target container is null");
             getUnifiedAdCallback().onAdShowFailed(BMError.Internal);
             return;
         }
@@ -62,8 +63,7 @@ public final class ViewAdObject<
         container.removeAllViews();
         final ViewGroup.LayoutParams params;
         if (container instanceof FrameLayout) {
-            params = new FrameLayout.LayoutParams(
-                    getScaledWidth(context), getScaledHeight(context), Gravity.CENTER);
+            params = new FrameLayout.LayoutParams(getScaledWidth(context), getScaledHeight(context), Gravity.CENTER);
         } else {
             params = new ViewGroup.LayoutParams(getScaledWidth(context), getScaledHeight(context));
         }
@@ -143,7 +143,7 @@ public final class ViewAdObject<
         }
     }
 
-    private class UnifiedViewAdCallbackImpl extends BaseUnifiedAdCallback implements UnifiedBannerAdCallback {
+    private final class UnifiedViewAdCallbackImpl extends BaseUnifiedAdCallback implements UnifiedBannerAdCallback {
 
         UnifiedViewAdCallbackImpl(@NonNull AdProcessCallback processCallback) {
             super(processCallback);

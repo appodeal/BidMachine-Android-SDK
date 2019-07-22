@@ -125,7 +125,7 @@ public abstract class AdObjectImpl<
     protected static class BaseUnifiedAdCallback implements UnifiedAdCallback {
 
         @NonNull
-        AdProcessCallback processCallback;
+        protected final AdProcessCallback processCallback;
 
         public BaseUnifiedAdCallback(@NonNull AdProcessCallback processCallback) {
             this.processCallback = processCallback;

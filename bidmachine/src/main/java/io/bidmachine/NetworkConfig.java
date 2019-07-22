@@ -61,7 +61,7 @@ public final class NetworkConfig {
         return this;
     }
 
-    NetworkConfig forAdTypes(@NonNull AdsType... adsType) {
+    public NetworkConfig forAdTypes(@NonNull AdsType... adsType) {
         this.supportedAdsTypes = adsType;
         return this;
     }

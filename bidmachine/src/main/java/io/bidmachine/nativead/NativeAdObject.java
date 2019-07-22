@@ -334,7 +334,7 @@ public final class NativeAdObject
         );
     }
 
-    protected View obtainIconView(Context context) {
+    private View obtainIconView(Context context) {
         return createIconView(context);
     }
 
@@ -362,7 +362,7 @@ public final class NativeAdObject
     }
 
     /* progress dialog */
-    protected void showProgressDialog(Context context) {
+    private void showProgressDialog(Context context) {
         if (container != null && context instanceof Activity && mayShowProgressDialog()) {
             Activity activity = (Activity) context;
             if (Utils.canAddWindowToActivity(activity)) {
@@ -397,7 +397,7 @@ public final class NativeAdObject
         return progressDialog == null || !progressDialog.isShowing();
     }
 
-    protected void hideProgressDialog() {
+    private void hideProgressDialog() {
         if (progressDialog != null && progressDialog.isShowing()) {
             progressDialog.dismiss();
             progressDialog = null;
@@ -478,7 +478,7 @@ public final class NativeAdObject
         return requiredViews;
     }
 
-    protected void loadAsset(@NonNull Context context, @NonNull NativeData nativeData) {
+    private void loadAsset(@NonNull Context context, @NonNull NativeData nativeData) {
         (new AssetLoader(context, getAdRequest(), getProcessCallback(), nativeData, this))
                 .downloadNativeAdsImages();
     }
@@ -533,7 +533,7 @@ public final class NativeAdObject
     public void dispatchVideoPlayFinished() {
     }
 
-    private class UnifiedNativeAdCallbackImpl extends BaseUnifiedAdCallback implements UnifiedNativeAdCallback {
+    private final class UnifiedNativeAdCallbackImpl extends BaseUnifiedAdCallback implements UnifiedNativeAdCallback {
 
         UnifiedNativeAdCallbackImpl(@NonNull AdProcessCallback processCallback) {
             super(processCallback);
@@ -543,7 +543,7 @@ public final class NativeAdObject
         public void onAdLoaded(@NonNull NativeData nativeData) {
             Context context = getContext();
             if (context == null) {
-                getProcessCallback().processLoadFail(BMError.Internal);
+                processCallback.processLoadFail(BMError.Internal);
                 return;
             }
             NativeAdObject.this.nativeData = nativeData;
@@ -551,7 +551,7 @@ public final class NativeAdObject
                 loadAsset(getContext(), nativeData);
             } catch (Exception e) {
                 Logger.log(e);
-                getProcessCallback().processLoadFail(BMError.Internal);
+                processCallback.processLoadFail(BMError.Internal);
             }
         }
     }

@@ -13,7 +13,7 @@ public final class FullScreenAdObject<AdRequestType extends FullScreenAdRequest<
         extends AdObjectImpl<AdRequestType, AdObjectParams, UnifiedFullscreenAd, UnifiedFullscreenAdCallback, UnifiedFullscreenAdRequestParams>
         implements IFullScreenAd {
 
-    private ImpressionThresholdTask thresholdTask = new ImpressionThresholdTask() {
+    private final ImpressionThresholdTask thresholdTask = new ImpressionThresholdTask() {
         @Override
         void onTracked() {
             getProcessCallback().processImpression();
@@ -90,7 +90,7 @@ public final class FullScreenAdObject<AdRequestType extends FullScreenAdRequest<
 
     }
 
-    private class UnifiedFullscreenAdCallbackImpl extends BaseUnifiedAdCallback implements UnifiedFullscreenAdCallback {
+    private final class UnifiedFullscreenAdCallbackImpl extends BaseUnifiedAdCallback implements UnifiedFullscreenAdCallback {
 
         UnifiedFullscreenAdCallbackImpl(@NonNull AdProcessCallback processCallback) {
             super(processCallback);

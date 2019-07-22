@@ -12,6 +12,7 @@ public interface ITargetingParams<SelfType> extends IBlockedParams<SelfType> {
      * @param userId Vendor-specific ID for the user
      * @return Self instance
      */
+    @SuppressWarnings("UnusedReturnValue")
     SelfType setUserId(String userId);
 
     /**
@@ -20,6 +21,7 @@ public interface ITargetingParams<SelfType> extends IBlockedParams<SelfType> {
      * @param gender Gender, one of: Female, Male, Omitted {@link Gender}
      * @return Self instance
      */
+    @SuppressWarnings("UnusedReturnValue")
     SelfType setGender(Gender gender);
 
     /**
@@ -28,6 +30,7 @@ public interface ITargetingParams<SelfType> extends IBlockedParams<SelfType> {
      * @param birthdayYear Year of birth as a 4-digit integer (e.g - 1990)
      * @return Self instance
      */
+    @SuppressWarnings("UnusedReturnValue")
     SelfType setBirthdayYear(Integer birthdayYear);
 
     /**
@@ -36,6 +39,7 @@ public interface ITargetingParams<SelfType> extends IBlockedParams<SelfType> {
      * @param keywords Array of keywords
      * @return Self instance
      */
+    @SuppressWarnings("UnusedReturnValue")
     SelfType setKeywords(String... keywords);
 
     /**
@@ -44,6 +48,7 @@ public interface ITargetingParams<SelfType> extends IBlockedParams<SelfType> {
      * @param location Location of the user's home base (i.e., not necessarily their current location)
      * @return Self instance
      */
+    @SuppressWarnings("UnusedReturnValue")
     SelfType setDeviceLocation(Location location);
 
     /**
@@ -52,6 +57,7 @@ public interface ITargetingParams<SelfType> extends IBlockedParams<SelfType> {
      * @param country An uppercase ISO 3166 2-letter code, or a UN M.49 3-digit code.
      * @return Self instance
      */
+    @SuppressWarnings("UnusedReturnValue")
     SelfType setCountry(String country);
 
     /**
@@ -60,6 +66,7 @@ public interface ITargetingParams<SelfType> extends IBlockedParams<SelfType> {
      * @param city User's city
      * @return Self instance
      */
+    @SuppressWarnings("UnusedReturnValue")
     SelfType setCity(String city);
 
     /**
@@ -68,6 +75,7 @@ public interface ITargetingParams<SelfType> extends IBlockedParams<SelfType> {
      * @param zip User's ZIP
      * @return Self instance
      */
+    @SuppressWarnings("UnusedReturnValue")
     SelfType setZip(String zip);
 
     /**
@@ -76,6 +84,7 @@ public interface ITargetingParams<SelfType> extends IBlockedParams<SelfType> {
      * @param url App store url
      * @return Self instance
      */
+    @SuppressWarnings("UnusedReturnValue")
     SelfType setStoreUrl(String url);
 
     /**
@@ -84,6 +93,7 @@ public interface ITargetingParams<SelfType> extends IBlockedParams<SelfType> {
      * @param paid {@code true} if it's paid app
      * @return Self instance
      */
+    @SuppressWarnings("UnusedReturnValue")
     SelfType setPaid(Boolean paid);
 
 }

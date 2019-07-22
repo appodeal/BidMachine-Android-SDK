@@ -13,7 +13,7 @@ import java.util.Map;
 
 import static io.bidmachine.utils.IabUtils.*;
 
-public final class NativeAdObjectParams
+final class NativeAdObjectParams
         extends AdObjectParams
         implements UnifiedMediationParams.MappedUnifiedMediationParams.DataProvider {
 

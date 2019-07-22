@@ -9,7 +9,7 @@ import io.bidmachine.models.AdObjectParams;
 import io.bidmachine.protobuf.headerbidding.HeaderBiddingAd;
 import io.bidmachine.unified.UnifiedMediationParams;
 
-public class HeaderBiddingAdObjectParams extends AdObjectParams {
+class HeaderBiddingAdObjectParams extends AdObjectParams {
 
     @NonNull
     private HeaderBiddingAd headerBiddingAd;

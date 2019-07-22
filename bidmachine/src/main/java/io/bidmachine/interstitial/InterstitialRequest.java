@@ -11,11 +11,6 @@ public final class InterstitialRequest extends FullScreenAdRequest<InterstitialR
     private InterstitialRequest() {
     }
 
-    @Override
-    public AdContentType getAdContentType() {
-        return super.getAdContentType();
-    }
-
     @NonNull
     @Override
     protected AdsType getType() {

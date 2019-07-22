@@ -4,7 +4,7 @@ import android.support.annotation.Nullable;
 
 import io.bidmachine.models.AuctionResult;
 
-public interface IAd<SelfType extends IAd, AdRequestType extends AdRequest> {
+interface IAd<SelfType extends IAd, AdRequestType extends AdRequest> {
 
     SelfType load(AdRequestType request);
 

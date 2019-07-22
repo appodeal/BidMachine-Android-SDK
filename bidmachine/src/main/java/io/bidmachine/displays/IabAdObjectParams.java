@@ -14,7 +14,7 @@ import java.util.Map;
 import static io.bidmachine.Utils.getOrDefault;
 import static io.bidmachine.utils.IabUtils.*;
 
-public abstract class IabAdObjectParams
+abstract class IabAdObjectParams
         extends AdObjectParams
         implements UnifiedMediationParams.MappedUnifiedMediationParams.DataProvider {
 
