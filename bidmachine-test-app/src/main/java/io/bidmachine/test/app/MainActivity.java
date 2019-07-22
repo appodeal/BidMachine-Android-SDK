@@ -28,6 +28,7 @@ import android.widget.*;
 import io.bidmachine.BuildConfig;
 import io.bidmachine.*;
 import io.bidmachine.adapters.my_target.MyTargetAdapter;
+import io.bidmachine.adapters.tapjoy.TapjoyAdapter;
 import io.bidmachine.banner.BannerSize;
 import io.bidmachine.banner.BannerView;
 import io.bidmachine.nativead.NativeAd;
@@ -80,6 +81,17 @@ public class MainActivity extends AppCompatActivity {
                         .withMediationConfig(AdsFormat.RewardedVideo, new HashMap<String, Object>() {{
                             put("slot_id", "482205");
                         }}));
+        BidMachine.registerAdapter(
+                new NetworkConfig(new TapjoyAdapter())
+                        .withMediationConfig(AdsFormat.InterstitialVideo, new HashMap<String, Object>() {{
+                            put("placement", "interstitial");
+                            put("sdk_key", "EYwK-ltaQHyPOb1rDKJHiwEC218S8RbCAMgi2pAzyF8lmtIQRYUtk7qxHSQX");
+                        }})
+                        .withMediationConfig(AdsFormat.RewardedVideo, new HashMap<String, Object>() {{
+                            put("placement", "video_without_cap");
+                            put("sdk_key", "EYwK-ltaQHyPOb1rDKJHiwEC218S8RbCAMgi2pAzyF8lmtIQRYUtk7qxHSQX");
+                        }})
+        );
 
         final SpannableStringBuilder appInfoBuilder = new SpannableStringBuilder();
         appInfoBuilder.append("Version: ");

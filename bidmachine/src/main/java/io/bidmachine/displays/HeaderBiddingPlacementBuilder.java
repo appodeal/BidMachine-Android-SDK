@@ -136,7 +136,7 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
         }
 
         @Override
-        public void onCollectFinished(@Nullable HashMap<String, String> params) {
+        public void onCollectFinished(@Nullable Map<String, String> params) {
             HeaderBiddingPlacement.AdUnit.Builder builder = HeaderBiddingPlacement.AdUnit.newBuilder();
             builder.setBidder(adapter.getKey());
             builder.setBidderSdkver(adapter.getVersion());
