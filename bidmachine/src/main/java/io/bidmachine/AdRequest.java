@@ -551,6 +551,11 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
             }
             return new TargetingInfoImpl(getDataRestrictions(), targetingParams);
         }
+
+        @Override
+        public boolean isTestMode() {
+            return BidMachineImpl.get().isTestMode();
+        }
     }
 
 }

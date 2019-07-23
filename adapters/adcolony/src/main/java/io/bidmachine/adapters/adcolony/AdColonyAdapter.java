@@ -7,10 +7,7 @@ import android.location.Location;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
-import com.adcolony.sdk.AdColony;
-import com.adcolony.sdk.AdColonyAdOptions;
-import com.adcolony.sdk.AdColonyAppOptions;
-import com.adcolony.sdk.AdColonyUserMetadata;
+import com.adcolony.sdk.*;
 import io.bidmachine.AdsType;
 import io.bidmachine.BidMachineAdapter;
 import io.bidmachine.HeaderBiddingAdapter;
@@ -23,9 +20,12 @@ import io.bidmachine.utils.BMError;
 import io.bidmachine.utils.Gender;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 public class AdColonyAdapter extends BidMachineAdapter implements HeaderBiddingAdapter {
+
+    private static HashSet<String> zonesCache = new HashSet<>();
 
     public AdColonyAdapter() {
         super("adcolony", AdColony.getSDKVersion(), new AdsType[]{AdsType.Interstitial, AdsType.Rewarded});
@@ -44,8 +44,9 @@ public class AdColonyAdapter extends BidMachineAdapter implements HeaderBiddingA
     @Override
     public void collectHeaderBiddingParams(@NonNull Context context,
                                            @NonNull UnifiedAdRequestParams requestParams,
-                                           @NonNull HeaderBiddingCollectParamsCallback callback,
-                                           @NonNull Map<String, Object> config) {
+                                           @NonNull final HeaderBiddingCollectParamsCallback callback,
+                                           @NonNull final Map<String, Object> config) {
+        final long startTime = System.currentTimeMillis();
         String appId = (String) config.get("app_id");
         if (TextUtils.isEmpty(appId)) {
             callback.onCollectFail(BMError.requestError("App id not provided"));
@@ -64,26 +65,53 @@ public class AdColonyAdapter extends BidMachineAdapter implements HeaderBiddingA
             return;
         }
         assert storeId != null;
-        long start = System.currentTimeMillis();
+        if (zonesCache == null) {
+            zonesCache = new HashSet<>();
+        }
+        zonesCache.add(zoneId);
         AdColony.configure(
                 (Application) context.getApplicationContext(),
-                createAppOptions(context, requestParams.getDataRestrictions(), storeId),
-                zoneId);
-        Log.e("AdColony", "configureTime: " + (System.currentTimeMillis() - start));
-        Map<String, String> params = new HashMap<>();
+                createAppOptions(context, requestParams, storeId),
+                appId,
+                zonesCache.toArray(new String[0]));
+
+        final Map<String, String> params = new HashMap<>();
         params.put("app_id", appId);
         params.put("zone_id", zoneId);
-        params.put("store_id", storeId);
-        callback.onCollectFinished(params);
+
+        AdColonyZone zone = AdColony.getZone(zoneId);
+        if (zone != null && zone.isValid()) {
+            callback.onCollectFinished(params);
+        } else {
+            AdColony.requestInterstitial(zoneId, new AdColonyInterstitialListener() {
+                @Override
+                public void onRequestFilled(AdColonyInterstitial adColonyInterstitial) {
+                    callback.onCollectFinished(params);
+                    Log.e("AdColony", "configureTime (success): " + (System.currentTimeMillis() - startTime));
+                }
+
+                @Override
+                public void onRequestNotFilled(AdColonyZone zone) {
+                    callback.onCollectFail(BMError.NoContent);
+                    Log.e("AdColony", "configureTime (fail): " + (System.currentTimeMillis() - startTime));
+                }
+            }, createAdOptions(requestParams));
+        }
     }
 
     private static AdColonyAppOptions createAppOptions(@NonNull Context context,
-                                                       @NonNull DataRestrictions dataRestrictions,
+                                                       @NonNull UnifiedAdRequestParams adRequestParams,
                                                        @NonNull String storeId) {
+        DataRestrictions dataRestrictions = adRequestParams.getDataRestrictions();
+        TargetingInfo targetingInfo = adRequestParams.getTargetingParams();
         AdColonyAppOptions options = AdColony.getAppOptions();
         if (options == null) {
             options = new AdColonyAppOptions();
             AdColony.setAppOptions(options);
+        }
+        String userId = targetingInfo.getUserId();
+        if (userId != null) {
+            options.setUserID(userId);
         }
         options.setOriginStore(storeId);
         try {
@@ -96,6 +124,7 @@ public class AdColonyAdapter extends BidMachineAdapter implements HeaderBiddingA
             options.setOption("explicit_consent_given", true);
             options.setOption("consent_response", dataRestrictions.isUserHasConsent());
         }
+        options.setTestModeEnabled(adRequestParams.isTestMode());
         return options;
     }
 
