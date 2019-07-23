@@ -12,6 +12,8 @@ import io.bidmachine.core.Utils;
 import io.bidmachine.models.AdObject;
 import io.bidmachine.models.AdObjectParams;
 import io.bidmachine.models.AuctionResult;
+import io.bidmachine.rewarded.RewardedAd;
+import io.bidmachine.rewarded.RewardedListener;
 import io.bidmachine.utils.BMError;
 import io.bidmachine.utils.ContextProvider;
 
@@ -416,7 +418,6 @@ public abstract class BidMachineAd<
         }
 
         @Override
-        @SuppressWarnings("unchecked")
         public void processFinished() {
             if (currentState.ordinal() > State.Success.ordinal()) {
                 return;
@@ -426,9 +427,9 @@ public abstract class BidMachineAd<
             Utils.onUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    if (listener instanceof AdRewardedListener) {
+                    if (listener instanceof RewardedListener) {
                         Logger.log(toStringShort() + ": notify AdRewarded");
-                        ((AdRewardedListener) listener).onAdRewarded(BidMachineAd.this);
+                        ((RewardedListener) listener).onAdRewarded((RewardedAd) BidMachineAd.this);
                     }
                 }
             });
