@@ -5,12 +5,12 @@ import com.tapjoy.*;
 import io.bidmachine.unified.UnifiedFullscreenAdCallback;
 import io.bidmachine.utils.BMError;
 
-public class TapjoyFullscreenAdListener implements TJPlacementListener, TJPlacementVideoListener {
+class TapjoyFullscreenAdListener implements TJPlacementListener, TJPlacementVideoListener {
 
     @NonNull
     private final UnifiedFullscreenAdCallback callback;
 
-    public TapjoyFullscreenAdListener(@NonNull UnifiedFullscreenAdCallback callback) {
+    TapjoyFullscreenAdListener(@NonNull UnifiedFullscreenAdCallback callback) {
         this.callback = callback;
     }
 

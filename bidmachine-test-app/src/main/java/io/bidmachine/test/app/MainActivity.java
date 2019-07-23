@@ -84,12 +84,12 @@ public class MainActivity extends AppCompatActivity {
         BidMachine.registerAdapter(
                 new NetworkConfig(new TapjoyAdapter())
                         .withMediationConfig(AdsFormat.InterstitialVideo, new HashMap<String, Object>() {{
-                            put("placement", "interstitial");
-                            put("sdk_key", "EYwK-ltaQHyPOb1rDKJHiwEC218S8RbCAMgi2pAzyF8lmtIQRYUtk7qxHSQX");
+                            put("placement_name", "video_without_cap_pb");
+                            put("sdk_key", "tmyN5ZcXTMyjeJNJmUD5ggECAbnEGtJREmLDd0fvqKBXcIr7e1dvboNKZI4y");
                         }})
                         .withMediationConfig(AdsFormat.RewardedVideo, new HashMap<String, Object>() {{
-                            put("placement", "video_without_cap");
-                            put("sdk_key", "EYwK-ltaQHyPOb1rDKJHiwEC218S8RbCAMgi2pAzyF8lmtIQRYUtk7qxHSQX");
+                            put("placement_name", "rewarded_video_without_cap_pb");
+                            put("sdk_key", "tmyN5ZcXTMyjeJNJmUD5ggECAbnEGtJREmLDd0fvqKBXcIr7e1dvboNKZI4y");
                         }})
         );
 

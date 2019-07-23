@@ -22,7 +22,7 @@ android {
         debug {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            buildConfigField "String", "BM_API_URL", "\"https://staging.appodealx.com\""
+            buildConfigField "String", "BM_API_URL", "\"https://staging1.appodealx.com\""
         }
         release {
             minifyEnabled false
