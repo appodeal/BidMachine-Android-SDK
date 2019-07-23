@@ -17,14 +17,8 @@ public final class BannerAd extends ViewAd<
         AdListener<BannerAd>> {
 
     @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
-    public BannerAd(Context context) {
-        super(context);
-    }
-
-    @NonNull
-    @Override
-    protected AdsType getType() {
-        return AdsType.Banner;
+    public BannerAd(@NonNull Context context) {
+        super(context, AdsType.Banner);
     }
 
     @Override

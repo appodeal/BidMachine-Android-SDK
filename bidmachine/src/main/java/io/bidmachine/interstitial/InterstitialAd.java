@@ -10,14 +10,8 @@ import io.bidmachine.utils.ContextProvider;
 public final class InterstitialAd
         extends FullScreenAd<InterstitialAd, InterstitialRequest, FullScreenAdObject<InterstitialRequest>, InterstitialListener> {
 
-    public InterstitialAd(Context context) {
-        super(context);
-    }
-
-    @NonNull
-    @Override
-    protected AdsType getType() {
-        return AdsType.Interstitial;
+    public InterstitialAd(@NonNull Context context) {
+        super(context, AdsType.Interstitial);
     }
 
     @Override

@@ -14,8 +14,8 @@ public abstract class FullScreenAd<
         extends BidMachineAd<SelfType, AdRequestType, AdObjectType, AdObjectParams, ListenerType>
         implements IFullScreenAd {
 
-    public FullScreenAd(Context context) {
-        super(context);
+    protected FullScreenAd(@NonNull Context context, @NonNull AdsType adsType) {
+        super(context, adsType);
     }
 
     @Override

@@ -9,14 +9,8 @@ import io.bidmachine.utils.ContextProvider;
 
 public final class RewardedAd extends FullScreenAd<RewardedAd, RewardedRequest, FullScreenAdObject<RewardedRequest>, RewardedListener> {
 
-    public RewardedAd(Context context) {
-        super(context);
-    }
-
-    @NonNull
-    @Override
-    protected AdsType getType() {
-        return AdsType.Rewarded;
+    public RewardedAd(@NonNull Context context) {
+        super(context, AdsType.Rewarded);
     }
 
     @Override

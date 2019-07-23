@@ -41,6 +41,9 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
 
     private final String trackingId = UUID.randomUUID().toString();
 
+    @NonNull
+    private final AdsType adsType;
+
     PriceFloorParams priceFloorParams;
     TargetingParams targetingParams;
 
@@ -73,10 +76,11 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
         }
     };
 
-    protected AdRequest() {
+    protected AdRequest(@NonNull AdsType adsType) {
+        this.adsType = adsType;
     }
 
-    Object build(android.content.Context context, AdsType adsType) {
+    private Object build(android.content.Context context, AdsType adsType) {
         final String sellerId = BidMachineImpl.get().getSellerId();
         if (TextUtils.isEmpty(sellerId)) {
             return BMError.paramError("Seller Id not provided");
@@ -211,7 +215,9 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
     }
 
     @NonNull
-    protected abstract AdsType getType();
+    protected final AdsType getType() {
+        return adsType;
+    }
 
     boolean isValid() {
         return !TextUtils.isEmpty(BidMachineImpl.get().getSellerId());
@@ -357,47 +363,49 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
     private void processRequestSuccess(@Nullable Response response) {
         if (response != null && response.getSeatbidCount() > 0) {
             final Response.Seatbid seatbid = response.getSeatbid(0);
-            if (seatbid != null && seatbid.getBidCount() > 0) {
-                final Response.Seatbid.Bid bid = seatbid.getBid(0);
-                if (bid != null) {
-                    if (bid.getMedia() != null && bid.getMedia().is(Ad.class)) {
-                        try {
-                            if (bid.getMedia().is(Ad.class)) {
-                                Ad ad = bid.getMedia().unpack(Ad.class);
-                                if (ad != null) {
-                                    adResult = ad;
-                                    bidResult = bid;
-                                    seatBidResult = seatbid;
-                                    auctionResult = new AuctionResultImpl(seatbid, bid, ad);
-                                    expirationTime = getOrDefault(bid.getExp(),
-                                            Response.Seatbid.Bid.getDefaultInstance().getExp(),
-                                            DEF_EXPIRATION_TIME);
-                                    subscribeExpireTracker();
-                                    Logger.log(toString() + ": Request finished (" + auctionResult + ")");
-                                    if (adRequestListeners != null) {
-                                        for (AdRequestListener listener : adRequestListeners) {
-                                            listener.onRequestSuccess(this, auctionResult);
-                                        }
-                                    }
-                                    SessionTracker.eventFinish(
-                                            AdRequest.this,
-                                            TrackEventType.AuctionRequest,
-                                            getType(),
-                                            null);
-                                    return;
-                                }
-                            }
-                        } catch (InvalidProtocolBufferException e) {
-                            Logger.log(e);
-                        }
-                    } else {
-                        Logger.log(toString() + ": Media not found or not valid");
-                    }
-                } else {
-                    Logger.log(toString() + ": Bid not found or not valid");
-                }
-            } else {
+            if (seatbid == null || seatbid.getBidCount() == 0) {
                 Logger.log(toString() + ": Seatbid not found or not valid");
+                processRequestFail(BMError.requestError("Seatbid not found or not valid"));
+                return;
+            }
+            final Response.Seatbid.Bid bid = seatbid.getBid(0);
+            if (bid == null) {
+                Logger.log(toString() + ": Bid not found or not valid");
+                processRequestFail(BMError.requestError("Bid not found or not valid"));
+                return;
+            }
+            Any media = bid.getMedia();
+            if (media == null || !media.is(Ad.class)) {
+                Logger.log(toString() + ": Media not found or not valid");
+                processRequestFail(BMError.requestError("Media not found or not valid"));
+                return;
+            }
+            try {
+                Ad ad = bid.getMedia().unpack(Ad.class);
+                if (ad != null) {
+                    adResult = ad;
+                    bidResult = bid;
+                    seatBidResult = seatbid;
+                    auctionResult = new AuctionResultImpl(seatbid, bid, ad);
+                    expirationTime = getOrDefault(bid.getExp(),
+                            Response.Seatbid.Bid.getDefaultInstance().getExp(),
+                            DEF_EXPIRATION_TIME);
+                    subscribeExpireTracker();
+                    Logger.log(toString() + ": Request finished (" + auctionResult + ")");
+                    if (adRequestListeners != null) {
+                        for (AdRequestListener listener : adRequestListeners) {
+                            listener.onRequestSuccess(this, auctionResult);
+                        }
+                    }
+                    SessionTracker.eventFinish(
+                            AdRequest.this,
+                            TrackEventType.AuctionRequest,
+                            getType(),
+                            null);
+                    return;
+                }
+            } catch (InvalidProtocolBufferException e) {
+                Logger.log(e);
             }
         } else {
             Logger.log(toString() + ": Response not found or not valid");

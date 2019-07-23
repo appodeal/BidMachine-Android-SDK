@@ -10,6 +10,10 @@ public abstract class FullScreenAdRequest<SelfType extends FullScreenAdRequest>
 
     AdContentType adContentType = AdContentType.All;
 
+    protected FullScreenAdRequest(@NonNull AdsType adsType) {
+        super(adsType);
+    }
+
     protected AdContentType getAdContentType() {
         return adContentType;
     }

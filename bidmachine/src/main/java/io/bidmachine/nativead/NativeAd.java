@@ -25,8 +25,8 @@ public final class NativeAd
         extends BidMachineAd<NativeAd, NativeRequest, NativeAdObject, AdObjectParams, NativeListener>
         implements NativePublicData, NativeMediaPublicData, NativeContainer, NativeInteractor {
 
-    public NativeAd(Context context) {
-        super(context);
+    public NativeAd(@NonNull Context context) {
+        super(context, AdsType.Native);
     }
 
     @Override
@@ -40,12 +40,6 @@ public final class NativeAd
             return null;
         }
         return new NativeAdObject(this, processCallback, adRequest, adObjectParams, unifiedNativeAd);
-    }
-
-    @NonNull
-    @Override
-    protected AdsType getType() {
-        return AdsType.Native;
     }
 
     @Nullable

@@ -17,16 +17,11 @@ public final class BannerRequest extends AdRequest<BannerRequest, UnifiedBannerA
     private BannerSize bannerSize;
 
     private BannerRequest() {
+        super(AdsType.Banner);
     }
 
     public BannerSize getSize() {
         return bannerSize;
-    }
-
-    @NonNull
-    @Override
-    protected AdsType getType() {
-        return AdsType.Banner;
     }
 
     @Override

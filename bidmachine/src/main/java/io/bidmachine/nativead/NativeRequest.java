@@ -15,16 +15,16 @@ public final class NativeRequest extends AdRequest<NativeRequest, UnifiedNativeA
 
     private List<MediaAssetType> mediaAssetTypes = new ArrayList<>(MediaAssetType.values().length);
 
+    @SuppressWarnings("WeakerAccess")
+    public NativeRequest() {
+        super(AdsType.Native);
+    }
+
+    @SuppressWarnings("WeakerAccess")
     public boolean containsAssetType(MediaAssetType assetType) {
         return mediaAssetTypes.isEmpty()
                 || mediaAssetTypes.contains(assetType)
                 || mediaAssetTypes.contains(MediaAssetType.All);
-    }
-
-    @NonNull
-    @Override
-    protected AdsType getType() {
-        return AdsType.Native;
     }
 
     @Override

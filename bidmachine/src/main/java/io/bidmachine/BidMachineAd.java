@@ -27,7 +27,9 @@ public abstract class BidMachineAd<
         implements IAd<SelfType, AdRequestType>, TrackingObject, ContextProvider {
 
     @NonNull
-    private Context context;
+    private final Context context;
+    @NonNull
+    private final AdsType adsType;
     @Nullable
     private AdRequestType adRequest;
     @Nullable
@@ -41,8 +43,9 @@ public abstract class BidMachineAd<
     private boolean isImpressionTracked;
     private boolean isFinishTracked;
 
-    public BidMachineAd(@NonNull Context context) {
+    public BidMachineAd(@NonNull Context context, @NonNull AdsType adsType) {
         this.context = context;
+        this.adsType = adsType;
     }
 
     @Nullable
@@ -72,7 +75,9 @@ public abstract class BidMachineAd<
     }
 
     @NonNull
-    protected abstract AdsType getType();
+    protected final AdsType getType() {
+        return adsType;
+    }
 
     @Nullable
     public AdRequestType getAdRequest() {
