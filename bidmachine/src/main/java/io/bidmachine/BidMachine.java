@@ -1,6 +1,7 @@
 package io.bidmachine;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import io.bidmachine.core.Logger;
 
@@ -22,6 +23,15 @@ public class BidMachine {
      */
     public static void initialize(Context context, String sellerId) {
         BidMachineImpl.get().initialize(context, sellerId);
+    }
+
+    /**
+     * Set BidMachine SDK endpoint
+     *
+     * @param url - BidMachine endpoint URL
+     */
+    public static void setEndpoint(@NonNull String url) {
+        BidMachineImpl.get().setInitUrl(url);
     }
 
     /**

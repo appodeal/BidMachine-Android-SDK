@@ -56,8 +56,8 @@ final class BidMachineImpl implements TrackingObject {
 
     @VisibleForTesting
     static String DEF_INIT_URL = BuildConfig.BM_API_URL + "/init";
-    private static final String PREF_INIT_DATA = "initData";
     private static final String DEF_AUCTION_URL = BuildConfig.BM_API_URL + "/openrtb3/auction";
+    private static final String PREF_INIT_DATA = "initData";
 
     @Nullable
     private Context appContext;
@@ -83,6 +83,8 @@ final class BidMachineImpl implements TrackingObject {
 
     ApiRequest<InitRequest, InitResponse> currentInitRequest;
 
+    @VisibleForTesting
+    String currentInitUrl = DEF_INIT_URL;
     @VisibleForTesting
     String currentAuctionUrl = DEF_AUCTION_URL;
     @VisibleForTesting
@@ -126,7 +128,7 @@ final class BidMachineImpl implements TrackingObject {
         if (currentInitRequest != null) return;
         SessionTracker.eventStart(this, TrackEventType.InitLoading, null);
         currentInitRequest = new ApiRequest.Builder<InitRequest, InitResponse>()
-                .url(DEF_INIT_URL)
+                .url(currentInitUrl)
                 .setDataBinder(new ApiRequest.ApiInitDataBinder())
                 .setRequestData(OrtbUtils.obtainInitRequest(context, sellerId, targetingParams, userRestrictionParams))
                 .setCallback(new NetworkRequest.Callback<InitResponse, BMError>() {
@@ -263,6 +265,15 @@ final class BidMachineImpl implements TrackingObject {
     @NonNull
     DeviceParams getDeviceParams() {
         return deviceParams;
+    }
+
+    void setInitUrl(@NonNull String url) {
+        if (isInitialized) {
+            Logger.log("Can't change endpoint url after initialization was triggered");
+            return;
+        }
+        currentInitUrl = url + "/init";
+        currentAuctionUrl = url + "/openrtb3/auction";
     }
 
     String getAuctionUrl() {
