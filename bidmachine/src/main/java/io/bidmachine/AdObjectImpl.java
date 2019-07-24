@@ -150,5 +150,10 @@ public abstract class AdObjectImpl<
         public void onAdExpired() {
             processCallback.processExpired();
         }
+
+        @Override
+        public void log(String message) {
+            processCallback.log(message);
+        }
     }
 }

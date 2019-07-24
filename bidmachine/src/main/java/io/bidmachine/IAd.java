@@ -16,6 +16,10 @@ interface IAd<SelfType extends IAd, AdRequestType extends AdRequest> {
 
     boolean canShow();
 
+    boolean isExpired();
+
+    boolean isDestroyed();
+
     void destroy();
 
 }

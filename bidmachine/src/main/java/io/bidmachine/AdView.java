@@ -156,6 +156,16 @@ public abstract class AdView<
         return pendingAd != null && pendingAd.isLoading();
     }
 
+    @Override
+    public boolean isExpired() {
+        return pendingAd != null ? pendingAd.isExpired() : currentAd == null || currentAd.isExpired();
+    }
+
+    @Override
+    public boolean isDestroyed() {
+        return pendingAd != null ? pendingAd.isDestroyed() : currentAd == null || currentAd.isDestroyed();
+    }
+
     @Nullable
     @Override
     public AuctionResult getAuctionResult() {

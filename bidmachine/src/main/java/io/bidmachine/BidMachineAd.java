@@ -93,13 +93,13 @@ public abstract class BidMachineAd<
     @Override
     @SuppressWarnings("unchecked")
     public SelfType load(AdRequestType request) {
-        Logger.log(toStringShort() + ": load requested");
+        processCallback.log(" load requested");
         if (!BidMachineImpl.get().isInitialized()) {
             processRequestFail(BMError.NotInitialized);
             return (SelfType) this;
         }
         if (currentState != State.Idle) {
-            Logger.log(toStringShort() + ": request process abort because it's already processing");
+            processCallback.log(" request process abort because it's already processing");
             return (SelfType) this;
         }
         if (request == null) {
@@ -134,11 +134,13 @@ public abstract class BidMachineAd<
         return isLoaded();
     }
 
-    protected boolean isDestroyed() {
+    @Override
+    public boolean isDestroyed() {
         return currentState == State.Destroyed;
     }
 
-    protected boolean isExpired() {
+    @Override
+    public boolean isExpired() {
         return currentState == State.Expired;
     }
 
@@ -164,11 +166,11 @@ public abstract class BidMachineAd<
     */
 
     private void processRequest(@NonNull final AdRequestType request) {
-        Logger.log(toStringShort() + ": process request start");
+        processCallback.log(" process request start");
         final AuctionResult auctionResult = getAuctionResult();
         if (auctionResult != null) {
             if (request.isExpired()) {
-                Logger.log(toStringShort() + ": AuctionResult expired, please request new one");
+                processCallback.log(" AuctionResult expired, please request new one");
                 processRequestFail(BMError.Expired);
             } else {
                 processRequestSuccess(request,
@@ -292,14 +294,14 @@ public abstract class BidMachineAd<
             if (currentState.ordinal() > State.Loading.ordinal()) {
                 return;
             }
-            Logger.log(toStringShort() + ": processLoadSuccess");
+            log(" processLoadSuccess");
             currentState = State.Success;
             trackEvent(TrackEventType.Load, null);
             Utils.onUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (listener != null) {
-                        Logger.log(toStringShort() + ": notify AdLoaded");
+                        log(" notify AdLoaded");
                         listener.onAdLoaded((SelfType) BidMachineAd.this);
                     }
                 }
@@ -309,14 +311,14 @@ public abstract class BidMachineAd<
         @Override
         @SuppressWarnings("unchecked")
         public void processLoadFail(final BMError error) {
-            Logger.log(toStringShort() + ": processLoadFail - " + error.getMessage());
+            log(" processLoadFail - " + error.getMessage());
             currentState = State.Failed;
             trackEvent(TrackEventType.Load, error);
             Utils.onUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (listener != null) {
-                        Logger.log(toStringShort() + ": notify AdLoadFailed");
+                        log(" notify AdLoadFailed");
                         listener.onAdLoadFailed((SelfType) BidMachineAd.this, error);
                     }
                 }
@@ -339,13 +341,13 @@ public abstract class BidMachineAd<
             if (loadedObject != null) {
                 loadedObject.onShown();
             }
-            Logger.log(toStringShort() + ": processShown");
+            log(" processShown");
             trackEvent(TrackEventType.Show, null);
             Utils.onUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (listener != null) {
-                        Logger.log(toStringShort() + ": notify AdShown");
+                        log(" notify AdShown");
                         listener.onAdShown((SelfType) BidMachineAd.this);
                     }
                 }
@@ -355,13 +357,13 @@ public abstract class BidMachineAd<
         @Override
         @SuppressWarnings("unchecked")
         public void processShowFail(final BMError error) {
-            Logger.log(toStringShort() + ": processShowFail");
+            log(" processShowFail");
             trackEvent(TrackEventType.Show, error);
             Utils.onUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (listener instanceof AdFullScreenListener) {
-                        Logger.log(toStringShort() + ": notify AdShowFailed");
+                        log(" notify AdShowFailed");
                         ((AdFullScreenListener) listener).onAdShowFailed(BidMachineAd.this, error);
                     }
                 }
@@ -377,13 +379,13 @@ public abstract class BidMachineAd<
             if (loadedObject != null) {
                 loadedObject.onClicked();
             }
-            Logger.log(toStringShort() + ": processClicked");
+            log(" processClicked");
             trackEvent(TrackEventType.Click, null);
             Utils.onUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (listener != null) {
-                        Logger.log(toStringShort() + ": notify AdClicked");
+                        log(" notify AdClicked");
                         listener.onAdClicked((SelfType) BidMachineAd.this);
                     }
                 }
@@ -404,13 +406,13 @@ public abstract class BidMachineAd<
                 loadedObject.onImpression();
             }
             onImpression();
-            Logger.log(toStringShort() + ": processImpression");
+            log(" processImpression");
             trackEvent(TrackEventType.Impression, null);
             Utils.onUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (listener != null) {
-                        Logger.log(toStringShort() + ": notify AdImpression");
+                        log(" notify AdImpression");
                         listener.onAdImpression((SelfType) BidMachineAd.this);
                     }
                 }
@@ -423,12 +425,12 @@ public abstract class BidMachineAd<
                 return;
             }
             isFinishTracked = true;
-            Logger.log(toStringShort() + ": processFinished");
+            log(" processFinished");
             Utils.onUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (listener instanceof RewardedListener) {
-                        Logger.log(toStringShort() + ": notify AdRewarded");
+                        log(" notify AdRewarded");
                         ((RewardedListener) listener).onAdRewarded((RewardedAd) BidMachineAd.this);
                     }
                 }
@@ -441,13 +443,13 @@ public abstract class BidMachineAd<
             if (currentState.ordinal() > State.Success.ordinal()) {
                 return;
             }
-            Logger.log(toStringShort() + ": processClosed(" + isFinishTracked + ")");
+            log(" processClosed(" + isFinishTracked + ")");
             trackEvent(TrackEventType.Close, null);
             Utils.onUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (listener instanceof AdFullScreenListener) {
-                        Logger.log(toStringShort() + ": notify AdClosed");
+                        log(" notify AdClosed");
                         ((AdFullScreenListener) listener).onAdClosed(BidMachineAd.this, isFinishTracked);
                     }
                 }
@@ -460,14 +462,14 @@ public abstract class BidMachineAd<
             if (currentState.ordinal() > State.Success.ordinal()) {
                 return;
             }
-            Logger.log(toStringShort() + ": processExpired");
+            log("processExpired");
             currentState = State.Expired;
             trackEvent(TrackEventType.Expired, null);
             Utils.onUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (listener != null) {
-                        Logger.log(toStringShort() + ": notify AdExpired");
+                        log(" notify AdExpired");
                         listener.onAdExpired((SelfType) BidMachineAd.this);
                     }
                 }
@@ -476,7 +478,7 @@ public abstract class BidMachineAd<
 
         @Override
         public void processDestroy() {
-            Logger.log(toStringShort() + ": destroy requested");
+            log("destroy requested");
             trackEvent(TrackEventType.Destroy, null);
             currentState = State.Destroyed;
             if (adRequest != null) {
@@ -487,6 +489,11 @@ public abstract class BidMachineAd<
                 loadedObject.onDestroy();
             }
             onDestroy();
+        }
+
+        @Override
+        public void log(String message) {
+            Logger.log(String.format("%s: %s", toStringShort(), message));
         }
     };
 
