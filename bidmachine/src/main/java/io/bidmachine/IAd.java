@@ -1,7 +1,6 @@
 package io.bidmachine;
 
 import android.support.annotation.Nullable;
-
 import io.bidmachine.models.AuctionResult;
 
 interface IAd<SelfType extends IAd, AdRequestType extends AdRequest> {

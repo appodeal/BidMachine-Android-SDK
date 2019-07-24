@@ -11,17 +11,19 @@ public abstract class FullScreenAd<
         AdRequestType extends FullScreenAdRequest<AdRequestType>,
         AdObjectType extends FullScreenAdObject<AdRequestType>,
         ListenerType extends AdListener<SelfType>>
-        extends BidMachineAd<SelfType, AdRequestType, AdObjectType, AdObjectParams, ListenerType>
-        implements IFullScreenAd {
+        extends BidMachineAd<SelfType, AdRequestType, AdObjectType, AdObjectParams, ListenerType> {
 
     protected FullScreenAd(@NonNull Context context, @NonNull AdsType adsType) {
         super(context, adsType);
     }
 
-    @Override
-    public void show(@NonNull Context context) {
+    public void show() {
+        final Context context = getContext();
         final AdObjectType loadedObject = getLoadedObject();
-        if (!prepareShow() || loadedObject == null) return;
+        if (!prepareShow() || loadedObject == null || context == null) {
+            processCallback.processShowFail(BMError.NotLoaded);
+            return;
+        }
         if (!Utils.isNetworkAvailable(context)) {
             processCallback.processShowFail(BMError.Connection);
         } else {
