@@ -1,5 +1,6 @@
 package io.bidmachine;
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
@@ -10,7 +11,6 @@ import io.bidmachine.unified.UnifiedAd;
 import io.bidmachine.unified.UnifiedAdCallback;
 import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.utils.BMError;
-import io.bidmachine.utils.ContextProvider;
 
 import java.util.Map;
 
@@ -48,10 +48,16 @@ public abstract class AdObjectImpl<
         this.unifiedAdCallback = createUnifiedCallback(processCallback);
     }
 
-    @Nullable
+    @NonNull
     @Override
     public Context getContext() {
         return contextProvider.getContext();
+    }
+
+    @Nullable
+    @Override
+    public Activity getActivity() {
+        return contextProvider.getActivity();
     }
 
     @NonNull
@@ -84,8 +90,8 @@ public abstract class AdObjectImpl<
     }
 
     @Override
-    public void load(@NonNull Context context, @Nullable Map<String, Object> extra) {
-        unifiedAd.load(context,
+    public void load(@NonNull ContextProvider contextProvider, @Nullable Map<String, Object> extra) {
+        unifiedAd.load(contextProvider,
                 unifiedAdCallback,
                 adRequest.getUnifiedRequestParams(),
                 adObjectParams.toMediationParams(),

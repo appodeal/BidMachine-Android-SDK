@@ -1,6 +1,5 @@
 package io.bidmachine;
 
-import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
@@ -15,7 +14,6 @@ import io.bidmachine.models.AuctionResult;
 import io.bidmachine.rewarded.RewardedAd;
 import io.bidmachine.rewarded.RewardedListener;
 import io.bidmachine.utils.BMError;
-import io.bidmachine.utils.ContextProvider;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +24,7 @@ public abstract class BidMachineAd<
         AdObjectType extends AdObject<AdObjectParamsType>,
         AdObjectParamsType extends AdObjectParams,
         AdListenerType extends AdListener<SelfType>>
-        implements IAd<SelfType, AdRequestType>, TrackingObject, ContextProvider {
+        implements IAd<SelfType, AdRequestType> {
 
     @NonNull
     private final Context context;
@@ -45,18 +43,49 @@ public abstract class BidMachineAd<
     private boolean isImpressionTracked;
     private boolean isFinishTracked;
 
+    private final ContextProvider contextProvider = new ContextProvider.SimpleContextProvider() {
+        @NonNull
+        @Override
+        public Context getContext() {
+            return context;
+        }
+    };
+
+    private final TrackingObject trackingObject = new TrackingObject() {
+        @Override
+        public Object getTrackingKey() {
+            AuctionResult auctionResult = getAuctionResult();
+            if (auctionResult != null) {
+                return auctionResult.getId();
+            }
+            return "-1";
+        }
+
+        @Nullable
+        @Override
+        public List<String> getTrackingUrls(@NonNull TrackEventType eventType) {
+            ArrayList<String> outList = new ArrayList<>();
+            List<String> urls = loadedObject != null && loadedObject.getParams() != null
+                    ? loadedObject.getParams().getTrackUrls(eventType) : null;
+            if (urls != null) {
+                outList.addAll(urls);
+            }
+            List<String> baseUrls = BidMachineImpl.get().getTrackingUrls(eventType);
+            if (baseUrls != null) {
+                outList.addAll(baseUrls);
+            }
+            return outList;
+        }
+    };
+
     public BidMachineAd(@NonNull Context context, @NonNull AdsType adsType) {
         this.context = context;
         this.adsType = adsType;
     }
 
-    @Nullable
-    public Context getContext() {
-        if (context instanceof Activity) {
-            return context;
-        } else {
-            return BidMachineImpl.getTopActivity();
-        }
+    @NonNull
+    Context getContext() {
+        return context;
     }
 
     @Nullable
@@ -93,13 +122,13 @@ public abstract class BidMachineAd<
     @Override
     @SuppressWarnings("unchecked")
     public SelfType load(AdRequestType request) {
-        processCallback.log(" load requested");
+        processCallback.log("load requested");
         if (!BidMachineImpl.get().isInitialized()) {
             processRequestFail(BMError.NotInitialized);
             return (SelfType) this;
         }
         if (currentState != State.Idle) {
-            processCallback.log(" request process abort because it's already processing");
+            processCallback.log("request process abort because it's already processing");
             return (SelfType) this;
         }
         if (request == null) {
@@ -116,7 +145,7 @@ public abstract class BidMachineAd<
     @Override
     public void destroy() {
         processCallback.processDestroy();
-        SessionTracker.clear(this);
+        SessionTracker.clear(trackingObject);
     }
 
     @Override
@@ -166,11 +195,11 @@ public abstract class BidMachineAd<
     */
 
     private void processRequest(@NonNull final AdRequestType request) {
-        processCallback.log(" process request start");
+        processCallback.log("process request start");
         final AuctionResult auctionResult = getAuctionResult();
         if (auctionResult != null) {
             if (request.isExpired()) {
-                processCallback.log(" AuctionResult expired, please request new one");
+                processCallback.log("AuctionResult expired, please request new one");
                 processRequestFail(BMError.Expired);
             } else {
                 processRequestSuccess(request,
@@ -189,7 +218,7 @@ public abstract class BidMachineAd<
                                        @Nullable Response.Seatbid.Bid bid,
                                        @Nullable Ad ad) {
         if (currentState.ordinal() > State.Loading.ordinal()) return;
-        SessionTracker.eventStart(this, TrackEventType.Load, getType());
+        SessionTracker.eventStart(trackingObject, TrackEventType.Load, getType());
         currentState = State.Loading;
         if (request == null || seatbid == null || bid == null || ad == null) {
             processRequestFail(BMError.Internal);
@@ -218,17 +247,13 @@ public abstract class BidMachineAd<
                                            @NonNull Response.Seatbid.Bid bid,
                                            @NonNull Ad ad,
                                            @NonNull AdRequestType adRequest) {
-        Context context = getContext();
-        if (context == null) {
-            return BMError.Internal;
-        }
-        NetworkConfig networkConfig = getType().obtainNetworkConfig(context, ad, adRequest.getUnifiedRequestParams());
+        NetworkConfig networkConfig = getType().obtainNetworkConfig(contextProvider, adRequest.getUnifiedRequestParams(), ad);
         if (networkConfig != null) {
-            AdObjectParams adObjectParams = getType().createAdObjectParams(getContext(), seatbid, bid, ad, adRequest);
+            AdObjectParams adObjectParams = getType().createAdObjectParams(contextProvider, seatbid, bid, ad, adRequest);
             if (adObjectParams != null && adObjectParams.isValid()) {
-                loadedObject = createAdObject(this, adRequest, networkConfig.getAdapter(), adObjectParams, processCallback);
+                loadedObject = createAdObject(contextProvider, adRequest, networkConfig.getAdapter(), adObjectParams, processCallback);
                 if (loadedObject != null) {
-                    networkConfig.getAdapter().load(context, loadedObject, null);
+                    networkConfig.getAdapter().load(contextProvider, loadedObject, null);
                     return null;
                 }
             }
@@ -239,13 +264,13 @@ public abstract class BidMachineAd<
 
     protected abstract AdObjectType createAdObject(@NonNull ContextProvider contextProvider,
                                                    @NonNull AdRequestType adRequest,
-                                                   @NonNull BidMachineAdapter adapter,
+                                                   @NonNull NetworkAdapter adapter,
                                                    @NonNull AdObjectParams adObjectParams,
                                                    @NonNull AdProcessCallback processCallback);
 
     private void processRequestFail(BMError error) {
         if (currentState.ordinal() > State.Loading.ordinal()) return;
-        SessionTracker.eventStart(this, TrackEventType.Load, getType());
+        SessionTracker.eventStart(trackingObject, TrackEventType.Load, getType());
         processCallback.processLoadFail(error);
     }
 
@@ -294,14 +319,14 @@ public abstract class BidMachineAd<
             if (currentState.ordinal() > State.Loading.ordinal()) {
                 return;
             }
-            log(" processLoadSuccess");
+            log("processLoadSuccess");
             currentState = State.Success;
             trackEvent(TrackEventType.Load, null);
             Utils.onUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (listener != null) {
-                        log(" notify AdLoaded");
+                        log("notify AdLoaded");
                         listener.onAdLoaded((SelfType) BidMachineAd.this);
                     }
                 }
@@ -311,14 +336,14 @@ public abstract class BidMachineAd<
         @Override
         @SuppressWarnings("unchecked")
         public void processLoadFail(final BMError error) {
-            log(" processLoadFail - " + error.getMessage());
+            log("processLoadFail - " + error.getMessage());
             currentState = State.Failed;
             trackEvent(TrackEventType.Load, error);
             Utils.onUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (listener != null) {
-                        log(" notify AdLoadFailed");
+                        log("notify AdLoadFailed");
                         listener.onAdLoadFailed((SelfType) BidMachineAd.this, error);
                     }
                 }
@@ -341,13 +366,13 @@ public abstract class BidMachineAd<
             if (loadedObject != null) {
                 loadedObject.onShown();
             }
-            log(" processShown");
+            log("processShown");
             trackEvent(TrackEventType.Show, null);
             Utils.onUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (listener != null) {
-                        log(" notify AdShown");
+                        log("notify AdShown");
                         listener.onAdShown((SelfType) BidMachineAd.this);
                     }
                 }
@@ -357,13 +382,13 @@ public abstract class BidMachineAd<
         @Override
         @SuppressWarnings("unchecked")
         public void processShowFail(final BMError error) {
-            log(" processShowFail");
+            log("processShowFail");
             trackEvent(TrackEventType.Show, error);
             Utils.onUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (listener instanceof AdFullScreenListener) {
-                        log(" notify AdShowFailed");
+                        log("notify AdShowFailed");
                         ((AdFullScreenListener) listener).onAdShowFailed(BidMachineAd.this, error);
                     }
                 }
@@ -379,13 +404,13 @@ public abstract class BidMachineAd<
             if (loadedObject != null) {
                 loadedObject.onClicked();
             }
-            log(" processClicked");
+            log("processClicked");
             trackEvent(TrackEventType.Click, null);
             Utils.onUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (listener != null) {
-                        log(" notify AdClicked");
+                        log("notify AdClicked");
                         listener.onAdClicked((SelfType) BidMachineAd.this);
                     }
                 }
@@ -406,13 +431,13 @@ public abstract class BidMachineAd<
                 loadedObject.onImpression();
             }
             onImpression();
-            log(" processImpression");
+            log("processImpression");
             trackEvent(TrackEventType.Impression, null);
             Utils.onUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (listener != null) {
-                        log(" notify AdImpression");
+                        log("notify AdImpression");
                         listener.onAdImpression((SelfType) BidMachineAd.this);
                     }
                 }
@@ -425,12 +450,12 @@ public abstract class BidMachineAd<
                 return;
             }
             isFinishTracked = true;
-            log(" processFinished");
+            log("processFinished");
             Utils.onUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (listener instanceof RewardedListener) {
-                        log(" notify AdRewarded");
+                        log("notify AdRewarded");
                         ((RewardedListener) listener).onAdRewarded((RewardedAd) BidMachineAd.this);
                     }
                 }
@@ -443,13 +468,13 @@ public abstract class BidMachineAd<
             if (currentState.ordinal() > State.Success.ordinal()) {
                 return;
             }
-            log(" processClosed(" + isFinishTracked + ")");
+            log("processClosed (" + isFinishTracked + ")");
             trackEvent(TrackEventType.Close, null);
             Utils.onUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (listener instanceof AdFullScreenListener) {
-                        log(" notify AdClosed");
+                        log("notify AdClosed");
                         ((AdFullScreenListener) listener).onAdClosed(BidMachineAd.this, isFinishTracked);
                     }
                 }
@@ -469,7 +494,7 @@ public abstract class BidMachineAd<
                 @Override
                 public void run() {
                     if (listener != null) {
-                        log(" notify AdExpired");
+                        log("notify AdExpired");
                         listener.onAdExpired((SelfType) BidMachineAd.this);
                     }
                 }
@@ -497,33 +522,8 @@ public abstract class BidMachineAd<
         }
     };
 
-    @Override
-    public Object getTrackingKey() {
-        AuctionResult auctionResult = getAuctionResult();
-        if (auctionResult != null) {
-            return auctionResult.getId();
-        }
-        return "-1";
-    }
-
-    @Nullable
-    @Override
-    public List<String> getTrackingUrls(@NonNull TrackEventType eventType) {
-        ArrayList<String> outList = new ArrayList<>();
-        List<String> urls = loadedObject != null && loadedObject.getParams() != null
-                ? loadedObject.getParams().getTrackUrls(eventType) : null;
-        if (urls != null) {
-            outList.addAll(urls);
-        }
-        List<String> baseUrls = BidMachineImpl.get().getTrackingUrls(eventType);
-        if (baseUrls != null) {
-            outList.addAll(baseUrls);
-        }
-        return outList;
-    }
-
     private void trackEvent(TrackEventType eventType, @Nullable BMError error) {
-        SessionTracker.eventFinish(BidMachineAd.this, eventType, getType(), error);
+        SessionTracker.eventFinish(trackingObject, eventType, getType(), error);
     }
 
     @NonNull

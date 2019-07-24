@@ -1,5 +1,6 @@
 package io.bidmachine.adapters.mraid;
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -8,6 +9,7 @@ import io.bidmachine.unified.UnifiedFullscreenAdCallback;
 import io.bidmachine.unified.UnifiedFullscreenAdRequestParams;
 import io.bidmachine.unified.UnifiedMediationParams;
 import io.bidmachine.utils.BMError;
+import io.bidmachine.ContextProvider;
 import org.nexage.sourcekit.mraid.MRAIDInterstitial;
 import org.nexage.sourcekit.util.Video;
 
@@ -32,11 +34,16 @@ class MraidFullScreenAd implements UnifiedFullscreenAd {
     }
 
     @Override
-    public void load(@NonNull final Context context,
+    public void load(@NonNull final ContextProvider contextProvider,
                      @NonNull UnifiedFullscreenAdCallback callback,
                      @NonNull UnifiedFullscreenAdRequestParams requestParams,
                      @NonNull UnifiedMediationParams mediationParams,
                      @Nullable Map<String, Object> localExtra) {
+        final Activity activity = contextProvider.getActivity();
+        if (activity == null) {
+            BMError.requestError("Activity not provided");
+            return;
+        }
         mraidParams = new MraidParams(mediationParams);
         if (!mraidParams.isValid(callback)) {
             return;
@@ -48,7 +55,7 @@ class MraidFullScreenAd implements UnifiedFullscreenAd {
             @Override
             public void run() {
                 mraidInterstitial = new MRAIDInterstitial.builder(
-                        context, mraidParams.creativeAdm, mraidParams.width, mraidParams.height
+                        activity, mraidParams.creativeAdm, mraidParams.width, mraidParams.height
                 ).setPreload(mraidParams.canPreload)
                         .setListener(adapterListener)
                         .setNativeFeatureListener(adapterListener)

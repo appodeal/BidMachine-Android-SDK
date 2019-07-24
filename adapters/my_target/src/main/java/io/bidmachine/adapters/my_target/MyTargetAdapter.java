@@ -1,26 +1,26 @@
 package io.bidmachine.adapters.my_target;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import com.my.target.common.CustomParams;
 import com.my.target.common.MyTargetPrivacy;
 import io.bidmachine.AdsType;
-import io.bidmachine.BidMachineAdapter;
 import io.bidmachine.HeaderBiddingAdapter;
 import io.bidmachine.HeaderBiddingCollectParamsCallback;
+import io.bidmachine.NetworkAdapter;
 import io.bidmachine.models.DataRestrictions;
 import io.bidmachine.models.TargetingInfo;
 import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.unified.UnifiedBannerAd;
 import io.bidmachine.unified.UnifiedFullscreenAd;
 import io.bidmachine.utils.BMError;
+import io.bidmachine.ContextProvider;
 import io.bidmachine.utils.Gender;
 
 import java.util.Collections;
 import java.util.Map;
 
-class MyTargetAdapter extends BidMachineAdapter implements HeaderBiddingAdapter {
+class MyTargetAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
 
     MyTargetAdapter() {
         super("my_target", BuildConfig.VERSION_NAME, new AdsType[]{AdsType.Banner, AdsType.Interstitial, AdsType.Rewarded});
@@ -42,15 +42,14 @@ class MyTargetAdapter extends BidMachineAdapter implements HeaderBiddingAdapter 
     }
 
     @Override
-    protected void onInitialize(@NonNull Context context,
+    protected void onInitialize(@NonNull ContextProvider contextProvider,
                                 @NonNull UnifiedAdRequestParams adRequestParams,
                                 @Nullable Map<String, Object> config) {
         updateRestrictions(adRequestParams);
-
     }
 
     @Override
-    public void collectHeaderBiddingParams(@NonNull Context context,
+    public void collectHeaderBiddingParams(@NonNull ContextProvider contextProvider,
                                            @NonNull UnifiedAdRequestParams requestParams,
                                            @NonNull HeaderBiddingCollectParamsCallback callback,
                                            @NonNull Map<String, Object> config) {

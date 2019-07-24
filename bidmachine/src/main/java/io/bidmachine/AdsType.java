@@ -1,6 +1,5 @@
 package io.bidmachine;
 
-import android.content.Context;
 import android.graphics.Point;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -34,7 +33,7 @@ public enum AdsType {
             new PlacementBuilder[]{
                     new DisplayPlacementBuilder<UnifiedBannerAdRequestParams>(false, true) {
                         @Override
-                        public Point getSize(Context context, UnifiedBannerAdRequestParams bannerRequest) {
+                        public Point getSize(ContextProvider contextProvider, UnifiedBannerAdRequestParams bannerRequest) {
                             BannerSize bannerSize = bannerRequest.getBannerSize();
                             return new Point(bannerSize.width, bannerSize.height);
                         }
@@ -61,26 +60,26 @@ public enum AdsType {
         this.placementBuilders = placementBuilders;
     }
 
-    NetworkConfig obtainNetworkConfig(@NonNull Context context,
-                                      @NonNull Ad ad,
-                                      @NonNull UnifiedAdRequestParams adRequestParams) {
-        NetworkConfig networkConfig = obtainHeaderBiddingAdNetworkConfig(context, ad, adRequestParams);
+    NetworkConfig obtainNetworkConfig(@NonNull ContextProvider contextProvider,
+                                      @NonNull UnifiedAdRequestParams adRequestParams,
+                                      @NonNull Ad ad) {
+        NetworkConfig networkConfig = obtainHeaderBiddingAdNetworkConfig(contextProvider, adRequestParams, ad);
         if (networkConfig == null) {
             if (this == AdsType.Native) {
-                networkConfig = obtainNetworkConfig(context, AdapterRegistry.Nast, adRequestParams);
+                networkConfig = obtainNetworkConfig(contextProvider, adRequestParams, AdapterRegistry.Nast);
             } else if (ad.hasDisplay()) {
-                networkConfig = obtainNetworkConfig(context, AdapterRegistry.Mraid, adRequestParams);
+                networkConfig = obtainNetworkConfig(contextProvider, adRequestParams, AdapterRegistry.Mraid);
             } else if (ad.hasVideo()) {
-                networkConfig = obtainNetworkConfig(context, AdapterRegistry.Vast, adRequestParams);
+                networkConfig = obtainNetworkConfig(contextProvider, adRequestParams, AdapterRegistry.Vast);
             }
         }
         return networkConfig;
     }
 
     @Nullable
-    private NetworkConfig obtainHeaderBiddingAdNetworkConfig(@NonNull Context context,
-                                                             @NonNull Ad ad,
-                                                             @NonNull UnifiedAdRequestParams adRequestParams) {
+    private NetworkConfig obtainHeaderBiddingAdNetworkConfig(@NonNull ContextProvider contextProvider,
+                                                             @NonNull UnifiedAdRequestParams adRequestParams,
+                                                             @NonNull Ad ad) {
         List<Any> extensions = null;
         if (ad.hasDisplay()) {
             Ad.Display display = ad.getDisplay();
@@ -94,20 +93,20 @@ public enum AdsType {
             extensions = ad.getVideo().getExtList();
         }
         if (extensions != null) {
-            return obtainHeaderBiddingAdNetworkConfig(context, adRequestParams, extensions);
+            return obtainHeaderBiddingAdNetworkConfig(contextProvider, adRequestParams, extensions);
         }
         return null;
     }
 
     @Nullable
-    private NetworkConfig obtainHeaderBiddingAdNetworkConfig(@NonNull Context context,
+    private NetworkConfig obtainHeaderBiddingAdNetworkConfig(@NonNull ContextProvider contextProvider,
                                                              @NonNull UnifiedAdRequestParams adRequestParams,
                                                              @NonNull List<Any> extensions) {
         for (Any extension : extensions) {
             if (extension.is(HeaderBiddingAd.class)) {
                 try {
                     HeaderBiddingAd headerBiddingAd = extension.unpack(HeaderBiddingAd.class);
-                    return obtainNetworkConfig(context, headerBiddingAd.getBidder(), adRequestParams);
+                    return obtainNetworkConfig(contextProvider, adRequestParams, headerBiddingAd.getBidder());
                 } catch (InvalidProtocolBufferException e) {
                     e.printStackTrace();
                 }
@@ -116,13 +115,13 @@ public enum AdsType {
         return null;
     }
 
-    private NetworkConfig obtainNetworkConfig(@NonNull Context context,
-                                              @NonNull String networkName,
-                                              @NonNull UnifiedAdRequestParams adRequestParams) {
+    private NetworkConfig obtainNetworkConfig(@NonNull ContextProvider contextProvider,
+                                              @NonNull UnifiedAdRequestParams adRequestParams,
+                                              @NonNull String networkName) {
         NetworkConfig networkConfig = AdapterRegistry.getConfig(networkName);
         if (networkConfig != null) {
             try {
-                networkConfig.getAdapter().initialize(context, adRequestParams, networkConfig.getNetworkConfig());
+                networkConfig.getAdapter().initialize(contextProvider, adRequestParams, networkConfig.getNetworkConfig());
             } catch (Throwable throwable) {
                 Logger.log(throwable);
                 networkConfig = null;
@@ -136,14 +135,14 @@ public enum AdsType {
     }
 
     @SuppressWarnings("unchecked")
-    AdObjectParams createAdObjectParams(@NonNull Context context,
+    AdObjectParams createAdObjectParams(@NonNull ContextProvider contextProvider,
                                         @NonNull Response.Seatbid seatbid,
                                         @NonNull Response.Seatbid.Bid bid,
                                         @NonNull Ad ad,
                                         @Deprecated AdRequest adRequest) {
         for (PlacementBuilder builder : placementBuilders) {
             AdObjectParams params = builder.createAdObjectParams(
-                    context, adRequest.getUnifiedRequestParams(), seatbid, bid, ad);
+                    contextProvider, adRequest.getUnifiedRequestParams(), seatbid, bid, ad);
             if (params != null) {
                 return params;
             }
@@ -152,11 +151,11 @@ public enum AdsType {
     }
 
     @SuppressWarnings("unchecked")
-    void collectDisplayPlacements(Context context, AdRequest adRequest, ArrayList<Message.Builder> outList) {
+    void collectDisplayPlacements(ContextProvider contextProvider, AdRequest adRequest, ArrayList<Message.Builder> outList) {
         for (PlacementBuilder placementBuilder : placementBuilders) {
             if (adRequest.isPlacementBuilderMatch(placementBuilder)) {
                 Message.Builder buildResult = placementBuilder.createPlacement(
-                        context, adRequest.getUnifiedRequestParams(), this, networkConfigs.values());
+                        contextProvider, adRequest.getUnifiedRequestParams(), this, networkConfigs.values());
                 if (buildResult != null) {
                     outList.add(buildResult);
                 }
@@ -189,7 +188,7 @@ public enum AdsType {
 
         static void registerNetworks(NetworkConfig... networkConfigs) {
             for (NetworkConfig config : networkConfigs) {
-                BidMachineAdapter adapter = config.getAdapter();
+                NetworkAdapter adapter = config.getAdapter();
                 if (!cache.containsKey(adapter.getKey())) {
                     cache.put(adapter.getKey(), config);
                 }

@@ -1,6 +1,5 @@
 package io.bidmachine;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import io.bidmachine.models.AdObject;
@@ -14,7 +13,7 @@ import java.util.Map;
 /**
  * All adapters must extends this class
  */
-public abstract class BidMachineAdapter {
+public abstract class NetworkAdapter {
 
     private final String key;
     private final String version;
@@ -22,7 +21,7 @@ public abstract class BidMachineAdapter {
 
     private boolean isInitialized;
 
-    public BidMachineAdapter(@NonNull String key, @NonNull String version, @NonNull AdsType[] supportedTypes) {
+    public NetworkAdapter(@NonNull String key, @NonNull String version, @NonNull AdsType[] supportedTypes) {
         this.key = key;
         this.version = version;
         this.supportedTypes = supportedTypes;
@@ -43,7 +42,7 @@ public abstract class BidMachineAdapter {
     /**
      * Call for initialize BidMachine
      */
-    public final void initialize(@NonNull Context context,
+    public final void initialize(@NonNull ContextProvider context,
                                  @NonNull UnifiedAdRequestParams adRequestParams,
                                  @Nullable Map<String, Object> config) throws Throwable {
         if (!isInitialized) {
@@ -52,7 +51,7 @@ public abstract class BidMachineAdapter {
         }
     }
 
-    protected void onInitialize(@NonNull Context context,
+    protected void onInitialize(@NonNull ContextProvider context,
                                 @NonNull UnifiedAdRequestParams adRequestParams,
                                 @Nullable Map<String, Object> config) {
     }
@@ -76,8 +75,8 @@ public abstract class BidMachineAdapter {
     /**
      * Load ad with server response
      */
-    public void load(@NonNull Context context, @NonNull AdObject response, @Nullable Map<String, String> extra) {
-        response.load(context, extra);
+    public void load(@NonNull ContextProvider contextProvider, @NonNull AdObject response, @Nullable Map<String, String> extra) {
+        response.load(contextProvider, extra);
     }
 
     /**

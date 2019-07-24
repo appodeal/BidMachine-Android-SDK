@@ -15,7 +15,6 @@ import io.bidmachine.unified.UnifiedAd;
 import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.unified.UnifiedBannerAdCallback;
 import io.bidmachine.utils.BMError;
-import io.bidmachine.utils.ContextProvider;
 
 public final class ViewAdObject<
         AdRequestType extends AdRequest<AdRequestType, UnifiedAdRequestParamsType>,

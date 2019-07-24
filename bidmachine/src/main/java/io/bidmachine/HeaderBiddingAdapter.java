@@ -1,6 +1,5 @@
 package io.bidmachine;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
 import io.bidmachine.unified.UnifiedAdRequestParams;
 
@@ -12,7 +11,7 @@ public interface HeaderBiddingAdapter {
 
     String getVersion();
 
-    void collectHeaderBiddingParams(@NonNull Context context,
+    void collectHeaderBiddingParams(@NonNull ContextProvider contextProvider,
                                     @NonNull UnifiedAdRequestParams requestParams,
                                     @NonNull HeaderBiddingCollectParamsCallback callback,
                                     @NonNull Map<String, Object> config);

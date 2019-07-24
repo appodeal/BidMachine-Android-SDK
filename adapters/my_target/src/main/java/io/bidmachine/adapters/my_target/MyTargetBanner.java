@@ -1,6 +1,5 @@
 package io.bidmachine.adapters.my_target;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import com.my.target.ads.MyTargetView;
@@ -10,6 +9,7 @@ import io.bidmachine.unified.UnifiedBannerAdCallback;
 import io.bidmachine.unified.UnifiedBannerAdRequestParams;
 import io.bidmachine.unified.UnifiedMediationParams;
 import io.bidmachine.utils.BMError;
+import io.bidmachine.ContextProvider;
 
 import java.util.Map;
 
@@ -19,7 +19,7 @@ class MyTargetBanner implements UnifiedBannerAd {
     private MyTargetView adView;
 
     @Override
-    public void load(@NonNull Context context,
+    public void load(@NonNull ContextProvider contextProvider,
                      @NonNull UnifiedBannerAdCallback callback,
                      @NonNull UnifiedBannerAdRequestParams requestParams,
                      @NonNull UnifiedMediationParams mediationParams,
@@ -44,7 +44,7 @@ class MyTargetBanner implements UnifiedBannerAd {
                 break;
             }
         }
-        adView = new MyTargetView(context);
+        adView = new MyTargetView(contextProvider.getContext());
         adView.init(params.slotId, adSize, false);
         adView.setListener(new MyTargetListener(callback));
         assert adView.getCustomParams() != null; // it's shouldn't be null at this point

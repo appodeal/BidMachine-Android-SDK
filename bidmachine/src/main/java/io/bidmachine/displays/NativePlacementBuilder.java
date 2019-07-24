@@ -1,6 +1,5 @@
 package io.bidmachine.displays;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
 import com.explorestack.protobuf.adcom.*;
 import com.explorestack.protobuf.openrtb.Response;
@@ -9,6 +8,7 @@ import com.google.protobuf.Message;
 import io.bidmachine.*;
 import io.bidmachine.models.AdObjectParams;
 import io.bidmachine.unified.UnifiedNativeAdRequestParams;
+import io.bidmachine.ContextProvider;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -120,7 +120,7 @@ public class NativePlacementBuilder extends PlacementBuilder<UnifiedNativeAdRequ
     }
 
     @Override
-    public Message.Builder createPlacement(@NonNull Context context,
+    public Message.Builder createPlacement(@NonNull ContextProvider contextProvider,
                                            @NonNull UnifiedNativeAdRequestParams adRequestParams,
                                            @NonNull AdsType adsType,
                                            @NonNull Collection<NetworkConfig> networkConfigs) {
@@ -149,8 +149,8 @@ public class NativePlacementBuilder extends PlacementBuilder<UnifiedNativeAdRequ
             builder.addAllMime(Arrays.asList(Constants.VIDEO_MIME_TYPES));
         }
         builder.setNativefmt(formatBuilder);
-        Message.Builder headerBiddingPlacement =
-                createHeaderBiddingPlacement(context, adRequestParams, adsType, AdContentType.Static, networkConfigs);
+        Message.Builder headerBiddingPlacement = createHeaderBiddingPlacement(
+                contextProvider, adRequestParams, adsType, AdContentType.Static, networkConfigs);
         if (headerBiddingPlacement != null) {
             builder.addExt(Any.pack(headerBiddingPlacement.build()));
         }
@@ -158,12 +158,12 @@ public class NativePlacementBuilder extends PlacementBuilder<UnifiedNativeAdRequ
     }
 
     @Override
-    public AdObjectParams createAdObjectParams(@NonNull Context context,
+    public AdObjectParams createAdObjectParams(@NonNull ContextProvider contextProvider,
                                                @NonNull UnifiedNativeAdRequestParams adRequest,
                                                @NonNull Response.Seatbid seatbid,
                                                @NonNull Response.Seatbid.Bid bid,
                                                @NonNull Ad ad) {
-        AdObjectParams params = createHeaderBiddingAdObjectParams(context, adRequest, seatbid, bid, ad);
+        AdObjectParams params = createHeaderBiddingAdObjectParams(contextProvider, adRequest, seatbid, bid, ad);
         if (params == null && (ad.hasDisplay() && ad.getDisplay().hasNative())) {
             params = new NativeAdObjectParams(seatbid, bid, ad);
         }

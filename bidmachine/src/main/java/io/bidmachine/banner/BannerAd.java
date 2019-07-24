@@ -7,7 +7,7 @@ import io.bidmachine.*;
 import io.bidmachine.models.AdObjectParams;
 import io.bidmachine.unified.UnifiedBannerAd;
 import io.bidmachine.unified.UnifiedBannerAdRequestParams;
-import io.bidmachine.utils.ContextProvider;
+import io.bidmachine.ContextProvider;
 
 @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
 public final class BannerAd extends ViewAd<
@@ -25,7 +25,7 @@ public final class BannerAd extends ViewAd<
     protected ViewAdObject<BannerRequest, UnifiedBannerAd, UnifiedBannerAdRequestParams> createAdObject(
             @NonNull ContextProvider contextProvider,
             @NonNull BannerRequest adRequest,
-            @NonNull BidMachineAdapter adapter,
+            @NonNull NetworkAdapter adapter,
             @NonNull AdObjectParams adObjectParams,
             @NonNull AdProcessCallback processCallback
     ) {

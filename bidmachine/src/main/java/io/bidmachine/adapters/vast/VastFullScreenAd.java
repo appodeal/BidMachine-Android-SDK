@@ -9,13 +9,14 @@ import io.bidmachine.unified.UnifiedFullscreenAdCallback;
 import io.bidmachine.unified.UnifiedFullscreenAdRequestParams;
 import io.bidmachine.unified.UnifiedMediationParams;
 import io.bidmachine.utils.BMError;
+import io.bidmachine.ContextProvider;
 import io.bidmachine.utils.IabUtils;
 import org.nexage.sourcekit.util.Video;
 import org.nexage.sourcekit.vast.view.AppodealVASTPlayer;
 
 import java.util.Map;
 
-class VastFullScreenAdObject implements UnifiedFullscreenAd {
+class VastFullScreenAd implements UnifiedFullscreenAd {
 
     private Video.Type videoType;
     @Nullable
@@ -23,12 +24,12 @@ class VastFullScreenAdObject implements UnifiedFullscreenAd {
     @Nullable
     private VastFullScreenAdapterListener vastListener;
 
-    VastFullScreenAdObject(Video.Type videoType) {
+    VastFullScreenAd(Video.Type videoType) {
         this.videoType = videoType;
     }
 
     @Override
-    public void load(@NonNull Context context,
+    public void load(@NonNull ContextProvider contextProvider,
                      @NonNull UnifiedFullscreenAdCallback callback,
                      @NonNull UnifiedFullscreenAdRequestParams requestParams,
                      @NonNull UnifiedMediationParams mediationParams,
@@ -39,7 +40,7 @@ class VastFullScreenAdObject implements UnifiedFullscreenAd {
             return;
         }
         int skipAfterTimeSec = mediationParams.getInt(IabUtils.KEY_SKIP_AFTER_TIME_SEC);
-        vastPlayer = new AppodealVASTPlayer(context);
+        vastPlayer = new AppodealVASTPlayer(contextProvider.getContext());
         vastPlayer.setPrecache(true);
         vastPlayer.setCloseTime(skipAfterTimeSec);
         vastListener = new VastFullScreenAdapterListener(callback);

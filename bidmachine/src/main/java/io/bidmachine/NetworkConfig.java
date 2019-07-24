@@ -11,7 +11,7 @@ import java.util.Map;
 public abstract class NetworkConfig {
 
     @NonNull
-    private final BidMachineAdapter adapter;
+    private final NetworkAdapter adapter;
     @Nullable
     private Map<String, Object> networkConfig;
     @Nullable
@@ -23,12 +23,12 @@ public abstract class NetworkConfig {
     @Nullable
     private AdsType[] mergedAdsTypes;
 
-    protected NetworkConfig(@NonNull BidMachineAdapter adapter) {
+    protected NetworkConfig(@NonNull NetworkAdapter adapter) {
         this.adapter = adapter;
     }
 
     @NonNull
-    public BidMachineAdapter getAdapter() {
+    public NetworkAdapter getAdapter() {
         return adapter;
     }
 

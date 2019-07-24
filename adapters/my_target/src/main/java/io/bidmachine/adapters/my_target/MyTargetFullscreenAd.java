@@ -9,6 +9,7 @@ import io.bidmachine.unified.UnifiedFullscreenAdCallback;
 import io.bidmachine.unified.UnifiedFullscreenAdRequestParams;
 import io.bidmachine.unified.UnifiedMediationParams;
 import io.bidmachine.utils.BMError;
+import io.bidmachine.ContextProvider;
 
 import java.util.Map;
 
@@ -18,7 +19,7 @@ public class MyTargetFullscreenAd implements UnifiedFullscreenAd {
     private InterstitialAd interstitialAd;
 
     @Override
-    public void load(@NonNull Context context,
+    public void load(@NonNull ContextProvider contextProvider,
                      @NonNull UnifiedFullscreenAdCallback callback,
                      @NonNull UnifiedFullscreenAdRequestParams requestParams,
                      @NonNull UnifiedMediationParams mediationParams,
@@ -27,7 +28,7 @@ public class MyTargetFullscreenAd implements UnifiedFullscreenAd {
         if (!params.isValid(callback)) {
             return;
         }
-        interstitialAd = new InterstitialAd(params.slotId, context);
+        interstitialAd = new InterstitialAd(params.slotId, contextProvider.getContext());
         interstitialAd.setListener(new MyTargetFullscreenListener(callback));
         MyTargetAdapter.updateTargeting(requestParams, interstitialAd.getCustomParams());
         assert params.bidId != null; // it's shouldn't be null since we already check it in {@link MyTargetParams}

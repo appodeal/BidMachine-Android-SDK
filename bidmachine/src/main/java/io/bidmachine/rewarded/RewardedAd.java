@@ -5,7 +5,7 @@ import android.support.annotation.NonNull;
 import io.bidmachine.*;
 import io.bidmachine.models.AdObjectParams;
 import io.bidmachine.unified.UnifiedFullscreenAd;
-import io.bidmachine.utils.ContextProvider;
+import io.bidmachine.ContextProvider;
 
 public final class RewardedAd extends FullScreenAd<RewardedAd, RewardedRequest, FullScreenAdObject<RewardedRequest>, RewardedListener> {
 
@@ -17,7 +17,7 @@ public final class RewardedAd extends FullScreenAd<RewardedAd, RewardedRequest, 
     protected FullScreenAdObject<RewardedRequest> createAdObject(
             @NonNull ContextProvider contextProvider,
             @NonNull RewardedRequest adRequest,
-            @NonNull BidMachineAdapter adapter,
+            @NonNull NetworkAdapter adapter,
             @NonNull AdObjectParams adObjectParams,
             @NonNull AdProcessCallback processCallback
     ) {

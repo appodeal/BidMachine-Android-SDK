@@ -80,7 +80,7 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
         this.adsType = adsType;
     }
 
-    private Object build(android.content.Context context, AdsType adsType) {
+    private Object build(final android.content.Context context, AdsType adsType) {
         final String sellerId = BidMachineImpl.get().getSellerId();
         if (TextUtils.isEmpty(sellerId)) {
             return BMError.paramError("Seller Id not provided");
@@ -113,7 +113,13 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
 
         //PriceFloor params
         final ArrayList<Message.Builder> placements = new ArrayList<>();
-        adsType.collectDisplayPlacements(context, this, placements);
+        adsType.collectDisplayPlacements(new ContextProvider.SimpleContextProvider() {
+            @NonNull
+            @Override
+            public android.content.Context getContext() {
+                return context;
+            }
+        }, this, placements);
 
         final PriceFloorParams priceFloorParams = this.priceFloorParams != null
                 ? this.priceFloorParams : bidMachine.getPriceFloorParams();

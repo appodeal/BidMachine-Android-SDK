@@ -1,8 +1,8 @@
 package io.bidmachine.unified;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import io.bidmachine.ContextProvider;
 
 import java.util.Map;
 
@@ -10,7 +10,7 @@ public interface UnifiedAd<
         UnifiedAdCallbackType extends UnifiedAdCallback,
         UnifiedAdRequestParamsType extends UnifiedAdRequestParams> {
 
-    void load(@NonNull Context context,
+    void load(@NonNull ContextProvider context,
               @NonNull UnifiedAdCallbackType callback,
               @NonNull UnifiedAdRequestParamsType requestParams,
               @NonNull UnifiedMediationParams mediationParams,

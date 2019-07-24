@@ -7,7 +7,6 @@ import io.bidmachine.models.AdObjectParams;
 import io.bidmachine.unified.UnifiedFullscreenAd;
 import io.bidmachine.unified.UnifiedFullscreenAdCallback;
 import io.bidmachine.unified.UnifiedFullscreenAdRequestParams;
-import io.bidmachine.utils.ContextProvider;
 
 public final class FullScreenAdObject<AdRequestType extends FullScreenAdRequest<AdRequestType>>
         extends AdObjectImpl<AdRequestType, AdObjectParams, UnifiedFullscreenAd, UnifiedFullscreenAdCallback, UnifiedFullscreenAdRequestParams> {

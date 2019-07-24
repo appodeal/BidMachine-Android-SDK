@@ -1,6 +1,5 @@
 package io.bidmachine.displays;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import com.explorestack.protobuf.adcom.Ad;
@@ -15,6 +14,7 @@ import io.bidmachine.protobuf.headerbidding.HeaderBiddingAd;
 import io.bidmachine.protobuf.headerbidding.HeaderBiddingPlacement;
 import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.utils.BMError;
+import io.bidmachine.ContextProvider;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,20 +26,20 @@ import java.util.concurrent.Executors;
 
 class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAdRequestParams> {
 
-    Message.Builder createPlacement(@NonNull Context context,
+    Message.Builder createPlacement(@NonNull ContextProvider contextProvider,
                                     @NonNull UnifiedAdRequestParamsType adRequestParams,
                                     @NonNull AdsType adsType,
                                     @NonNull AdContentType contentType,
                                     @NonNull Collection<NetworkConfig> networkConfigs) {
         List<AdUnitPreloadTask> preloadTasks = new ArrayList<>();
         for (NetworkConfig networkConfig : networkConfigs) {
-            BidMachineAdapter adapter = networkConfig.getAdapter();
+            NetworkAdapter adapter = networkConfig.getAdapter();
             if (adapter instanceof HeaderBiddingAdapter) {
                 Map<String, Object> mediationConfig = networkConfig.peekMediationConfig(adsType, contentType);
                 if (mediationConfig != null) {
                     preloadTasks.add(
                             new AdUnitPreloadTask<>(
-                                    context, (HeaderBiddingAdapter) adapter, adRequestParams, mediationConfig));
+                                    contextProvider, (HeaderBiddingAdapter) adapter, adRequestParams, mediationConfig));
                 }
             }
         }
@@ -72,7 +72,7 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
         return null;
     }
 
-    AdObjectParams createAdObjectParams(@NonNull Context context,
+    AdObjectParams createAdObjectParams(@NonNull ContextProvider contextProvider,
                                         @NonNull UnifiedAdRequestParamsType adRequestParams,
                                         @NonNull Response.Seatbid seatbid,
                                         @NonNull Response.Seatbid.Bid bid,
@@ -112,7 +112,7 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
         private static Executor executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
 
         @NonNull
-        private Context context;
+        private ContextProvider contextProvider;
         @NonNull
         private HeaderBiddingAdapter adapter;
         @NonNull
@@ -123,11 +123,11 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
         private CountDownLatch syncLock;
         private HeaderBiddingPlacement.AdUnit adUnit;
 
-        AdUnitPreloadTask(@NonNull Context context,
+        AdUnitPreloadTask(@NonNull ContextProvider contextProvider,
                           @NonNull HeaderBiddingAdapter adapter,
                           @NonNull UnifiedAdRequestParamsType adRequestParams,
                           @NonNull Map<String, Object> mediationConfig) {
-            this.context = context;
+            this.contextProvider = contextProvider;
             this.adapter = adapter;
             this.adRequestParams = adRequestParams;
             this.mediationConfig = mediationConfig;
@@ -135,7 +135,7 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
 
         @Override
         public void run() {
-            adapter.collectHeaderBiddingParams(context, adRequestParams, this, mediationConfig);
+            adapter.collectHeaderBiddingParams(contextProvider, adRequestParams, this, mediationConfig);
         }
 
         @Override
