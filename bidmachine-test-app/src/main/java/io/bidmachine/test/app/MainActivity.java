@@ -27,7 +27,7 @@ import android.view.ViewGroup;
 import android.widget.*;
 import io.bidmachine.BuildConfig;
 import io.bidmachine.*;
-import io.bidmachine.adapters.my_target.MyTargetAdapter;
+import io.bidmachine.adapters.my_target.MyTargetConfig;
 import io.bidmachine.banner.BannerSize;
 import io.bidmachine.banner.BannerView;
 import io.bidmachine.nativead.NativeAd;
@@ -44,7 +44,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 
 public class MainActivity extends AppCompatActivity {
@@ -72,14 +71,10 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        BidMachine.registerAdapter(
-                new NetworkConfig(new MyTargetAdapter())
-                        .withMediationConfig(AdsFormat.Banner, new HashMap<String, Object>() {{
-                            put("slot_id", "437933");
-                        }})
-                        .withMediationConfig(AdsFormat.RewardedVideo, new HashMap<String, Object>() {{
-                            put("slot_id", "482205");
-                        }}));
+        BidMachine.registerNetworks(
+                new MyTargetConfig()
+                        .withMediationConfig(AdsFormat.Banner, "437933")
+                        .withMediationConfig(AdsFormat.RewardedVideo, "482205"));
 
         final SpannableStringBuilder appInfoBuilder = new SpannableStringBuilder();
         appInfoBuilder.append("Version: ");

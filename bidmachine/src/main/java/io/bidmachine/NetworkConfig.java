@@ -8,7 +8,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class NetworkConfig {
+public abstract class NetworkConfig {
 
     @NonNull
     private final BidMachineAdapter adapter;
@@ -23,7 +23,7 @@ public final class NetworkConfig {
     @Nullable
     private AdsType[] mergedAdsTypes;
 
-    public NetworkConfig(@NonNull BidMachineAdapter adapter) {
+    protected NetworkConfig(@NonNull BidMachineAdapter adapter) {
         this.adapter = adapter;
     }
 
@@ -37,17 +37,20 @@ public final class NetworkConfig {
         return networkConfig;
     }
 
-    public NetworkConfig withNetworkConfig(@Nullable Map<String, Object> config) {
+    @SuppressWarnings("unchecked")
+    public <T extends NetworkConfig> T withNetworkConfig(@Nullable Map<String, Object> config) {
         this.networkConfig = config;
-        return this;
+        return (T) this;
     }
 
-    public NetworkConfig withMediationConfig(@Nullable Map<String, Object> config) {
+    @SuppressWarnings("unchecked")
+    public <T extends NetworkConfig> T withMediationConfig(@Nullable Map<String, Object> config) {
         this.mediationConfig = config;
-        return this;
+        return (T) this;
     }
 
-    public NetworkConfig withMediationConfig(@NonNull AdsFormat adsFormat, @Nullable Map<String, Object> config) {
+    @SuppressWarnings({"unchecked", "WeakerAccess"})
+    public <T extends NetworkConfig> T withMediationConfig(@NonNull AdsFormat adsFormat, @Nullable Map<String, Object> config) {
         if (config == null) {
             if (typedMediationConfigs != null) {
                 typedMediationConfigs.remove(adsFormat);
@@ -58,26 +61,12 @@ public final class NetworkConfig {
             }
             typedMediationConfigs.put(adsFormat, config);
         }
-        return this;
+        return (T) this;
     }
 
     public NetworkConfig forAdTypes(@NonNull AdsType... adsType) {
         this.supportedAdsTypes = adsType;
         return this;
-    }
-
-    AdsType[] getSupportedAdsTypes() {
-        if (mergedAdsTypes == null) {
-            AdsType[] adapterSupportedTypes = getAdapter().getSupportedTypes();
-            ArrayList<AdsType> resultList = new ArrayList<>();
-            for (AdsType adsType : adapterSupportedTypes) {
-                if (supportedAdsTypes == null || contains(supportedAdsTypes, adsType)) {
-                    resultList.add(adsType);
-                }
-            }
-            mergedAdsTypes = resultList.toArray(new AdsType[0]);
-        }
-        return mergedAdsTypes;
     }
 
     @Nullable
@@ -96,6 +85,20 @@ public final class NetworkConfig {
             resultConfig = new HashMap<>(mediationConfig);
         }
         return resultConfig;
+    }
+
+    AdsType[] getSupportedAdsTypes() {
+        if (mergedAdsTypes == null) {
+            AdsType[] adapterSupportedTypes = getAdapter().getSupportedTypes();
+            ArrayList<AdsType> resultList = new ArrayList<>();
+            for (AdsType adsType : adapterSupportedTypes) {
+                if (supportedAdsTypes == null || contains(supportedAdsTypes, adsType)) {
+                    resultList.add(adsType);
+                }
+            }
+            mergedAdsTypes = resultList.toArray(new AdsType[0]);
+        }
+        return mergedAdsTypes;
     }
 
     private boolean contains(Object[] array, Object v) {

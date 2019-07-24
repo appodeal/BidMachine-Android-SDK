@@ -165,9 +165,13 @@ public enum AdsType {
     }
 
     static {
-        AdapterRegistry.registerAdapter(new NetworkConfig(new MraidAdapter()));
-        AdapterRegistry.registerAdapter(new NetworkConfig(new VastAdapter()));
-        AdapterRegistry.registerAdapter(new NetworkConfig(new NastAdapter()));
+        AdapterRegistry.registerNetworks(
+                new NetworkConfig(new MraidAdapter()) {
+                },
+                new NetworkConfig(new NastAdapter()) {
+                },
+                new NetworkConfig(new VastAdapter()) {
+                });
     }
 
     static class AdapterRegistry {
@@ -183,13 +187,15 @@ public enum AdsType {
             return cache.get(key);
         }
 
-        static void registerAdapter(NetworkConfig networkConfig) {
-            BidMachineAdapter adapter = networkConfig.getAdapter();
-            if (!cache.containsKey(adapter.getKey())) {
-                cache.put(adapter.getKey(), networkConfig);
-            }
-            for (AdsType type : networkConfig.getSupportedAdsTypes()) {
-                type.networkConfigs.put(adapter.getKey(), networkConfig);
+        static void registerNetworks(NetworkConfig... networkConfigs) {
+            for (NetworkConfig config : networkConfigs) {
+                BidMachineAdapter adapter = config.getAdapter();
+                if (!cache.containsKey(adapter.getKey())) {
+                    cache.put(adapter.getKey(), config);
+                }
+                for (AdsType type : config.getSupportedAdsTypes()) {
+                    type.networkConfigs.put(adapter.getKey(), config);
+                }
             }
         }
 

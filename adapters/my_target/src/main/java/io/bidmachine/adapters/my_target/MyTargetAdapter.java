@@ -17,12 +17,12 @@ import io.bidmachine.unified.UnifiedFullscreenAd;
 import io.bidmachine.utils.BMError;
 import io.bidmachine.utils.Gender;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 
-public class MyTargetAdapter extends BidMachineAdapter implements HeaderBiddingAdapter {
+class MyTargetAdapter extends BidMachineAdapter implements HeaderBiddingAdapter {
 
-    public MyTargetAdapter() {
+    MyTargetAdapter() {
         super("my_target", BuildConfig.VERSION_NAME, new AdsType[]{AdsType.Banner, AdsType.Interstitial, AdsType.Rewarded});
     }
 
@@ -46,6 +46,7 @@ public class MyTargetAdapter extends BidMachineAdapter implements HeaderBiddingA
                                 @NonNull UnifiedAdRequestParams adRequestParams,
                                 @Nullable Map<String, Object> config) {
         updateRestrictions(adRequestParams);
+
     }
 
     @Override
@@ -53,14 +54,13 @@ public class MyTargetAdapter extends BidMachineAdapter implements HeaderBiddingA
                                            @NonNull UnifiedAdRequestParams requestParams,
                                            @NonNull HeaderBiddingCollectParamsCallback callback,
                                            @NonNull Map<String, Object> config) {
-        Object slotId = config.get("slot_id");
+        Object slotId = config.get(MyTargetConfig.KEY_SLOT_ID);
         if (!(slotId instanceof String)) {
             callback.onCollectFail(BMError.requestError("slot_id not provided"));
             return;
         }
         updateRestrictions(requestParams);
-        HashMap<String, String> params = new HashMap<>();
-        params.put("slot_id", (String) slotId);
+        Map<String, String> params = Collections.singletonMap(MyTargetConfig.KEY_SLOT_ID, (String) slotId);
         callback.onCollectFinished(params);
     }
 

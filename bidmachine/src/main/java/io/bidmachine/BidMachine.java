@@ -80,8 +80,13 @@ public class BidMachine {
         BidMachineImpl.get().getUserRestrictionParams().setCoppa(coppa);
     }
 
-    public static void registerAdapter(NetworkConfig networkConfig) {
-        AdsType.AdapterRegistry.registerAdapter(networkConfig);
+    /**
+     * Add 3rd party network configuration, which will be used for mediation, loading and displaying ads
+     *
+     * @param networkConfigs - Custom configuration object per network
+     */
+    public static void registerNetworks(NetworkConfig... networkConfigs) {
+        AdsType.AdapterRegistry.registerNetworks(networkConfigs);
     }
 
 }

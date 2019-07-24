@@ -14,13 +14,13 @@ class MyTargetParams extends UnifiedParams {
 
     MyTargetParams(@NonNull UnifiedMediationParams mediationParams) {
         super(mediationParams);
-        slotId = mediationParams.getInt("slot_id");
-        bidId = mediationParams.getString("bid_id");
+        slotId = mediationParams.getInt(MyTargetConfig.KEY_SLOT_ID);
+        bidId = mediationParams.getString(MyTargetConfig.KEY_BID_ID);
     }
 
     @Override
     public boolean isValid(@NonNull UnifiedAdCallback callback) {
-        if (!getMediationParams().contains("slot_id")) {
+        if (!getMediationParams().contains(MyTargetConfig.KEY_SLOT_ID)) {
             callback.onAdLoadFailed(BMError.requestError("slot_id not provided"));
             return false;
         }

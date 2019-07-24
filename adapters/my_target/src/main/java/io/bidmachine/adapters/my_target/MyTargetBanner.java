@@ -24,6 +24,10 @@ class MyTargetBanner implements UnifiedBannerAd {
                      @NonNull UnifiedBannerAdRequestParams requestParams,
                      @NonNull UnifiedMediationParams mediationParams,
                      @Nullable Map<String, Object> localExtra) {
+        MyTargetParams params = new MyTargetParams(mediationParams);
+        if (!params.isValid(callback)) {
+            return;
+        }
         BannerSize size = requestParams.getBannerSize();
         int adSize;
         switch (size) {
@@ -40,18 +44,12 @@ class MyTargetBanner implements UnifiedBannerAd {
                 break;
             }
         }
-        if (!mediationParams.contains("slot_id")) {
-            callback.onAdLoadFailed(BMError.requestError("slot_id not provided"));
-            return;
-        }
-        MyTargetParams params = new MyTargetParams(mediationParams);
-        if (!params.isValid(callback)) {
-            return;
-        }
         adView = new MyTargetView(context);
         adView.init(params.slotId, adSize, false);
         adView.setListener(new MyTargetListener(callback));
+        assert adView.getCustomParams() != null; // it's shouldn't be null at this point
         MyTargetAdapter.updateTargeting(requestParams, adView.getCustomParams());
+        assert params.bidId != null; // it's shouldn't be null since we already check it in {@link MyTargetParams}
         adView.loadFromBid(params.bidId);
     }
 

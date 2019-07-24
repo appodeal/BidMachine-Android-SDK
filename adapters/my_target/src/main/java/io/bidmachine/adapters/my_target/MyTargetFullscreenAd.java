@@ -23,10 +23,6 @@ public class MyTargetFullscreenAd implements UnifiedFullscreenAd {
                      @NonNull UnifiedFullscreenAdRequestParams requestParams,
                      @NonNull UnifiedMediationParams mediationParams,
                      @Nullable Map<String, Object> localExtra) {
-        if (!mediationParams.contains("slot_id")) {
-            callback.onAdLoadFailed(BMError.requestError("slot_id not provided"));
-            return;
-        }
         MyTargetParams params = new MyTargetParams(mediationParams);
         if (!params.isValid(callback)) {
             return;
@@ -34,6 +30,7 @@ public class MyTargetFullscreenAd implements UnifiedFullscreenAd {
         interstitialAd = new InterstitialAd(params.slotId, context);
         interstitialAd.setListener(new MyTargetFullscreenListener(callback));
         MyTargetAdapter.updateTargeting(requestParams, interstitialAd.getCustomParams());
+        assert params.bidId != null; // it's shouldn't be null since we already check it in {@link MyTargetParams}
         interstitialAd.loadFromBid(params.bidId);
     }
 

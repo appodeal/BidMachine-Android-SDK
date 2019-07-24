@@ -16,7 +16,10 @@ import io.bidmachine.protobuf.headerbidding.HeaderBiddingPlacement;
 import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.utils.BMError;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -136,7 +139,7 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
         }
 
         @Override
-        public void onCollectFinished(@Nullable HashMap<String, String> params) {
+        public void onCollectFinished(@Nullable Map<String, String> params) {
             HeaderBiddingPlacement.AdUnit.Builder builder = HeaderBiddingPlacement.AdUnit.newBuilder();
             builder.setBidder(adapter.getKey());
             builder.setBidderSdkver(adapter.getVersion());
