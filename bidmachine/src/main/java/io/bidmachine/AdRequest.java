@@ -345,8 +345,11 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
         }
     }
 
-    @SuppressWarnings("WeakerAccess")
-    public void processShown() {
+    void onShown() {
+        unsubscribeExpireTracker();
+    }
+
+    void onExpired() {
         unsubscribeExpireTracker();
     }
 

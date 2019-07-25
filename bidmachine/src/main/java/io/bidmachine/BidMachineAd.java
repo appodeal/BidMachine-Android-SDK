@@ -361,7 +361,7 @@ public abstract class BidMachineAd<
             }
             isShownTracked = true;
             if (adRequest != null) {
-                adRequest.processShown();
+                adRequest.onShown();
             }
             if (loadedObject != null) {
                 loadedObject.onShown();
@@ -486,6 +486,9 @@ public abstract class BidMachineAd<
         public void processExpired() {
             if (currentState.ordinal() > State.Success.ordinal()) {
                 return;
+            }
+            if (adRequest != null) {
+                adRequest.onExpired();
             }
             log("processExpired");
             currentState = State.Expired;
