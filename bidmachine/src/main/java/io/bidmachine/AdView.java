@@ -15,7 +15,7 @@ import io.bidmachine.utils.ParamsHelper;
 
 public abstract class AdView<
         SelfType extends AdView<SelfType, AdType, AdRequestType, AdObjectType, ExternalAdListenerType>,
-        AdType extends ViewAd<AdType, AdRequestType, AdObjectType, AdListener<AdType>>,
+        AdType extends ViewAd<AdType, AdRequestType, AdObjectType, ?, AdListener<AdType>>,
         AdRequestType extends AdRequest<AdRequestType, ?>,
         AdObjectType extends ViewAdObject<AdRequestType, ?, ?>,
         ExternalAdListenerType extends AdListener<SelfType>>

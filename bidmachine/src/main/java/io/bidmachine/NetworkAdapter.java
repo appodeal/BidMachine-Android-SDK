@@ -2,7 +2,6 @@ package io.bidmachine;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import io.bidmachine.models.AdObject;
 import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.unified.UnifiedBannerAd;
 import io.bidmachine.unified.UnifiedFullscreenAd;
@@ -70,13 +69,6 @@ public abstract class NetworkAdapter {
 
     public UnifiedNativeAd createNativeAd() {
         throw new IllegalArgumentException(getKey() + " adapter not supported native");
-    }
-
-    /**
-     * Load ad with server response
-     */
-    public void load(@NonNull ContextProvider contextProvider, @NonNull AdObject response, @Nullable Map<String, String> extra) {
-        response.load(contextProvider, extra);
     }
 
     /**

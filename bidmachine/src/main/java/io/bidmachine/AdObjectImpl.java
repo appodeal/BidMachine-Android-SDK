@@ -12,15 +12,13 @@ import io.bidmachine.unified.UnifiedAdCallback;
 import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.utils.BMError;
 
-import java.util.Map;
-
 public abstract class AdObjectImpl<
         AdRequestType extends AdRequest<AdRequestType, UnifiedAdRequestParamsType>,
         AdObjectParamsType extends AdObjectParams,
         UnifiedAdType extends UnifiedAd<UnifiedAdCallbackType, UnifiedAdRequestParamsType>,
         UnifiedAdCallbackType extends UnifiedAdCallback,
         UnifiedAdRequestParamsType extends UnifiedAdRequestParams>
-        implements AdObject<AdObjectParamsType>, ContextProvider {
+        implements AdObject<AdObjectParamsType, UnifiedAdRequestParamsType>, ContextProvider {
 
     @NonNull
     private final ContextProvider contextProvider;
@@ -61,9 +59,6 @@ public abstract class AdObjectImpl<
     }
 
     @NonNull
-    public abstract UnifiedAdCallbackType createUnifiedCallback(@NonNull AdProcessCallback processCallback);
-
-    @NonNull
     public AdRequestType getAdRequest() {
         return adRequest;
     }
@@ -90,12 +85,12 @@ public abstract class AdObjectImpl<
     }
 
     @Override
-    public void load(@NonNull ContextProvider contextProvider, @Nullable Map<String, Object> extra) {
+    public void load(@NonNull ContextProvider contextProvider,
+                     @NonNull UnifiedAdRequestParamsType adRequestParams) {
         unifiedAd.load(contextProvider,
                 unifiedAdCallback,
-                adRequest.getUnifiedRequestParams(),
-                adObjectParams.toMediationParams(),
-                extra);
+                adRequestParams,
+                adObjectParams.toMediationParams());
     }
 
     @CallSuper
@@ -127,6 +122,9 @@ public abstract class AdObjectImpl<
     @Override
     public void onDestroy() {
     }
+
+    @NonNull
+    public abstract UnifiedAdCallbackType createUnifiedCallback(@NonNull AdProcessCallback processCallback);
 
     protected static class BaseUnifiedAdCallback implements UnifiedAdCallback {
 

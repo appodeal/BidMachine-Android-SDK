@@ -12,7 +12,8 @@ import io.bidmachine.unified.UnifiedMediationParams;
 class HeaderBiddingAdObjectParams extends AdObjectParams {
 
     @NonNull
-    private HeaderBiddingAd headerBiddingAd;
+    private final HeaderBiddingAd headerBiddingAd;
+    private final HeaderBiddingUnifiedMediationParams mediationParams = new HeaderBiddingUnifiedMediationParams();
 
     HeaderBiddingAdObjectParams(@NonNull Response.Seatbid seatbid,
                                 @NonNull Response.Seatbid.Bid bid,
@@ -42,7 +43,7 @@ class HeaderBiddingAdObjectParams extends AdObjectParams {
     @NonNull
     @Override
     public UnifiedMediationParams toMediationParams() {
-        return new HeaderBiddingUnifiedMediationParams();
+        return mediationParams;
     }
 
     private class HeaderBiddingUnifiedMediationParams extends UnifiedMediationParams {

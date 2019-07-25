@@ -4,14 +4,12 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import com.my.target.ads.InterstitialAd;
+import io.bidmachine.ContextProvider;
 import io.bidmachine.unified.UnifiedFullscreenAd;
 import io.bidmachine.unified.UnifiedFullscreenAdCallback;
 import io.bidmachine.unified.UnifiedFullscreenAdRequestParams;
 import io.bidmachine.unified.UnifiedMediationParams;
 import io.bidmachine.utils.BMError;
-import io.bidmachine.ContextProvider;
-
-import java.util.Map;
 
 public class MyTargetFullscreenAd implements UnifiedFullscreenAd {
 
@@ -22,8 +20,7 @@ public class MyTargetFullscreenAd implements UnifiedFullscreenAd {
     public void load(@NonNull ContextProvider contextProvider,
                      @NonNull UnifiedFullscreenAdCallback callback,
                      @NonNull UnifiedFullscreenAdRequestParams requestParams,
-                     @NonNull UnifiedMediationParams mediationParams,
-                     @Nullable Map<String, Object> localExtra) {
+                     @NonNull UnifiedMediationParams mediationParams) {
         MyTargetParams params = new MyTargetParams(mediationParams);
         if (!params.isValid(callback)) {
             return;

@@ -4,16 +4,14 @@ import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import io.bidmachine.ContextProvider;
 import io.bidmachine.unified.UnifiedFullscreenAd;
 import io.bidmachine.unified.UnifiedFullscreenAdCallback;
 import io.bidmachine.unified.UnifiedFullscreenAdRequestParams;
 import io.bidmachine.unified.UnifiedMediationParams;
 import io.bidmachine.utils.BMError;
-import io.bidmachine.ContextProvider;
 import org.nexage.sourcekit.mraid.MRAIDInterstitial;
 import org.nexage.sourcekit.util.Video;
-
-import java.util.Map;
 
 import static io.bidmachine.core.Utils.onUiThread;
 
@@ -37,8 +35,7 @@ class MraidFullScreenAd implements UnifiedFullscreenAd {
     public void load(@NonNull final ContextProvider contextProvider,
                      @NonNull UnifiedFullscreenAdCallback callback,
                      @NonNull UnifiedFullscreenAdRequestParams requestParams,
-                     @NonNull UnifiedMediationParams mediationParams,
-                     @Nullable Map<String, Object> localExtra) {
+                     @NonNull UnifiedMediationParams mediationParams) {
         final Activity activity = contextProvider.getActivity();
         if (activity == null) {
             BMError.requestError("Activity not provided");

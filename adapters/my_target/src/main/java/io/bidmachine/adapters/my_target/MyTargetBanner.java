@@ -3,15 +3,13 @@ package io.bidmachine.adapters.my_target;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import com.my.target.ads.MyTargetView;
+import io.bidmachine.ContextProvider;
 import io.bidmachine.banner.BannerSize;
 import io.bidmachine.unified.UnifiedBannerAd;
 import io.bidmachine.unified.UnifiedBannerAdCallback;
 import io.bidmachine.unified.UnifiedBannerAdRequestParams;
 import io.bidmachine.unified.UnifiedMediationParams;
 import io.bidmachine.utils.BMError;
-import io.bidmachine.ContextProvider;
-
-import java.util.Map;
 
 class MyTargetBanner implements UnifiedBannerAd {
 
@@ -22,8 +20,7 @@ class MyTargetBanner implements UnifiedBannerAd {
     public void load(@NonNull ContextProvider contextProvider,
                      @NonNull UnifiedBannerAdCallback callback,
                      @NonNull UnifiedBannerAdRequestParams requestParams,
-                     @NonNull UnifiedMediationParams mediationParams,
-                     @Nullable Map<String, Object> localExtra) {
+                     @NonNull UnifiedMediationParams mediationParams) {
         MyTargetParams params = new MyTargetParams(mediationParams);
         if (!params.isValid(callback)) {
             return;

@@ -1,16 +1,17 @@
 package io.bidmachine.models;
 
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import io.bidmachine.ContextProvider;
+import io.bidmachine.unified.UnifiedAdRequestParams;
 
-import java.util.Map;
-
-public interface AdObject<AdObjectParamsType extends AdObjectParams> {
+public interface AdObject<
+        AdObjectParamsType extends AdObjectParams,
+        UnifiedAdRequestParamsType extends UnifiedAdRequestParams> {
 
     AdObjectParamsType getParams();
 
-    void load(@NonNull ContextProvider contextProvider, @Nullable Map<String, Object> extra);
+    void load(@NonNull ContextProvider contextProvider,
+              @NonNull UnifiedAdRequestParamsType adRequestParams);
 
     void onShown();
 

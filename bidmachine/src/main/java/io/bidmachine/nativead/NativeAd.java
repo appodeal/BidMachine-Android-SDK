@@ -16,9 +16,10 @@ import io.bidmachine.nativead.utils.NativePublicData;
 import io.bidmachine.nativead.view.NativeIconView;
 import io.bidmachine.nativead.view.NativeMediaView;
 import io.bidmachine.unified.UnifiedNativeAd;
+import io.bidmachine.unified.UnifiedNativeAdRequestParams;
 
 public final class NativeAd
-        extends BidMachineAd<NativeAd, NativeRequest, NativeAdObject, AdObjectParams, NativeListener>
+        extends BidMachineAd<NativeAd, NativeRequest, NativeAdObject, AdObjectParams, UnifiedNativeAdRequestParams, NativeListener>
         implements NativePublicData, NativeMediaPublicData, NativeContainer, NativeInteractor {
 
     public NativeAd(@NonNull Context context) {

@@ -7,13 +7,13 @@ import io.bidmachine.*;
 import io.bidmachine.models.AdObjectParams;
 import io.bidmachine.unified.UnifiedBannerAd;
 import io.bidmachine.unified.UnifiedBannerAdRequestParams;
-import io.bidmachine.ContextProvider;
 
 @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
 public final class BannerAd extends ViewAd<
         BannerAd,
         BannerRequest,
         ViewAdObject<BannerRequest, UnifiedBannerAd, UnifiedBannerAdRequestParams>,
+        UnifiedBannerAdRequestParams,
         AdListener<BannerAd>> {
 
     @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)

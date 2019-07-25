@@ -13,6 +13,7 @@ import io.bidmachine.models.AdObjectParams;
 import io.bidmachine.models.AuctionResult;
 import io.bidmachine.rewarded.RewardedAd;
 import io.bidmachine.rewarded.RewardedListener;
+import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.utils.BMError;
 
 import java.util.ArrayList;
@@ -20,9 +21,10 @@ import java.util.List;
 
 public abstract class BidMachineAd<
         SelfType extends IAd,
-        AdRequestType extends AdRequest<AdRequestType, ?>,
-        AdObjectType extends AdObject<AdObjectParamsType>,
+        AdRequestType extends AdRequest<AdRequestType, UnifiedAdRequestParamsType>,
+        AdObjectType extends AdObject<AdObjectParamsType, UnifiedAdRequestParamsType>,
         AdObjectParamsType extends AdObjectParams,
+        UnifiedAdRequestParamsType extends UnifiedAdRequestParams,
         AdListenerType extends AdListener<SelfType>>
         implements IAd<SelfType, AdRequestType> {
 
@@ -247,13 +249,17 @@ public abstract class BidMachineAd<
                                            @NonNull Response.Seatbid.Bid bid,
                                            @NonNull Ad ad,
                                            @NonNull AdRequestType adRequest) {
-        NetworkConfig networkConfig = getType().obtainNetworkConfig(contextProvider, adRequest.getUnifiedRequestParams(), ad);
+        UnifiedAdRequestParamsType adRequestParams = adRequest.getUnifiedRequestParams();
+        if (adRequestParams == null) {
+            return BMError.Internal;
+        }
+        NetworkConfig networkConfig = getType().obtainNetworkConfig(contextProvider, adRequestParams, ad);
         if (networkConfig != null) {
             AdObjectParams adObjectParams = getType().createAdObjectParams(contextProvider, seatbid, bid, ad, adRequest);
             if (adObjectParams != null && adObjectParams.isValid()) {
                 loadedObject = createAdObject(contextProvider, adRequest, networkConfig.getAdapter(), adObjectParams, processCallback);
                 if (loadedObject != null) {
-                    networkConfig.getAdapter().load(contextProvider, loadedObject, null);
+                    loadedObject.load(contextProvider, adRequestParams);
                     return null;
                 }
             }
