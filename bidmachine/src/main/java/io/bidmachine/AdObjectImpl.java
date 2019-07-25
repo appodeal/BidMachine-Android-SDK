@@ -87,7 +87,7 @@ public abstract class AdObjectImpl<
 
     @Override
     public void load(@NonNull ContextProvider contextProvider,
-                     @NonNull UnifiedAdRequestParamsType adRequestParams) {
+                     @NonNull UnifiedAdRequestParamsType adRequestParams) throws Throwable {
         unifiedAd.load(contextProvider,
                 unifiedAdCallback,
                 adRequestParams,

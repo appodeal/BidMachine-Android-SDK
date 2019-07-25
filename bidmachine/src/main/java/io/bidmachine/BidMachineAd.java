@@ -255,23 +255,28 @@ public abstract class BidMachineAd<
                                            @NonNull Response.Seatbid.Bid bid,
                                            @NonNull Ad ad,
                                            @NonNull AdRequestType adRequest) {
-        UnifiedAdRequestParamsType adRequestParams = adRequest.getUnifiedRequestParams();
-        if (adRequestParams == null) {
+        try {
+            UnifiedAdRequestParamsType adRequestParams = adRequest.getUnifiedRequestParams();
+            if (adRequestParams == null) {
+                return BMError.Internal;
+            }
+            NetworkConfig networkConfig = getType().obtainNetworkConfig(contextProvider, adRequestParams, ad);
+            if (networkConfig != null) {
+                AdObjectParams adObjectParams = getType().createAdObjectParams(contextProvider, seatbid, bid, ad, adRequest);
+                if (adObjectParams != null && adObjectParams.isValid()) {
+                    loadedObject = createAdObject(contextProvider, adRequest, networkConfig.getAdapter(), adObjectParams, processCallback);
+                    if (loadedObject != null) {
+                        loadedObject.load(contextProvider, adRequestParams);
+                        return null;
+                    }
+                }
+                return BMError.IncorrectAdUnit;
+            }
+            return BMError.adapterNotFoundError("for Ad with id: " + ad.getId());
+        } catch (Throwable e) {
+            Logger.log(e);
             return BMError.Internal;
         }
-        NetworkConfig networkConfig = getType().obtainNetworkConfig(contextProvider, adRequestParams, ad);
-        if (networkConfig != null) {
-            AdObjectParams adObjectParams = getType().createAdObjectParams(contextProvider, seatbid, bid, ad, adRequest);
-            if (adObjectParams != null && adObjectParams.isValid()) {
-                loadedObject = createAdObject(contextProvider, adRequest, networkConfig.getAdapter(), adObjectParams, processCallback);
-                if (loadedObject != null) {
-                    loadedObject.load(contextProvider, adRequestParams);
-                    return null;
-                }
-            }
-            return BMError.IncorrectAdUnit;
-        }
-        return BMError.adapterNotFoundError("for Ad with id: " + ad.getId());
     }
 
     protected abstract AdObjectType createAdObject(@NonNull ContextProvider contextProvider,

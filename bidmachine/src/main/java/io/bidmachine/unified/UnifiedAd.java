@@ -1,6 +1,5 @@
 package io.bidmachine.unified;
 
-import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 import io.bidmachine.ContextProvider;
 
@@ -11,7 +10,7 @@ public abstract class UnifiedAd<
     public abstract void load(@NonNull ContextProvider context,
                               @NonNull UnifiedAdCallbackType callback,
                               @NonNull UnifiedAdRequestParamsType requestParams,
-                              @NonNull UnifiedMediationParams mediationParams);
+                              @NonNull UnifiedMediationParams mediationParams) throws Throwable;
 
     public void onShown() {
     }

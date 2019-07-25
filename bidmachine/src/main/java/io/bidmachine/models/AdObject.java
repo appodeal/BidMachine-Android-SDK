@@ -11,7 +11,7 @@ public interface AdObject<
     AdObjectParamsType getParams();
 
     void load(@NonNull ContextProvider contextProvider,
-              @NonNull UnifiedAdRequestParamsType adRequestParams);
+              @NonNull UnifiedAdRequestParamsType adRequestParams) throws Throwable;
 
     void onShown();
 
