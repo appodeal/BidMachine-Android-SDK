@@ -304,10 +304,6 @@ public abstract class BidMachineAd<
             };
 
     @CallSuper
-    protected void onImpression() {
-    }
-
-    @CallSuper
     protected void onDestroy() {
     }
 
@@ -430,7 +426,6 @@ public abstract class BidMachineAd<
             if (loadedObject != null) {
                 loadedObject.onImpression();
             }
-            onImpression();
             log("processImpression");
             trackEvent(TrackEventType.Impression, null);
             Utils.onUiThread(new Runnable() {

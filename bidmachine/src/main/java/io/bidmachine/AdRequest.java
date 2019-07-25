@@ -63,6 +63,8 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
     private ApiRequest<Request, Response> currentApiRequest;
     @Nullable
     private ArrayList<AdRequestListener<SelfType>> adRequestListeners;
+    @Nullable
+    private UnifiedAdRequestParamsType unifiedAdRequestParams;
 
     private long expirationTime = -1;
 
@@ -110,6 +112,7 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
             userRestrictionParams = this.userRestrictionParams;
             userRestrictionParams.merge(bidMachine.getUserRestrictionParams());
         }
+        unifiedAdRequestParams = createUnifiedAdRequestParams(targetingParams, userRestrictionParams);
 
         //PriceFloor params
         final ArrayList<Message.Builder> placements = new ArrayList<>();
@@ -412,6 +415,8 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
                             getType(),
                             null);
                     return;
+                } else {
+                    Logger.log(toString() + ": Ad not found or not valid");
                 }
             } catch (InvalidProtocolBufferException e) {
                 Logger.log(e);
@@ -447,7 +452,12 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
         return BidMachineImpl.get().getTrackingUrls(eventType);
     }
 
-    public abstract UnifiedAdRequestParamsType getUnifiedRequestParams();
+    protected abstract UnifiedAdRequestParamsType createUnifiedAdRequestParams(@NonNull TargetingParams targetingParams, @NonNull DataRestrictions dataRestrictions);
+
+    @Nullable
+    final UnifiedAdRequestParamsType getUnifiedRequestParams() {
+        return unifiedAdRequestParams;
+    }
 
     @NonNull
     @Override
@@ -542,31 +552,25 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
 
     }
 
-    protected class BaseUnifiedRequestParams implements UnifiedAdRequestParams {
+    protected static class BaseUnifiedRequestParams implements UnifiedAdRequestParams {
+
+        private final DataRestrictions dataRestrictions;
+        private final TargetingInfo targetingInfo;
+
+        public BaseUnifiedRequestParams(@NonNull TargetingParams targetingParams,
+                                        @NonNull DataRestrictions dataRestrictions) {
+            this.targetingInfo = new TargetingInfoImpl(dataRestrictions, targetingParams);
+            this.dataRestrictions = dataRestrictions;
+        }
+
         @Override
         public DataRestrictions getDataRestrictions() {
-            final UserRestrictionParams userRestrictionParams;
-            final UserRestrictionParams defaultUserRestrictionParams = BidMachineImpl.get().getUserRestrictionParams();
-            if (AdRequest.this.userRestrictionParams == null) {
-                userRestrictionParams = defaultUserRestrictionParams;
-            } else {
-                userRestrictionParams = AdRequest.this.userRestrictionParams;
-                userRestrictionParams.merge(defaultUserRestrictionParams);
-            }
-            return userRestrictionParams;
+            return dataRestrictions;
         }
 
         @Override
         public TargetingInfo getTargetingParams() {
-            final TargetingParams targetingParams;
-            final TargetingParams defaultTargetingParams = BidMachineImpl.get().getTargetingParams();
-            if (AdRequest.this.targetingParams == null) {
-                targetingParams = defaultTargetingParams;
-            } else {
-                targetingParams = AdRequest.this.targetingParams;
-                targetingParams.merge(defaultTargetingParams);
-            }
-            return new TargetingInfoImpl(getDataRestrictions(), targetingParams);
+            return targetingInfo;
         }
     }
 
