@@ -8,7 +8,6 @@ import com.google.protobuf.Message;
 import io.bidmachine.*;
 import io.bidmachine.models.AdObjectParams;
 import io.bidmachine.unified.UnifiedNativeAdRequestParams;
-import io.bidmachine.ContextProvider;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -120,10 +119,11 @@ public class NativePlacementBuilder extends PlacementBuilder<UnifiedNativeAdRequ
     }
 
     @Override
-    public Message.Builder createPlacement(@NonNull ContextProvider contextProvider,
-                                           @NonNull UnifiedNativeAdRequestParams adRequestParams,
-                                           @NonNull AdsType adsType,
-                                           @NonNull Collection<NetworkConfig> networkConfigs) {
+    public void createPlacement(@NonNull ContextProvider contextProvider,
+                                @NonNull UnifiedNativeAdRequestParams adRequestParams,
+                                @NonNull AdsType adsType,
+                                @NonNull Collection<NetworkConfig> networkConfigs,
+                                @NonNull PlacementCreateCallback callback) {
         Placement.DisplayPlacement.Builder builder = Placement.DisplayPlacement.newBuilder();
         builder.setInstl(false);
         builder.setUnit(SizeUnit.SIZE_UNIT_DIPS);
@@ -154,7 +154,7 @@ public class NativePlacementBuilder extends PlacementBuilder<UnifiedNativeAdRequ
         if (headerBiddingPlacement != null) {
             builder.addExt(Any.pack(headerBiddingPlacement.build()));
         }
-        return builder;
+        callback.onCreated(builder);
     }
 
     @Override

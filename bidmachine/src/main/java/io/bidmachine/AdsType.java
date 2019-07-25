@@ -26,6 +26,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public enum AdsType {
 
@@ -53,6 +56,7 @@ public enum AdsType {
     private final ApiRequest.ApiAuctionDataBinder binder;
     private final PlacementBuilder[] placementBuilders;
     private final Map<String, NetworkConfig> networkConfigs = new HashMap<>();
+    private final Executor placementCreateExecutor = Executors.newFixedThreadPool(Math.max(8, Runtime.getRuntime().availableProcessors() * 4));
 
     AdsType(@NonNull ApiRequest.ApiAuctionDataBinder binder,
             @NonNull PlacementBuilder[] placementBuilders) {
@@ -66,11 +70,11 @@ public enum AdsType {
         NetworkConfig networkConfig = obtainHeaderBiddingAdNetworkConfig(contextProvider, adRequestParams, ad);
         if (networkConfig == null) {
             if (this == AdsType.Native) {
-                networkConfig = obtainNetworkConfig(contextProvider, adRequestParams, AdapterRegistry.Nast);
+                networkConfig = obtainNetworkConfig(contextProvider, adRequestParams, NetworkRegistry.Nast);
             } else if (ad.hasDisplay()) {
-                networkConfig = obtainNetworkConfig(contextProvider, adRequestParams, AdapterRegistry.Mraid);
+                networkConfig = obtainNetworkConfig(contextProvider, adRequestParams, NetworkRegistry.Mraid);
             } else if (ad.hasVideo()) {
-                networkConfig = obtainNetworkConfig(contextProvider, adRequestParams, AdapterRegistry.Vast);
+                networkConfig = obtainNetworkConfig(contextProvider, adRequestParams, NetworkRegistry.Vast);
             }
         }
         return networkConfig;
@@ -118,7 +122,7 @@ public enum AdsType {
     private NetworkConfig obtainNetworkConfig(@NonNull ContextProvider contextProvider,
                                               @NonNull UnifiedAdRequestParams adRequestParams,
                                               @NonNull String networkName) {
-        NetworkConfig networkConfig = AdapterRegistry.getConfig(networkName);
+        NetworkConfig networkConfig = NetworkRegistry.getConfig(networkName);
         if (networkConfig != null) {
             try {
                 networkConfig.getAdapter().initialize(contextProvider, adRequestParams, networkConfig.getNetworkConfig());
@@ -151,20 +155,46 @@ public enum AdsType {
     }
 
     @SuppressWarnings("unchecked")
-    void collectDisplayPlacements(ContextProvider contextProvider, AdRequest adRequest, ArrayList<Message.Builder> outList) {
-        for (PlacementBuilder placementBuilder : placementBuilders) {
+    void collectDisplayPlacements(final ContextProvider contextProvider,
+                                  final AdRequest adRequest,
+                                  final ArrayList<Message.Builder> outList) {
+        final CountDownLatch syncLock = new CountDownLatch(placementBuilders.length);
+        for (final PlacementBuilder placementBuilder : placementBuilders) {
             if (adRequest.isPlacementBuilderMatch(placementBuilder)) {
-                Message.Builder buildResult = placementBuilder.createPlacement(
-                        contextProvider, adRequest.getUnifiedRequestParams(), this, networkConfigs.values());
-                if (buildResult != null) {
-                    outList.add(buildResult);
-                }
+                placementCreateExecutor.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        placementBuilder.createPlacement(
+                                contextProvider,
+                                adRequest.getUnifiedRequestParams(),
+                                AdsType.this,
+                                networkConfigs.values(),
+                                new PlacementBuilder.PlacementCreateCallback() {
+                                    @Override
+                                    public void onCreated(@Nullable Message.Builder placement) {
+                                        if (placement != null) {
+                                            synchronized (outList) {
+                                                outList.add(placement);
+                                            }
+                                        }
+                                        syncLock.countDown();
+                                    }
+                                });
+                    }
+                });
+            } else {
+                syncLock.countDown();
             }
+        }
+        try {
+            syncLock.await();
+        } catch (InterruptedException e) {
+            Logger.log(e);
         }
     }
 
     static {
-        AdapterRegistry.registerNetworks(
+        NetworkRegistry.registerNetworks(
                 new NetworkConfig(new MraidAdapter()) {
                 },
                 new NetworkConfig(new NastAdapter()) {
@@ -173,7 +203,7 @@ public enum AdsType {
                 });
     }
 
-    static class AdapterRegistry {
+    static class NetworkRegistry {
 
         static final String Mraid = "mraid";
         static final String Vast = "vast";
@@ -188,12 +218,11 @@ public enum AdsType {
 
         static void registerNetworks(NetworkConfig... networkConfigs) {
             for (NetworkConfig config : networkConfigs) {
-                NetworkAdapter adapter = config.getAdapter();
-                if (!cache.containsKey(adapter.getKey())) {
-                    cache.put(adapter.getKey(), config);
+                if (!cache.containsKey(config.getKey())) {
+                    cache.put(config.getKey(), config);
                 }
                 for (AdsType type : config.getSupportedAdsTypes()) {
-                    type.networkConfigs.put(adapter.getKey(), config);
+                    type.networkConfigs.put(config.getKey(), config);
                 }
             }
         }

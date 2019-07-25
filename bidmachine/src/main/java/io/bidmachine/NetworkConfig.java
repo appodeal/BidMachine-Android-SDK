@@ -32,6 +32,14 @@ public abstract class NetworkConfig {
         return adapter;
     }
 
+    public String getKey() {
+        return adapter.getKey();
+    }
+
+    public String getVersion() {
+        return adapter.getVersion();
+    }
+
     @Nullable
     Map<String, Object> getNetworkConfig() {
         return networkConfig;

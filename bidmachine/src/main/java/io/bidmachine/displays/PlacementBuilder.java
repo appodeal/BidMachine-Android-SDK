@@ -7,10 +7,10 @@ import com.explorestack.protobuf.openrtb.Response;
 import com.google.protobuf.Message;
 import io.bidmachine.AdContentType;
 import io.bidmachine.AdsType;
+import io.bidmachine.ContextProvider;
 import io.bidmachine.NetworkConfig;
 import io.bidmachine.models.AdObjectParams;
 import io.bidmachine.unified.UnifiedAdRequestParams;
-import io.bidmachine.ContextProvider;
 
 import java.util.Collection;
 
@@ -31,10 +31,11 @@ public abstract class PlacementBuilder<UnifiedAdRequestParamsType extends Unifie
         return contentType;
     }
 
-    public abstract Message.Builder createPlacement(@NonNull ContextProvider contextProvider,
-                                                    @NonNull UnifiedAdRequestParamsType adRequestParams,
-                                                    @NonNull AdsType adsType,
-                                                    @NonNull Collection<NetworkConfig> networkConfigs);
+    public abstract void createPlacement(@NonNull ContextProvider contextProvider,
+                                         @NonNull UnifiedAdRequestParamsType adRequestParams,
+                                         @NonNull AdsType adsType,
+                                         @NonNull Collection<NetworkConfig> networkConfigs,
+                                         @NonNull PlacementCreateCallback callback);
 
     public abstract AdObjectParams createAdObjectParams(@NonNull ContextProvider contextProvider,
                                                         @NonNull UnifiedAdRequestParamsType adRequest,
@@ -60,6 +61,12 @@ public abstract class PlacementBuilder<UnifiedAdRequestParamsType extends Unifie
         return headerBiddingPlacementBuilder != null
                 ? headerBiddingPlacementBuilder.createAdObjectParams(contextProvider, adRequest, seatbid, bid, ad)
                 : null;
+    }
+
+    public interface PlacementCreateCallback {
+
+        void onCreated(@Nullable Message.Builder placement);
+
     }
 
 }

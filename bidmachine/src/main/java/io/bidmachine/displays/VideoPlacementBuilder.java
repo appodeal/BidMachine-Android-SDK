@@ -26,10 +26,11 @@ public class VideoPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAdR
     }
 
     @Override
-    public Message.Builder createPlacement(@NonNull ContextProvider contextProvider,
-                                           @NonNull UnifiedAdRequestParamsType adRequestParams,
-                                           @NonNull AdsType adsType,
-                                           @NonNull Collection<NetworkConfig> networkConfigs) {
+    public void createPlacement(@NonNull ContextProvider contextProvider,
+                                @NonNull UnifiedAdRequestParamsType adRequestParams,
+                                @NonNull AdsType adsType,
+                                @NonNull Collection<NetworkConfig> networkConfigs,
+                                @NonNull PlacementCreateCallback callback) {
         Placement.VideoPlacement.Builder builder = Placement.VideoPlacement.newBuilder();
         builder.setSkip(canSkip);
         builder.setUnit(SizeUnit.SIZE_UNIT_DIPS);
@@ -55,7 +56,7 @@ public class VideoPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAdR
         if (headerBiddingPlacement != null) {
             builder.addExt(Any.pack(headerBiddingPlacement.build()));
         }
-        return builder;
+        callback.onCreated(builder);
     }
 
     @Override

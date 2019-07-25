@@ -7,14 +7,10 @@ import com.explorestack.protobuf.adcom.*;
 import com.explorestack.protobuf.openrtb.Response;
 import com.google.protobuf.Any;
 import com.google.protobuf.Message;
-import io.bidmachine.AdContentType;
-import io.bidmachine.AdsType;
-import io.bidmachine.Constants;
-import io.bidmachine.NetworkConfig;
+import io.bidmachine.*;
 import io.bidmachine.core.Utils;
 import io.bidmachine.models.AdObjectParams;
 import io.bidmachine.unified.UnifiedAdRequestParams;
-import io.bidmachine.ContextProvider;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,10 +27,11 @@ public class DisplayPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedA
     }
 
     @Override
-    public Message.Builder createPlacement(@NonNull ContextProvider contextProvider,
-                                           @NonNull UnifiedAdRequestParamsType adRequestParams,
-                                           @NonNull AdsType adsType,
-                                           @NonNull Collection<NetworkConfig> networkConfigs) {
+    public void createPlacement(@NonNull ContextProvider contextProvider,
+                                @NonNull UnifiedAdRequestParamsType adRequestParams,
+                                @NonNull AdsType adsType,
+                                @NonNull Collection<NetworkConfig> networkConfigs,
+                                @NonNull PlacementCreateCallback callback) {
         Placement.DisplayPlacement.Builder builder = Placement.DisplayPlacement.newBuilder();
         builder.addApi(ApiFramework.API_FRAMEWORK_MRAID_2_0);
         builder.setUnit(SizeUnit.SIZE_UNIT_DIPS);
@@ -52,7 +49,7 @@ public class DisplayPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedA
         if (headerBiddingPlacement != null) {
             builder.addExt(Any.pack(headerBiddingPlacement.build()));
         }
-        return builder;
+        callback.onCreated(builder);
     }
 
     @Override

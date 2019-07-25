@@ -31,7 +31,7 @@ public class BidMachine {
      */
     public static void setLoggingEnabled(boolean enabled) {
         Logger.setLoggingEnabled(enabled);
-        AdsType.AdapterRegistry.setLoggingEnabled(enabled);
+        AdsType.NetworkRegistry.setLoggingEnabled(enabled);
     }
 
     /**
@@ -86,7 +86,7 @@ public class BidMachine {
      * @param networkConfigs - Custom configuration object per network
      */
     public static void registerNetworks(NetworkConfig... networkConfigs) {
-        AdsType.AdapterRegistry.registerNetworks(networkConfigs);
+        AdsType.NetworkRegistry.registerNetworks(networkConfigs);
     }
 
 }

@@ -74,6 +74,8 @@ public class MainActivity extends AppCompatActivity {
         BidMachine.registerNetworks(
                 new MyTargetConfig()
                         .withMediationConfig(AdsFormat.Banner, "437933")
+                        .withMediationConfig(AdsFormat.InterstitialStatic, "6896")
+                        .withMediationConfig(AdsFormat.InterstitialVideo, "10138")
                         .withMediationConfig(AdsFormat.RewardedVideo, "482205"));
 
         final SpannableStringBuilder appInfoBuilder = new SpannableStringBuilder();
