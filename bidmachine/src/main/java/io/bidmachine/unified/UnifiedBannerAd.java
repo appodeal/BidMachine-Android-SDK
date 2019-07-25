@@ -1,4 +1,4 @@
 package io.bidmachine.unified;
 
-public interface UnifiedBannerAd extends UnifiedAd<UnifiedBannerAdCallback, UnifiedBannerAdRequestParams> {
+public abstract class UnifiedBannerAd extends UnifiedAd<UnifiedBannerAdCallback, UnifiedBannerAdRequestParams> {
 }

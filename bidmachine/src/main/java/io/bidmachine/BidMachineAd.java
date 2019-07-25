@@ -66,14 +66,20 @@ public abstract class BidMachineAd<
         @Nullable
         @Override
         public List<String> getTrackingUrls(@NonNull TrackEventType eventType) {
-            ArrayList<String> outList = new ArrayList<>();
+            ArrayList<String> outList = null;
             List<String> urls = loadedObject != null && loadedObject.getParams() != null
                     ? loadedObject.getParams().getTrackUrls(eventType) : null;
             if (urls != null) {
+                if (outList == null) {
+                    outList = new ArrayList<>();
+                }
                 outList.addAll(urls);
             }
             List<String> baseUrls = BidMachineImpl.get().getTrackingUrls(eventType);
             if (baseUrls != null) {
+                if (outList == null) {
+                    outList = new ArrayList<>();
+                }
                 outList.addAll(baseUrls);
             }
             return outList;
@@ -384,6 +390,9 @@ public abstract class BidMachineAd<
         @Override
         @SuppressWarnings("unchecked")
         public void processShowFail(final BMError error) {
+            if (loadedObject != null) {
+                loadedObject.onShowFailed();
+            }
             log("processShowFail");
             trackEvent(TrackEventType.Show, error);
             Utils.onUiThread(new Runnable() {
@@ -451,6 +460,9 @@ public abstract class BidMachineAd<
                 return;
             }
             isFinishTracked = true;
+            if (loadedObject != null) {
+                loadedObject.onFinished();
+            }
             log("processFinished");
             Utils.onUiThread(new Runnable() {
                 @Override
@@ -468,6 +480,9 @@ public abstract class BidMachineAd<
         public void processClosed() {
             if (currentState.ordinal() > State.Success.ordinal()) {
                 return;
+            }
+            if (loadedObject != null) {
+                loadedObject.onClosed();
             }
             log("processClosed (" + isFinishTracked + ")");
             trackEvent(TrackEventType.Close, null);
@@ -490,6 +505,9 @@ public abstract class BidMachineAd<
             }
             if (adRequest != null) {
                 adRequest.onExpired();
+            }
+            if (loadedObject != null) {
+                loadedObject.onExpired();
             }
             log("processExpired");
             currentState = State.Expired;

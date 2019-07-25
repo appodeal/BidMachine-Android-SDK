@@ -13,7 +13,7 @@ import org.nexage.sourcekit.mraid.MRAIDView;
 
 import static io.bidmachine.core.Utils.onUiThread;
 
-class MraidBannerAd implements UnifiedBannerAd {
+class MraidBannerAd extends UnifiedBannerAd {
 
     @Nullable
     MRAIDView mraidView;

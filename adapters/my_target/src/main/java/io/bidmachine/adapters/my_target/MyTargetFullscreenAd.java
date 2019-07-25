@@ -11,7 +11,7 @@ import io.bidmachine.unified.UnifiedFullscreenAdRequestParams;
 import io.bidmachine.unified.UnifiedMediationParams;
 import io.bidmachine.utils.BMError;
 
-public class MyTargetFullscreenAd implements UnifiedFullscreenAd {
+public class MyTargetFullscreenAd extends UnifiedFullscreenAd {
 
     @Nullable
     private InterstitialAd interstitialAd;

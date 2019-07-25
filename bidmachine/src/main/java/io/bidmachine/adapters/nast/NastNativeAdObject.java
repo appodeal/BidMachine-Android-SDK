@@ -8,7 +8,7 @@ import io.bidmachine.unified.UnifiedNativeAdCallback;
 import io.bidmachine.unified.UnifiedNativeAdRequestParams;
 import io.bidmachine.utils.IabUtils;
 
-class NastNativeAdObject implements UnifiedNativeAd {
+class NastNativeAdObject extends UnifiedNativeAd {
 
     @Override
     public void load(@NonNull ContextProvider contextProvider,
@@ -16,10 +16,5 @@ class NastNativeAdObject implements UnifiedNativeAd {
                      @NonNull UnifiedNativeAdRequestParams adRequestParams,
                      @NonNull UnifiedMediationParams mediationParams) {
         callback.onAdLoaded(IabUtils.nativeDataFromMediationParams(mediationParams));
-    }
-
-    @Override
-    public void onDestroy() {
-        //ignore
     }
 }

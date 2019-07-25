@@ -14,7 +14,7 @@ import io.bidmachine.utils.IabUtils;
 import org.nexage.sourcekit.util.Video;
 import org.nexage.sourcekit.vast.view.AppodealVASTPlayer;
 
-class VastFullScreenAd implements UnifiedFullscreenAd {
+class VastFullScreenAd extends UnifiedFullscreenAd {
 
     private Video.Type videoType;
     @Nullable

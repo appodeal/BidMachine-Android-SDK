@@ -15,6 +15,8 @@ public interface AdObject<
 
     void onShown();
 
+    void onShowFailed();
+
     void onImpression();
 
     void onClicked();
@@ -22,6 +24,8 @@ public interface AdObject<
     void onFinished();
 
     void onClosed();
+
+    void onExpired();
 
     void onDestroy();
 }

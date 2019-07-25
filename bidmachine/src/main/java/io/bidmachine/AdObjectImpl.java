@@ -10,6 +10,7 @@ import io.bidmachine.models.AdObjectParams;
 import io.bidmachine.unified.UnifiedAd;
 import io.bidmachine.unified.UnifiedAdCallback;
 import io.bidmachine.unified.UnifiedAdRequestParams;
+import io.bidmachine.unified.UnifiedFullscreenAd;
 import io.bidmachine.utils.BMError;
 
 public abstract class AdObjectImpl<
@@ -96,31 +97,54 @@ public abstract class AdObjectImpl<
     @CallSuper
     @Override
     public void onShown() {
+        getUnifiedAd().onShown();
+    }
+
+    @CallSuper
+    @Override
+    public void onShowFailed() {
+        getUnifiedAd().onShowFailed();
     }
 
     @CallSuper
     @Override
     public void onImpression() {
+        getUnifiedAd().onImpression();
     }
 
     @CallSuper
     @Override
     public void onClicked() {
+        getUnifiedAd().onClicked();
     }
 
     @CallSuper
     @Override
     public void onFinished() {
+        UnifiedAdType unifiedAd = getUnifiedAd();
+        if (unifiedAd instanceof UnifiedFullscreenAd) {
+            ((UnifiedFullscreenAd) unifiedAd).onFinished();
+        }
     }
 
     @CallSuper
     @Override
     public void onClosed() {
+        UnifiedAdType unifiedAd = getUnifiedAd();
+        if (unifiedAd instanceof UnifiedFullscreenAd) {
+            ((UnifiedFullscreenAd) unifiedAd).onClosed();
+        }
+    }
+
+    @Override
+    public void onExpired() {
+        getUnifiedAd().onExpired();
     }
 
     @CallSuper
     @Override
     public void onDestroy() {
+        getUnifiedAd().onDestroy();
     }
 
     @NonNull

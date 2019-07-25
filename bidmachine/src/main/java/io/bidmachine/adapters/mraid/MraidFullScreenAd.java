@@ -15,7 +15,7 @@ import org.nexage.sourcekit.util.Video;
 
 import static io.bidmachine.core.Utils.onUiThread;
 
-class MraidFullScreenAd implements UnifiedFullscreenAd {
+class MraidFullScreenAd extends UnifiedFullscreenAd {
 
     private Video.Type videoType;
     private MRAIDInterstitial mraidInterstitial;

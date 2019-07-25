@@ -40,7 +40,6 @@ public class DisplayPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedA
             builder.setInstl(true);
             builder.setPos(PlacementPosition.PLACEMENT_POSITION_FULLSCREEN);
         }
-
         Point displaySize = getSize(contextProvider, adRequestParams);
         builder.setW(displaySize.x);
         builder.setH(displaySize.y);

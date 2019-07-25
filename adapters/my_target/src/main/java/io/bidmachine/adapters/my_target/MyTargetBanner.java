@@ -11,7 +11,7 @@ import io.bidmachine.unified.UnifiedBannerAdRequestParams;
 import io.bidmachine.unified.UnifiedMediationParams;
 import io.bidmachine.utils.BMError;
 
-class MyTargetBanner implements UnifiedBannerAd {
+class MyTargetBanner extends UnifiedBannerAd {
 
     @Nullable
     private MyTargetView adView;
