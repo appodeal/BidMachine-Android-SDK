@@ -9,18 +9,18 @@ import io.bidmachine.utils.BMError;
 
 class MyTargetParams extends UnifiedParams {
 
-    final int slotId;
+    final Integer slotId;
     final String bidId;
 
     MyTargetParams(@NonNull UnifiedMediationParams mediationParams) {
         super(mediationParams);
-        slotId = mediationParams.getInt(MyTargetConfig.KEY_SLOT_ID);
+        slotId = mediationParams.getInteger(MyTargetConfig.KEY_SLOT_ID);
         bidId = mediationParams.getString(MyTargetConfig.KEY_BID_ID);
     }
 
     @Override
     public boolean isValid(@NonNull UnifiedAdCallback callback) {
-        if (!getMediationParams().contains(MyTargetConfig.KEY_SLOT_ID)) {
+        if (slotId == null) {
             callback.onAdLoadFailed(BMError.requestError("slot_id not provided"));
             return false;
         }

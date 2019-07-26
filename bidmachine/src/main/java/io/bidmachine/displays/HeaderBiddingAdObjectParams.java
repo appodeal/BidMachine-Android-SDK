@@ -68,6 +68,20 @@ class HeaderBiddingAdObjectParams extends AdObjectParams {
             return fallback;
         }
 
+        @Nullable
+        @Override
+        public Integer getInteger(@Nullable String key, @Nullable Integer fallback) {
+            String value = getParam(key);
+            if (value != null) {
+                try {
+                    return Integer.parseInt(value);
+                } catch (Exception e) {
+                    Logger.log(e);
+                }
+            }
+            return fallback;
+        }
+
         @Override
         public boolean getBool(@Nullable String key, boolean fallback) {
             String value = getParam(key);

@@ -25,6 +25,7 @@ public class MyTargetFullscreenAd extends UnifiedFullscreenAd {
         if (!params.isValid(callback)) {
             return;
         }
+        assert params.slotId != null; // it's shouldn't be null since we already check it in {@link MyTargetParams}
         interstitialAd = new InterstitialAd(params.slotId, contextProvider.getContext());
         interstitialAd.setListener(new MyTargetFullscreenListener(callback));
         MyTargetAdapter.updateTargeting(requestParams, interstitialAd.getCustomParams());

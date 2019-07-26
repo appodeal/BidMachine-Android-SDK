@@ -42,6 +42,7 @@ class MyTargetBanner extends UnifiedBannerAd {
             }
         }
         adView = new MyTargetView(contextProvider.getContext());
+        assert params.slotId != null; // it's shouldn't be null since we already check it in {@link MyTargetParams}
         adView.init(params.slotId, adSize, false);
         adView.setListener(new MyTargetListener(callback));
         assert adView.getCustomParams() != null; // it's shouldn't be null at this point
