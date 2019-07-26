@@ -34,6 +34,7 @@ public final class BannerRequest extends AdRequest<BannerRequest, UnifiedBannerA
         return super.verifyRequest();
     }
 
+    @NonNull
     @Override
     protected UnifiedBannerAdRequestParams createUnifiedAdRequestParams(@NonNull TargetingParams targetingParams,
                                                                         @NonNull DataRestrictions dataRestrictions) {

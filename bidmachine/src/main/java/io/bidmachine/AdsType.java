@@ -140,13 +140,13 @@ public enum AdsType {
 
     @SuppressWarnings("unchecked")
     AdObjectParams createAdObjectParams(@NonNull ContextProvider contextProvider,
+                                        @NonNull UnifiedAdRequestParams adRequestParams,
                                         @NonNull Response.Seatbid seatbid,
                                         @NonNull Response.Seatbid.Bid bid,
-                                        @NonNull Ad ad,
-                                        @Deprecated AdRequest adRequest) {
+                                        @NonNull Ad ad) {
         for (PlacementBuilder builder : placementBuilders) {
             AdObjectParams params = builder.createAdObjectParams(
-                    contextProvider, adRequest.getUnifiedRequestParams(), seatbid, bid, ad);
+                    contextProvider, adRequestParams, seatbid, bid, ad);
             if (params != null) {
                 return params;
             }
@@ -155,9 +155,10 @@ public enum AdsType {
     }
 
     @SuppressWarnings("unchecked")
-    void collectDisplayPlacements(final ContextProvider contextProvider,
-                                  final AdRequest adRequest,
-                                  final ArrayList<Message.Builder> outList) {
+    void collectDisplayPlacements(@NonNull final ContextProvider contextProvider,
+                                  @NonNull final AdRequest adRequest,
+                                  @NonNull final UnifiedAdRequestParams adRequestParams,
+                                  @NonNull final ArrayList<Message.Builder> outList) {
         final CountDownLatch syncLock = new CountDownLatch(placementBuilders.length);
         for (final PlacementBuilder placementBuilder : placementBuilders) {
             if (adRequest.isPlacementBuilderMatch(placementBuilder)) {
@@ -166,7 +167,7 @@ public enum AdsType {
                     public void run() {
                         placementBuilder.createPlacement(
                                 contextProvider,
-                                adRequest.getUnifiedRequestParams(),
+                                adRequestParams,
                                 AdsType.this,
                                 networkConfigs.values(),
                                 new PlacementBuilder.PlacementCreateCallback() {

@@ -119,7 +119,7 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
             public android.content.Context getContext() {
                 return context;
             }
-        }, this, placements);
+        }, this, unifiedAdRequestParams, placements);
 
         final Request.Item.Builder itemBuilder = Request.Item.newBuilder();
         itemBuilder.setId(UUID.randomUUID().toString());
@@ -439,7 +439,9 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
         return BidMachineImpl.get().getTrackingUrls(eventType);
     }
 
-    protected abstract UnifiedAdRequestParamsType createUnifiedAdRequestParams(@NonNull TargetingParams targetingParams, @NonNull DataRestrictions dataRestrictions);
+    @NonNull
+    protected abstract UnifiedAdRequestParamsType createUnifiedAdRequestParams(@NonNull TargetingParams targetingParams,
+                                                                               @NonNull DataRestrictions dataRestrictions);
 
     @Nullable
     final UnifiedAdRequestParamsType getUnifiedRequestParams() {

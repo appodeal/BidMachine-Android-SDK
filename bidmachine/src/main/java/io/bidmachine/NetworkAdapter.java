@@ -10,7 +10,7 @@ import io.bidmachine.unified.UnifiedNativeAd;
 import java.util.Map;
 
 /**
- * All adapters must extends this class
+ * Class for implement Network initialization and specific Ads types creation
  */
 public abstract class NetworkAdapter {
 
@@ -20,26 +20,35 @@ public abstract class NetworkAdapter {
 
     private boolean isInitialized;
 
-    public NetworkAdapter(@NonNull String key, @NonNull String version, @NonNull AdsType[] supportedTypes) {
+    protected NetworkAdapter(@NonNull String key, @NonNull String version, @NonNull AdsType[] supportedTypes) {
         this.key = key;
         this.version = version;
         this.supportedTypes = supportedTypes;
     }
 
+    /**
+     * @return unique Network key
+     */
     public String getKey() {
         return key;
     }
 
+    /**
+     * @return Network version
+     */
     public String getVersion() {
         return version;
     }
 
+    /**
+     * @return Network supported ads types
+     */
     AdsType[] getSupportedTypes() {
         return supportedTypes;
     }
 
     /**
-     * Call for initialize BidMachine
+     * Call for initialize Network
      */
     public final void initialize(@NonNull ContextProvider context,
                                  @NonNull UnifiedAdRequestParams adRequestParams,
@@ -55,24 +64,36 @@ public abstract class NetworkAdapter {
                                 @Nullable Map<String, Object> config) {
     }
 
+    /**
+     * Method for create specific per Network Banner Ads
+     */
     public UnifiedBannerAd createBanner() {
         throw new IllegalArgumentException(getKey() + " adapter not supported banner");
     }
 
+    /**
+     * Method for create specific per Network Interstitial Ads
+     */
     public UnifiedFullscreenAd createInterstitial() {
         throw new IllegalArgumentException(getKey() + " adapter not supported static interstitial");
     }
 
+    /**
+     * Method for create specific per Network Rewarded Ads
+     */
     public UnifiedFullscreenAd createRewarded() {
         throw new IllegalArgumentException(getKey() + " adapter not supported rewarded interstitial");
     }
 
+    /**
+     * Method for create specific per Network Native Ads
+     */
     public UnifiedNativeAd createNativeAd() {
         throw new IllegalArgumentException(getKey() + " adapter not supported native");
     }
 
     /**
-     * Enable logging in adapter. Will be called before load of any ad type
+     * Enable logging in adapter. Will be called after this parameter was changed via {@link BidMachine#setLoggingEnabled(boolean)}
      *
      * @param enabled {@code true} to enable logging
      */

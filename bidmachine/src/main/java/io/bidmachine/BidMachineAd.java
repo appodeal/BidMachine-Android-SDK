@@ -231,7 +231,7 @@ public abstract class BidMachineAd<
         if (request == null || seatbid == null || bid == null || ad == null) {
             processRequestFail(BMError.Internal);
         } else {
-            BMError processResult = processResponseSuccess(seatbid, bid, ad, request);
+            BMError processResult = processResponseSuccess(request, seatbid, bid, ad);
             if (processResult != null) {
                 processCallback.processLoadFail(processResult);
             }
@@ -251,10 +251,10 @@ public abstract class BidMachineAd<
     }
 
     @Nullable
-    private BMError processResponseSuccess(@NonNull Response.Seatbid seatbid,
+    private BMError processResponseSuccess(@NonNull AdRequestType adRequest,
+                                           @NonNull Response.Seatbid seatbid,
                                            @NonNull Response.Seatbid.Bid bid,
-                                           @NonNull Ad ad,
-                                           @NonNull AdRequestType adRequest) {
+                                           @NonNull Ad ad) {
         try {
             UnifiedAdRequestParamsType adRequestParams = adRequest.getUnifiedRequestParams();
             if (adRequestParams == null) {
@@ -262,7 +262,7 @@ public abstract class BidMachineAd<
             }
             NetworkConfig networkConfig = getType().obtainNetworkConfig(contextProvider, adRequestParams, ad);
             if (networkConfig != null) {
-                AdObjectParams adObjectParams = getType().createAdObjectParams(contextProvider, seatbid, bid, ad, adRequest);
+                AdObjectParams adObjectParams = getType().createAdObjectParams(contextProvider, adRequestParams, seatbid, bid, ad);
                 if (adObjectParams != null && adObjectParams.isValid()) {
                     loadedObject = createAdObject(contextProvider, adRequest, networkConfig.getAdapter(), adObjectParams, processCallback);
                     if (loadedObject != null) {

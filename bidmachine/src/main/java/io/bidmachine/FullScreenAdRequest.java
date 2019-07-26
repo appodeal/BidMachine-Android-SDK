@@ -21,6 +21,7 @@ public abstract class FullScreenAdRequest<SelfType extends FullScreenAdRequest>
                 && super.isPlacementBuilderMatch(placementBuilder);
     }
 
+    @NonNull
     @Override
     protected UnifiedFullscreenAdRequestParams createUnifiedAdRequestParams(@NonNull TargetingParams targetingParams,
                                                                             @NonNull DataRestrictions dataRestrictions) {

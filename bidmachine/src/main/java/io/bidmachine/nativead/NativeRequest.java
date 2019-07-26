@@ -29,6 +29,7 @@ public final class NativeRequest extends AdRequest<NativeRequest, UnifiedNativeA
                 || mediaAssetTypes.contains(MediaAssetType.All);
     }
 
+    @NonNull
     @Override
     protected UnifiedNativeAdRequestParams createUnifiedAdRequestParams(@NonNull TargetingParams targetingParams,
                                                                         @NonNull DataRestrictions dataRestrictions) {
