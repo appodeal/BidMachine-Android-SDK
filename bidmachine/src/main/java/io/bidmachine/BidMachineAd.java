@@ -44,6 +44,7 @@ public abstract class BidMachineAd<
     private boolean isShownTracked;
     private boolean isImpressionTracked;
     private boolean isFinishTracked;
+    private boolean isCloseTracked;
 
     @NonNull
     private final ContextProvider contextProvider;
@@ -463,6 +464,9 @@ public abstract class BidMachineAd<
             if (currentState.ordinal() > State.Success.ordinal()) {
                 return;
             }
+            if (isFinishTracked) {
+                return;
+            }
             isFinishTracked = true;
             if (loadedObject != null) {
                 loadedObject.onFinished();
@@ -485,6 +489,10 @@ public abstract class BidMachineAd<
             if (currentState.ordinal() > State.Success.ordinal()) {
                 return;
             }
+            if (isCloseTracked) {
+                return;
+            }
+            isCloseTracked = true;
             if (loadedObject != null) {
                 loadedObject.onClosed(isFinishTracked);
             }

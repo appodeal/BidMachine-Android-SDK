@@ -20,7 +20,9 @@ import java.util.Map;
 class MyTargetAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
 
     MyTargetAdapter() {
-        super("my_target", BuildConfig.VERSION_NAME, new AdsType[]{AdsType.Banner, AdsType.Interstitial, AdsType.Rewarded});
+        super("my_target",
+                BuildConfig.VERSION_NAME,
+                new AdsType[]{AdsType.Banner, AdsType.Interstitial, AdsType.Rewarded});
     }
 
     @Override
