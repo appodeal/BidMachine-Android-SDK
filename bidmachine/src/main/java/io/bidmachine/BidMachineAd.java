@@ -45,14 +45,10 @@ public abstract class BidMachineAd<
     private boolean isImpressionTracked;
     private boolean isFinishTracked;
 
-    private final ContextProvider contextProvider = new ContextProvider.SimpleContextProvider() {
-        @NonNull
-        @Override
-        public Context getContext() {
-            return context;
-        }
-    };
+    @NonNull
+    private final ContextProvider contextProvider;
 
+    @NonNull
     private final TrackingObject trackingObject = new TrackingObject() {
         @Override
         public Object getTrackingKey() {
@@ -89,6 +85,7 @@ public abstract class BidMachineAd<
     public BidMachineAd(@NonNull Context context, @NonNull AdsType adsType) {
         this.context = context;
         this.adsType = adsType;
+        contextProvider = new ContextProvider.SimpleContextProvider(context);
     }
 
     @NonNull
@@ -260,11 +257,13 @@ public abstract class BidMachineAd<
             if (adRequestParams == null) {
                 return BMError.Internal;
             }
-            NetworkConfig networkConfig = getType().obtainNetworkConfig(contextProvider, adRequestParams, ad);
+            NetworkConfig networkConfig = getType().obtainNetworkConfig(ad);
             if (networkConfig != null) {
-                AdObjectParams adObjectParams = getType().createAdObjectParams(contextProvider, adRequestParams, seatbid, bid, ad);
+                AdObjectParams adObjectParams = getType().createAdObjectParams(
+                        contextProvider, adRequestParams, seatbid, bid, ad);
                 if (adObjectParams != null && adObjectParams.isValid()) {
-                    loadedObject = createAdObject(contextProvider, adRequest, networkConfig.getAdapter(), adObjectParams, processCallback);
+                    loadedObject = createAdObject(
+                            contextProvider, adRequest, networkConfig.getAdapter(), adObjectParams, processCallback);
                     if (loadedObject != null) {
                         loadedObject.load(contextProvider, adRequestParams);
                         return null;

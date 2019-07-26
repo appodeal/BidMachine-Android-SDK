@@ -2,19 +2,16 @@ package io.bidmachine.adapters.my_target;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import com.my.target.common.CustomParams;
 import com.my.target.common.MyTargetPrivacy;
-import io.bidmachine.AdsType;
-import io.bidmachine.HeaderBiddingAdapter;
-import io.bidmachine.HeaderBiddingCollectParamsCallback;
-import io.bidmachine.NetworkAdapter;
+import io.bidmachine.*;
 import io.bidmachine.models.DataRestrictions;
 import io.bidmachine.models.TargetingInfo;
 import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.unified.UnifiedBannerAd;
 import io.bidmachine.unified.UnifiedFullscreenAd;
 import io.bidmachine.utils.BMError;
-import io.bidmachine.ContextProvider;
 import io.bidmachine.utils.Gender;
 
 import java.util.Collections;
@@ -44,7 +41,7 @@ class MyTargetAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
     @Override
     protected void onInitialize(@NonNull ContextProvider contextProvider,
                                 @NonNull UnifiedAdRequestParams adRequestParams,
-                                @Nullable Map<String, Object> config) {
+                                @Nullable Map<String, String> networkConfig) {
         updateRestrictions(adRequestParams);
     }
 
@@ -52,14 +49,14 @@ class MyTargetAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
     public void collectHeaderBiddingParams(@NonNull ContextProvider contextProvider,
                                            @NonNull UnifiedAdRequestParams requestParams,
                                            @NonNull HeaderBiddingCollectParamsCallback callback,
-                                           @NonNull Map<String, Object> config) {
-        Object slotId = config.get(MyTargetConfig.KEY_SLOT_ID);
-        if (!(slotId instanceof String)) {
+                                           @NonNull Map<String, String> mediationConfig) {
+        String slotId = mediationConfig.get(MyTargetConfig.KEY_SLOT_ID);
+        if (TextUtils.isEmpty(slotId)) {
             callback.onCollectFail(BMError.requestError("slot_id not provided"));
             return;
         }
         updateRestrictions(requestParams);
-        Map<String, String> params = Collections.singletonMap(MyTargetConfig.KEY_SLOT_ID, (String) slotId);
+        Map<String, String> params = Collections.singletonMap(MyTargetConfig.KEY_SLOT_ID, slotId);
         callback.onCollectFinished(params);
     }
 

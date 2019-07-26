@@ -35,7 +35,7 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
         for (NetworkConfig networkConfig : networkConfigs) {
             NetworkAdapter adapter = networkConfig.getAdapter();
             if (adapter instanceof HeaderBiddingAdapter) {
-                Map<String, Object> mediationConfig = networkConfig.peekMediationConfig(adsType, contentType);
+                Map<String, String> mediationConfig = networkConfig.peekMediationConfig(adsType, contentType);
                 if (mediationConfig != null) {
                     preloadTasks.add(
                             new AdUnitPreloadTask<>(
@@ -118,7 +118,7 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
         @NonNull
         private UnifiedAdRequestParamsType adRequestParams;
         @NonNull
-        private Map<String, Object> mediationConfig;
+        private Map<String, String> mediationConfig;
 
         private CountDownLatch syncLock;
         private HeaderBiddingPlacement.AdUnit adUnit;
@@ -126,7 +126,7 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
         AdUnitPreloadTask(@NonNull ContextProvider contextProvider,
                           @NonNull HeaderBiddingAdapter adapter,
                           @NonNull UnifiedAdRequestParamsType adRequestParams,
-                          @NonNull Map<String, Object> mediationConfig) {
+                          @NonNull Map<String, String> mediationConfig) {
             this.contextProvider = contextProvider;
             this.adapter = adapter;
             this.adRequestParams = adRequestParams;

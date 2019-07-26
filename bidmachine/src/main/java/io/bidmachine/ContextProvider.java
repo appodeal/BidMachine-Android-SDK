@@ -13,7 +13,20 @@ public interface ContextProvider {
     @Nullable
     Activity getActivity();
 
-    abstract class SimpleContextProvider implements ContextProvider {
+    final class SimpleContextProvider implements ContextProvider {
+
+        @NonNull
+        private Context context;
+
+        SimpleContextProvider(@NonNull Context context) {
+            this.context = context;
+        }
+
+        @NonNull
+        @Override
+        public Context getContext() {
+            return context;
+        }
 
         @Nullable
         @Override

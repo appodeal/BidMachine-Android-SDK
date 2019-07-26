@@ -50,18 +50,18 @@ public abstract class NetworkAdapter {
     /**
      * Call for initialize Network
      */
-    public final void initialize(@NonNull ContextProvider context,
+    public final void initialize(@NonNull ContextProvider contextProvider,
                                  @NonNull UnifiedAdRequestParams adRequestParams,
-                                 @Nullable Map<String, Object> config) throws Throwable {
+                                 @Nullable Map<String, String> networkConfig) throws Throwable {
         if (!isInitialized) {
-            onInitialize(context, adRequestParams, config);
+            onInitialize(contextProvider, adRequestParams, networkConfig);
             isInitialized = true;
         }
     }
 
-    protected void onInitialize(@NonNull ContextProvider context,
+    protected void onInitialize(@NonNull ContextProvider contextProvider,
                                 @NonNull UnifiedAdRequestParams adRequestParams,
-                                @Nullable Map<String, Object> config) {
+                                @Nullable Map<String, String> networkConfig) {
     }
 
     /**

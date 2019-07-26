@@ -14,6 +14,6 @@ public interface HeaderBiddingAdapter {
     void collectHeaderBiddingParams(@NonNull ContextProvider contextProvider,
                                     @NonNull UnifiedAdRequestParams requestParams,
                                     @NonNull HeaderBiddingCollectParamsCallback callback,
-                                    @NonNull Map<String, Object> config);
+                                    @NonNull Map<String, String> mediationConfig);
 
 }

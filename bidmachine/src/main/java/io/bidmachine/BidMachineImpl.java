@@ -14,8 +14,11 @@ import io.bidmachine.core.AdvertisingIdClientInfo;
 import io.bidmachine.core.Logger;
 import io.bidmachine.core.NetworkRequest;
 import io.bidmachine.core.Utils;
+import io.bidmachine.models.DataRestrictions;
+import io.bidmachine.models.TargetingInfo;
 import io.bidmachine.protobuf.InitRequest;
 import io.bidmachine.protobuf.InitResponse;
+import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.utils.ActivityHelper;
 import io.bidmachine.utils.BMError;
 
@@ -104,6 +107,10 @@ final class BidMachineImpl implements TrackingObject {
 
     synchronized void initialize(Context context, String sellerId) {
         if (isInitialized) return;
+        if (TextUtils.isEmpty(sellerId)) {
+            Logger.log("Initialization fail: Seller id not provided");
+            return;
+        }
         this.sellerId = sellerId;
         appContext = context.getApplicationContext();
         sessionTracker = new SessionTrackerImpl();
@@ -119,6 +126,11 @@ final class BidMachineImpl implements TrackingObject {
         topActivity = ActivityHelper.getTopActivity();
         ((Application) context.getApplicationContext())
                 .registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks());
+        final DataRestrictions dataRestrictions = getUserRestrictionParams();
+        final TargetingInfo targetingInfo = new TargetingInfoImpl(dataRestrictions, getTargetingParams());
+        AdsType.NetworkRegistry.initializeNetworks(
+                new ContextProvider.SimpleContextProvider(context),
+                new UnifiedAdRequestParams.SimpleUnifiedAdRequestParams(dataRestrictions, targetingInfo));
         isInitialized = true;
     }
 
@@ -215,11 +227,6 @@ final class BidMachineImpl implements TrackingObject {
 
     boolean isTestMode() {
         return isTestMode;
-    }
-
-    @Nullable
-    Context getAppContext() {
-        return appContext;
     }
 
     @Nullable

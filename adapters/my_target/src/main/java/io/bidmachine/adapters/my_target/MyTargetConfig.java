@@ -16,7 +16,7 @@ public class MyTargetConfig extends NetworkConfig {
     }
 
     public MyTargetConfig withMediationConfig(@NonNull AdsFormat format, @NonNull final String slotId) {
-        return withMediationConfig(format, new HashMap<String, Object>() {{
+        return withMediationConfig(format, new HashMap<String, String>() {{
             put(KEY_SLOT_ID, slotId);
         }});
     }

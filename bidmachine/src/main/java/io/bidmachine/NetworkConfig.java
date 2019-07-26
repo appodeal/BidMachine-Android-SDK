@@ -17,11 +17,11 @@ public abstract class NetworkConfig {
     @NonNull
     private final NetworkAdapter adapter;
     @Nullable
-    private Map<String, Object> networkConfig;
+    private Map<String, String> networkConfig;
     @Nullable
-    private Map<String, Object> mediationConfig;
+    private Map<String, String> mediationConfig;
     @Nullable
-    private EnumMap<AdsFormat, Map<String, Object>> typedMediationConfigs;
+    private EnumMap<AdsFormat, Map<String, String>> typedMediationConfigs;
     @Nullable
     private AdsType[] supportedAdsTypes;
     @Nullable
@@ -57,7 +57,7 @@ public abstract class NetworkConfig {
      * @return Network global configuration (will be used for {@link NetworkAdapter#initialize(ContextProvider, UnifiedAdRequestParams, Map)})
      */
     @Nullable
-    Map<String, Object> getNetworkConfig() {
+    Map<String, String> getNetworkConfig() {
         return networkConfig;
     }
 
@@ -67,7 +67,7 @@ public abstract class NetworkConfig {
      * @param config map of parameters which will be used for Network initialization
      */
     @SuppressWarnings("unchecked")
-    public <T extends NetworkConfig> T withNetworkConfig(@Nullable Map<String, Object> config) {
+    public <T extends NetworkConfig> T withNetworkConfig(@Nullable Map<String, String> config) {
         this.networkConfig = config;
         return (T) this;
     }
@@ -79,7 +79,7 @@ public abstract class NetworkConfig {
      * @param config map of parameters which will be used for Network mediation process
      */
     @SuppressWarnings({"unchecked", "WeakerAccess"})
-    public <T extends NetworkConfig> T withMediationConfig(@Nullable Map<String, Object> config) {
+    public <T extends NetworkConfig> T withMediationConfig(@Nullable Map<String, String> config) {
         this.mediationConfig = config;
         return (T) this;
     }
@@ -92,7 +92,7 @@ public abstract class NetworkConfig {
      * @param config    map of parameters which will be used for Network mediation process
      */
     @SuppressWarnings({"unchecked", "WeakerAccess"})
-    public <T extends NetworkConfig> T withMediationConfig(@NonNull AdsFormat adsFormat, @Nullable Map<String, Object> config) {
+    public <T extends NetworkConfig> T withMediationConfig(@NonNull AdsFormat adsFormat, @Nullable Map<String, String> config) {
         if (config == null) {
             if (typedMediationConfigs != null) {
                 typedMediationConfigs.remove(adsFormat);
@@ -125,11 +125,11 @@ public abstract class NetworkConfig {
      * @return map of parameters for provided {@link AdsType} and {@link AdContentType} which will be used for mediation process
      */
     @Nullable
-    public Map<String, Object> peekMediationConfig(@NonNull AdsType adsType,
+    public Map<String, String> peekMediationConfig(@NonNull AdsType adsType,
                                                    @NonNull AdContentType contentType) {
-        Map<String, Object> resultConfig = null;
+        Map<String, String> resultConfig = null;
         if (typedMediationConfigs != null) {
-            for (Map.Entry<AdsFormat, Map<String, Object>> entry : typedMediationConfigs.entrySet()) {
+            for (Map.Entry<AdsFormat, Map<String, String>> entry : typedMediationConfigs.entrySet()) {
                 if (entry.getKey().isMatch(adsType, contentType)) {
                     resultConfig = new HashMap<>(entry.getValue());
                     break;

@@ -22,10 +22,7 @@ import io.bidmachine.protobuf.headerbidding.HeaderBiddingAd;
 import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.unified.UnifiedBannerAdRequestParams;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -64,26 +61,22 @@ public enum AdsType {
         this.placementBuilders = placementBuilders;
     }
 
-    NetworkConfig obtainNetworkConfig(@NonNull ContextProvider contextProvider,
-                                      @NonNull UnifiedAdRequestParams adRequestParams,
-                                      @NonNull Ad ad) {
-        NetworkConfig networkConfig = obtainHeaderBiddingAdNetworkConfig(contextProvider, adRequestParams, ad);
+    NetworkConfig obtainNetworkConfig(@NonNull Ad ad) {
+        NetworkConfig networkConfig = obtainHeaderBiddingAdNetworkConfig(ad);
         if (networkConfig == null) {
             if (this == AdsType.Native) {
-                networkConfig = obtainNetworkConfig(contextProvider, adRequestParams, NetworkRegistry.Nast);
+                networkConfig = NetworkRegistry.getConfig(NetworkRegistry.Nast);
             } else if (ad.hasDisplay()) {
-                networkConfig = obtainNetworkConfig(contextProvider, adRequestParams, NetworkRegistry.Mraid);
+                networkConfig = NetworkRegistry.getConfig(NetworkRegistry.Mraid);
             } else if (ad.hasVideo()) {
-                networkConfig = obtainNetworkConfig(contextProvider, adRequestParams, NetworkRegistry.Vast);
+                networkConfig = NetworkRegistry.getConfig(NetworkRegistry.Vast);
             }
         }
         return networkConfig;
     }
 
     @Nullable
-    private NetworkConfig obtainHeaderBiddingAdNetworkConfig(@NonNull ContextProvider contextProvider,
-                                                             @NonNull UnifiedAdRequestParams adRequestParams,
-                                                             @NonNull Ad ad) {
+    private NetworkConfig obtainHeaderBiddingAdNetworkConfig(@NonNull Ad ad) {
         List<Any> extensions = null;
         if (ad.hasDisplay()) {
             Ad.Display display = ad.getDisplay();
@@ -97,41 +90,24 @@ public enum AdsType {
             extensions = ad.getVideo().getExtList();
         }
         if (extensions != null) {
-            return obtainHeaderBiddingAdNetworkConfig(contextProvider, adRequestParams, extensions);
+            return obtainHeaderBiddingAdNetworkConfig(extensions);
         }
         return null;
     }
 
     @Nullable
-    private NetworkConfig obtainHeaderBiddingAdNetworkConfig(@NonNull ContextProvider contextProvider,
-                                                             @NonNull UnifiedAdRequestParams adRequestParams,
-                                                             @NonNull List<Any> extensions) {
+    private NetworkConfig obtainHeaderBiddingAdNetworkConfig(@NonNull List<Any> extensions) {
         for (Any extension : extensions) {
             if (extension.is(HeaderBiddingAd.class)) {
                 try {
                     HeaderBiddingAd headerBiddingAd = extension.unpack(HeaderBiddingAd.class);
-                    return obtainNetworkConfig(contextProvider, adRequestParams, headerBiddingAd.getBidder());
+                    return NetworkRegistry.getConfig(headerBiddingAd.getBidder());
                 } catch (InvalidProtocolBufferException e) {
                     e.printStackTrace();
                 }
             }
         }
         return null;
-    }
-
-    private NetworkConfig obtainNetworkConfig(@NonNull ContextProvider contextProvider,
-                                              @NonNull UnifiedAdRequestParams adRequestParams,
-                                              @NonNull String networkName) {
-        NetworkConfig networkConfig = NetworkRegistry.getConfig(networkName);
-        if (networkConfig != null) {
-            try {
-                networkConfig.getAdapter().initialize(contextProvider, adRequestParams, networkConfig.getNetworkConfig());
-            } catch (Throwable throwable) {
-                Logger.log(throwable);
-                networkConfig = null;
-            }
-        }
-        return networkConfig;
     }
 
     ApiRequest.ApiAuctionDataBinder getBinder() {
@@ -211,6 +187,7 @@ public enum AdsType {
         static final String Nast = "nast";
 
         private static final HashMap<String, NetworkConfig> cache = new HashMap<>();
+        private static boolean isNetworksInitialized = false;
 
         @Nullable
         static NetworkConfig getConfig(String key) {
@@ -219,13 +196,39 @@ public enum AdsType {
 
         static void registerNetworks(NetworkConfig... networkConfigs) {
             for (NetworkConfig config : networkConfigs) {
-                if (!cache.containsKey(config.getKey())) {
-                    cache.put(config.getKey(), config);
+                String key = config.getKey();
+                if (!cache.containsKey(key)) {
+                    cache.put(key, config);
                 }
                 for (AdsType type : config.getSupportedAdsTypes()) {
-                    type.networkConfigs.put(config.getKey(), config);
+                    type.networkConfigs.put(key, config);
                 }
             }
+        }
+
+        static void initializeNetworks(@NonNull final ContextProvider contextProvider,
+                                       @NonNull final UnifiedAdRequestParams unifiedAdRequestParams) {
+            if (isNetworksInitialized) {
+                return;
+            }
+            isNetworksInitialized = true;
+            new Thread() {
+                @Override
+                public void run() {
+                    super.run();
+                    for (Iterator<Map.Entry<String, NetworkConfig>> iterator = cache.entrySet().iterator(); iterator.hasNext(); ) {
+                        Map.Entry<String, NetworkConfig> entry = iterator.next();
+                        try {
+                            NetworkConfig config = entry.getValue();
+                            config.getAdapter().initialize(contextProvider, unifiedAdRequestParams, config.getNetworkConfig());
+                        } catch (Throwable e) {
+                            Logger.log(e);
+                            Logger.log("Network initialization fail: " + entry.getKey() + " - removed from registered networks");
+                            iterator.remove();
+                        }
+                    }
+                }
+            }.start();
         }
 
         static void setLoggingEnabled(boolean enabled) {
