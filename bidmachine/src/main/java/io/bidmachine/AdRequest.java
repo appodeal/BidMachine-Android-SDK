@@ -14,10 +14,7 @@ import com.google.protobuf.Message;
 import io.bidmachine.core.Logger;
 import io.bidmachine.core.NetworkRequest;
 import io.bidmachine.displays.PlacementBuilder;
-import io.bidmachine.models.AuctionResult;
-import io.bidmachine.models.DataRestrictions;
-import io.bidmachine.models.RequestBuilder;
-import io.bidmachine.models.TargetingInfo;
+import io.bidmachine.models.*;
 import io.bidmachine.protobuf.RequestExtension;
 import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.utils.BMError;
@@ -31,6 +28,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static io.bidmachine.Utils.getOrDefault;
+import static io.bidmachine.core.Utils.oneOf;
 
 public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestParamsType extends UnifiedAdRequestParams>
         implements TrackingObject {
@@ -97,24 +95,23 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
         final BidMachineImpl bidMachine = BidMachineImpl.get();
 
         final Request.Builder requestBuilder = Request.newBuilder();
-        final TargetingParams targetingParams;
-        if (this.targetingParams == null) {
-            targetingParams = bidMachine.getTargetingParams();
-        } else {
-            targetingParams = this.targetingParams;
-            targetingParams.merge(bidMachine.getTargetingParams());
-        }
+        final TargetingParams targetingParams =
+                RequestParams.resolveParams(this.targetingParams, bidMachine.getTargetingParams());
         final BlockedParams blockedParams = targetingParams.getBlockedParams();
-        final UserRestrictionParams userRestrictionParams;
-        if (this.userRestrictionParams == null) {
-            userRestrictionParams = bidMachine.getUserRestrictionParams();
-        } else {
-            userRestrictionParams = this.userRestrictionParams;
-            userRestrictionParams.merge(bidMachine.getUserRestrictionParams());
-        }
+        final UserRestrictionParams userRestrictionParams =
+                RequestParams.resolveParams(this.userRestrictionParams, bidMachine.getUserRestrictionParams());
         unifiedAdRequestParams = createUnifiedAdRequestParams(targetingParams, userRestrictionParams);
 
         //PriceFloor params
+        final PriceFloorParams priceFloorParams = oneOf(this.priceFloorParams, bidMachine.getPriceFloorParams());
+        final Map<String, Double> priceFloorsMap =
+                priceFloorParams.getPriceFloors() == null || priceFloorParams.getPriceFloors().size() == 0
+                        ? bidMachine.getPriceFloorParams().getPriceFloors() : priceFloorParams.getPriceFloors();
+
+        if (priceFloorsMap == null) {
+            return BMError.paramError("PriceFloors not provided");
+        }
+
         final ArrayList<Message.Builder> placements = new ArrayList<>();
         adsType.collectDisplayPlacements(new ContextProvider.SimpleContextProvider() {
             @NonNull
@@ -123,16 +120,6 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
                 return context;
             }
         }, this, placements);
-
-        final PriceFloorParams priceFloorParams = this.priceFloorParams != null
-                ? this.priceFloorParams : bidMachine.getPriceFloorParams();
-        final Map<String, Double> priceFloorsMap = priceFloorParams.getPriceFloors() == null
-                || priceFloorParams.getPriceFloors().size() == 0
-                ? bidMachine.getPriceFloorParams().getPriceFloors() : priceFloorParams.getPriceFloors();
-
-        if (priceFloorsMap == null) {
-            return BMError.paramError("PriceFloors not provided");
-        }
 
         final Request.Item.Builder itemBuilder = Request.Item.newBuilder();
         itemBuilder.setId(UUID.randomUUID().toString());

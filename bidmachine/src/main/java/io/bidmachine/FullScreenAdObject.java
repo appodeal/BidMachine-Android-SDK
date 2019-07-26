@@ -49,8 +49,8 @@ public final class FullScreenAdObject<AdRequestType extends FullScreenAdRequest<
     }
 
     @Override
-    public void onClosed() {
-        super.onClosed();
+    public void onClosed(boolean finished) {
+        super.onClosed(finished);
         cancelImpressionThresholdTask();
     }
 

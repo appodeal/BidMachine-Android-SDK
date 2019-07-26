@@ -11,6 +11,6 @@ public abstract class UnifiedFullscreenAd extends UnifiedAd<UnifiedFullscreenAdC
     public void onFinished() {
     }
 
-    public void onClosed() {
+    public void onClosed(boolean finished) {
     }
 }

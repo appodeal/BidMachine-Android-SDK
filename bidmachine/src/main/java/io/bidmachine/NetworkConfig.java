@@ -84,12 +84,12 @@ public abstract class NetworkConfig {
         if (typedMediationConfigs != null) {
             for (Map.Entry<AdsFormat, Map<String, Object>> entry : typedMediationConfigs.entrySet()) {
                 if (entry.getKey().isMatch(adsType, contentType)) {
-                    resultConfig = entry.getValue();
+                    resultConfig = new HashMap<>(entry.getValue());
                     break;
                 }
             }
         }
-        if (resultConfig != null && mediationConfig != null) {
+        if (resultConfig == null && mediationConfig != null) {
             resultConfig = new HashMap<>(mediationConfig);
         }
         return resultConfig;

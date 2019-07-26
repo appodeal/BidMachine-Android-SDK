@@ -19,7 +19,7 @@ public abstract class AdObjectImpl<
         UnifiedAdType extends UnifiedAd<UnifiedAdCallbackType, UnifiedAdRequestParamsType>,
         UnifiedAdCallbackType extends UnifiedAdCallback,
         UnifiedAdRequestParamsType extends UnifiedAdRequestParams>
-        implements AdObject<AdObjectParamsType, UnifiedAdRequestParamsType>, ContextProvider {
+        implements AdObject<AdObjectParamsType, UnifiedAdRequestParamsType, UnifiedAdCallbackType>, ContextProvider {
 
     @NonNull
     private final ContextProvider contextProvider;
@@ -129,10 +129,10 @@ public abstract class AdObjectImpl<
 
     @CallSuper
     @Override
-    public void onClosed() {
+    public void onClosed(boolean finished) {
         UnifiedAdType unifiedAd = getUnifiedAd();
         if (unifiedAd instanceof UnifiedFullscreenAd) {
-            ((UnifiedFullscreenAd) unifiedAd).onClosed();
+            ((UnifiedFullscreenAd) unifiedAd).onClosed(finished);
         }
     }
 
@@ -146,9 +146,6 @@ public abstract class AdObjectImpl<
     public void onDestroy() {
         getUnifiedAd().onDestroy();
     }
-
-    @NonNull
-    public abstract UnifiedAdCallbackType createUnifiedCallback(@NonNull AdProcessCallback processCallback);
 
     protected static class BaseUnifiedAdCallback implements UnifiedAdCallback {
 

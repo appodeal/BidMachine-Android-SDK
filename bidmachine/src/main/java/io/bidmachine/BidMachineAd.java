@@ -22,7 +22,7 @@ import java.util.List;
 public abstract class BidMachineAd<
         SelfType extends IAd,
         AdRequestType extends AdRequest<AdRequestType, UnifiedAdRequestParamsType>,
-        AdObjectType extends AdObject<AdObjectParamsType, UnifiedAdRequestParamsType>,
+        AdObjectType extends AdObject<AdObjectParamsType, UnifiedAdRequestParamsType, ?>,
         AdObjectParamsType extends AdObjectParams,
         UnifiedAdRequestParamsType extends UnifiedAdRequestParams,
         AdListenerType extends AdListener<SelfType>>
@@ -487,7 +487,7 @@ public abstract class BidMachineAd<
                 return;
             }
             if (loadedObject != null) {
-                loadedObject.onClosed();
+                loadedObject.onClosed(isFinishTracked);
             }
             log("processClosed (" + isFinishTracked + ")");
             trackEvent(TrackEventType.Close, null);
