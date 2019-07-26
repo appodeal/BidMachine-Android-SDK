@@ -105,8 +105,12 @@ final class BidMachineImpl implements TrackingObject {
         }
     };
 
-    synchronized void initialize(Context context, String sellerId) {
+    synchronized void initialize(@NonNull Context context, @NonNull String sellerId) {
         if (isInitialized) return;
+        if (context == null) {
+            Logger.log("Initialization fail: Context not provided");
+            return;
+        }
         if (TextUtils.isEmpty(sellerId)) {
             Logger.log("Initialization fail: Seller id not provided");
             return;
@@ -134,7 +138,7 @@ final class BidMachineImpl implements TrackingObject {
         isInitialized = true;
     }
 
-    private void requestInitData(final Context context, String sellerId) {
+    private void requestInitData(@NonNull final Context context, @NonNull String sellerId) {
         if (currentInitRequest != null) return;
         SessionTracker.eventStart(this, TrackEventType.InitLoading, null);
         currentInitRequest = new ApiRequest.Builder<InitRequest, InitResponse>()
@@ -188,12 +192,12 @@ final class BidMachineImpl implements TrackingObject {
         OrtbUtils.prepareEvents(trackingEventTypes, response.getEventList());
     }
 
-    private void storeInitResponse(Context context, InitResponse response) {
+    private void storeInitResponse(@NonNull Context context, @NonNull InitResponse response) {
         SharedPreferences preferences = context.getSharedPreferences("BidMachinePref", Context.MODE_PRIVATE);
         preferences.edit().putString(PREF_INIT_DATA, Base64.encodeToString(response.toByteArray(), Base64.DEFAULT)).apply();
     }
 
-    private void loadStoredInitResponse(Context context) {
+    private void loadStoredInitResponse(@NonNull Context context) {
         SharedPreferences preferences = context.getSharedPreferences("BidMachinePref", Context.MODE_PRIVATE);
         if (preferences.contains(PREF_INIT_DATA)) {
             try {

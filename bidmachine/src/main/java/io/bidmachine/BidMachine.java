@@ -1,6 +1,7 @@
 package io.bidmachine;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import io.bidmachine.core.Logger;
 
@@ -20,7 +21,7 @@ public class BidMachine {
      * @param context  - your application context
      * @param sellerId - your Seller Id
      */
-    public static void initialize(Context context, String sellerId) {
+    public static void initialize(@NonNull Context context, @NonNull String sellerId) {
         BidMachineImpl.get().initialize(context, sellerId);
     }
 
@@ -58,7 +59,7 @@ public class BidMachine {
      *                      <a href="https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/Consent%20string%20and%20vendor%20list%20formats%20v1.1%20Final.md">Consent String Format</a>
      *                      in the <a href="https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework">Transparency and Consent Framework</a> technical specifications
      */
-    public static void setConsentConfig(boolean hasConsent, String consentString) {
+    public static void setConsentConfig(boolean hasConsent, @Nullable String consentString) {
         BidMachineImpl.get().getUserRestrictionParams().setConsentConfig(hasConsent, consentString);
     }
 
@@ -67,7 +68,7 @@ public class BidMachine {
      *
      * @param subject - Flag indicating if GDPR regulations apply. <a href="https://wikipedia.org/wiki/General_Data_Protection_Regulation">The  General Data Protection Regulation (GDPR)</a> is a regulation of the European Union
      */
-    public static void setSubjectToGDPR(Boolean subject) {
+    public static void setSubjectToGDPR(@Nullable Boolean subject) {
         BidMachineImpl.get().getUserRestrictionParams().setSubjectToGDPR(subject);
     }
 
@@ -76,7 +77,7 @@ public class BidMachine {
      *
      * @param coppa - Flag indicating if COPPA regulations apply. <a href="https://wikipedia.org/wiki/Children%27s_Online_Privacy_Protection_Act">The Children's Online Privacy Protection Act (COPPA)</a> was established by the U.S. Federal Trade Commission
      */
-    public static void setCoppa(Boolean coppa) {
+    public static void setCoppa(@Nullable Boolean coppa) {
         BidMachineImpl.get().getUserRestrictionParams().setCoppa(coppa);
     }
 
@@ -85,7 +86,7 @@ public class BidMachine {
      *
      * @param networkConfigs - Custom configuration object per network
      */
-    public static void registerNetworks(NetworkConfig... networkConfigs) {
+    public static void registerNetworks(@NonNull NetworkConfig... networkConfigs) {
         AdsType.NetworkRegistry.registerNetworks(networkConfigs);
     }
 
