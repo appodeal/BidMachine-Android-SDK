@@ -158,12 +158,12 @@ public abstract class AdView<
 
     @Override
     public boolean isExpired() {
-        return pendingAd != null ? pendingAd.isExpired() : currentAd == null || currentAd.isExpired();
+        return pendingAd != null ? pendingAd.isExpired() : currentAd != null && currentAd.isExpired();
     }
 
     @Override
     public boolean isDestroyed() {
-        return pendingAd != null ? pendingAd.isDestroyed() : currentAd == null || currentAd.isDestroyed();
+        return pendingAd != null ? pendingAd.isDestroyed() : currentAd != null && currentAd.isDestroyed();
     }
 
     @Nullable
