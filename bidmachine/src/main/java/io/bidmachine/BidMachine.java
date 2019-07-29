@@ -26,6 +26,15 @@ public class BidMachine {
     }
 
     /**
+     * Set BidMachine SDK endpoint
+     *
+     * @param url - BidMachine endpoint URL
+     */
+    public static void setEndpoint(@NonNull String url) {
+        BidMachineImpl.get().setInitUrl(url);
+    }
+
+    /**
      * Set BidMachine SDK logs enabled
      *
      * @param enabled - if {@code true} SDK will print all information about ad requests
