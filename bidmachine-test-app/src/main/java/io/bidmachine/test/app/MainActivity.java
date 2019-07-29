@@ -32,6 +32,7 @@ import io.bidmachine.BidMachine;
 import io.bidmachine.MediaAssetType;
 import io.bidmachine.adapters.adcolony.AdColonyNetworkConfig;
 import io.bidmachine.adapters.my_target.MyTargetConfig;
+import io.bidmachine.adapters.tapjoy.TapjoyNetworkConfig;
 import io.bidmachine.banner.BannerSize;
 import io.bidmachine.banner.BannerView;
 import io.bidmachine.nativead.NativeAd;
@@ -83,7 +84,10 @@ public class MainActivity extends AppCompatActivity {
                         .withMediationConfig(AdsFormat.Banner, "437933")
                         .withMediationConfig(AdsFormat.InterstitialStatic, "365991")
                         .withMediationConfig(AdsFormat.InterstitialVideo, "365991")
-                        .withMediationConfig(AdsFormat.RewardedVideo, "482205"));
+                        .withMediationConfig(AdsFormat.RewardedVideo, "482205"),
+                new TapjoyNetworkConfig("tmyN5ZcXTMyjeJNJmUD5ggECAbnEGtJREmLDd0fvqKBXcIr7e1dvboNKZI4y")
+                        .withMediationConfig(AdsFormat.InterstitialVideo, "video_without_cap_pb")
+                        .withMediationConfig(AdsFormat.RewardedVideo, "rewarded_video_without_cap_pb"));
 
         final SpannableStringBuilder appInfoBuilder = new SpannableStringBuilder();
         appInfoBuilder.append("Version: ");
