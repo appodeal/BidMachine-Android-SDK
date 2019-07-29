@@ -39,7 +39,7 @@ class TapjoyAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
         super.onInitialize(contextProvider, adRequestParams, networkConfig);
         configure(adRequestParams);
         if (networkConfig != null) {
-            final String sdkKey = networkConfig.get(TapjoyNetworkConfig.KEY_SDK);
+            final String sdkKey = networkConfig.get(TapjoyConfig.KEY_SDK);
             if (!TextUtils.isEmpty(sdkKey)) {
                 assert sdkKey != null;
                 initializeTapjoy(contextProvider, sdkKey, null);
@@ -52,13 +52,13 @@ class TapjoyAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
                                            @NonNull UnifiedAdRequestParams adRequestParams,
                                            @NonNull final HeaderBiddingCollectParamsCallback callback,
                                            @NonNull Map<String, String> mediationConfig) {
-        final String sdkKey = mediationConfig.get(TapjoyNetworkConfig.KEY_SDK);
+        final String sdkKey = mediationConfig.get(TapjoyConfig.KEY_SDK);
         if (TextUtils.isEmpty(sdkKey)) {
             callback.onCollectFail(BMError.requestError("sdk_key not provided"));
             return;
         }
         assert sdkKey != null;
-        final String placementName = mediationConfig.get(TapjoyNetworkConfig.KEY_PLACEMENT_NAME);
+        final String placementName = mediationConfig.get(TapjoyConfig.KEY_PLACEMENT_NAME);
         if (TextUtils.isEmpty(placementName)) {
             callback.onCollectFail(BMError.requestError("placement_name not provided"));
             return;
@@ -69,9 +69,9 @@ class TapjoyAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
             @Override
             public void onInitialized() {
                 Map<String, String> params = new HashMap<>();
-                params.put(TapjoyNetworkConfig.KEY_SDK, sdkKey);
-                params.put(TapjoyNetworkConfig.KEY_PLACEMENT_NAME, placementName);
-                params.put(TapjoyNetworkConfig.KEY_TOKEN, Tapjoy.getUserToken());
+                params.put(TapjoyConfig.KEY_SDK, sdkKey);
+                params.put(TapjoyConfig.KEY_PLACEMENT_NAME, placementName);
+                params.put(TapjoyConfig.KEY_TOKEN, Tapjoy.getUserToken());
                 callback.onCollectFinished(params);
             }
 

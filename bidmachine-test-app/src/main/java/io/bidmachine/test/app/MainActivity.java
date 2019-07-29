@@ -30,9 +30,9 @@ import io.bidmachine.AdContentType;
 import io.bidmachine.AdsFormat;
 import io.bidmachine.BidMachine;
 import io.bidmachine.MediaAssetType;
-import io.bidmachine.adapters.adcolony.AdColonyNetworkConfig;
+import io.bidmachine.adapters.adcolony.AdColonyConfig;
 import io.bidmachine.adapters.my_target.MyTargetConfig;
-import io.bidmachine.adapters.tapjoy.TapjoyNetworkConfig;
+import io.bidmachine.adapters.tapjoy.TapjoyConfig;
 import io.bidmachine.banner.BannerSize;
 import io.bidmachine.banner.BannerView;
 import io.bidmachine.nativead.NativeAd;
@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         BidMachine.registerNetworks(
-                new AdColonyNetworkConfig("app185a7e71e1714831a49ec7")
+                new AdColonyConfig("app185a7e71e1714831a49ec7")
                         .withMediationParams(AdsFormat.InterstitialVideo, "vz06e8c32a037749699e7050")
                         .withMediationParams(AdsFormat.RewardedVideo, "vz1fd5a8b2bf6841a0a4b826"),
                 new MyTargetConfig()
@@ -85,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
                         .withMediationConfig(AdsFormat.InterstitialStatic, "365991")
                         .withMediationConfig(AdsFormat.InterstitialVideo, "365991")
                         .withMediationConfig(AdsFormat.RewardedVideo, "482205"),
-                new TapjoyNetworkConfig("tmyN5ZcXTMyjeJNJmUD5ggECAbnEGtJREmLDd0fvqKBXcIr7e1dvboNKZI4y")
+                new TapjoyConfig("tmyN5ZcXTMyjeJNJmUD5ggECAbnEGtJREmLDd0fvqKBXcIr7e1dvboNKZI4y")
                         .withMediationConfig(AdsFormat.InterstitialVideo, "video_without_cap_pb")
                         .withMediationConfig(AdsFormat.RewardedVideo, "rewarded_video_without_cap_pb"));
 

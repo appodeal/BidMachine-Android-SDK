@@ -6,7 +6,7 @@ import io.bidmachine.NetworkConfig;
 
 import java.util.HashMap;
 
-public class AdColonyNetworkConfig extends NetworkConfig {
+public class AdColonyConfig extends NetworkConfig {
 
     static final String KEY_APP_ID = "app_id";
     static final String KEY_ZONE_ID = "zone_id";
@@ -17,34 +17,34 @@ public class AdColonyNetworkConfig extends NetworkConfig {
     @NonNull
     private final String storeId;
 
-    public AdColonyNetworkConfig(@NonNull String appId) {
+    public AdColonyConfig(@NonNull String appId) {
         this(appId, "google");
     }
 
     @SuppressWarnings("WeakerAccess")
-    public AdColonyNetworkConfig(@NonNull String appId, @NonNull String storeId) {
+    public AdColonyConfig(@NonNull String appId, @NonNull String storeId) {
         super(new AdColonyAdapter());
         this.appId = appId;
         this.storeId = storeId;
     }
 
-    public AdColonyNetworkConfig withMediationParams(@NonNull AdsFormat adsFormat,
-                                                     @NonNull String zoneId) {
+    public AdColonyConfig withMediationParams(@NonNull AdsFormat adsFormat,
+                                              @NonNull String zoneId) {
         return withMediationParams(adsFormat, appId, zoneId);
     }
 
     @SuppressWarnings("WeakerAccess")
-    public AdColonyNetworkConfig withMediationParams(@NonNull AdsFormat adsFormat,
-                                                     @NonNull String appId,
-                                                     @NonNull String zoneId) {
+    public AdColonyConfig withMediationParams(@NonNull AdsFormat adsFormat,
+                                              @NonNull String appId,
+                                              @NonNull String zoneId) {
         return withMediationParams(adsFormat, appId, zoneId, storeId);
     }
 
     @SuppressWarnings("WeakerAccess")
-    public AdColonyNetworkConfig withMediationParams(@NonNull AdsFormat adsFormat,
-                                                     @NonNull final String appId,
-                                                     @NonNull final String zoneId,
-                                                     @NonNull final String storeId) {
+    public AdColonyConfig withMediationParams(@NonNull AdsFormat adsFormat,
+                                              @NonNull final String appId,
+                                              @NonNull final String zoneId,
+                                              @NonNull final String storeId) {
         return withMediationConfig(adsFormat, new HashMap<String, String>() {{
             put(KEY_APP_ID, appId);
             put(KEY_ZONE_ID, zoneId);

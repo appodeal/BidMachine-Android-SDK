@@ -8,7 +8,7 @@ import io.bidmachine.NetworkConfig;
 
 import java.util.HashMap;
 
-public class TapjoyNetworkConfig extends NetworkConfig {
+public class TapjoyConfig extends NetworkConfig {
 
     static final String KEY_SDK = "sdk_key";
     static final String KEY_PLACEMENT_NAME = "placement_name";
@@ -17,7 +17,7 @@ public class TapjoyNetworkConfig extends NetworkConfig {
     @NonNull
     private final String sdkKey;
 
-    public TapjoyNetworkConfig(@NonNull final String sdkKey) {
+    public TapjoyConfig(@NonNull final String sdkKey) {
         super(new TapjoyAdapter());
         this.sdkKey = sdkKey;
         withNetworkConfig(new HashMap<String, String>() {{
@@ -25,12 +25,12 @@ public class TapjoyNetworkConfig extends NetworkConfig {
         }});
     }
 
-    public TapjoyNetworkConfig withMediationConfig(@NonNull AdsFormat format, @NonNull String placementName) {
+    public TapjoyConfig withMediationConfig(@NonNull AdsFormat format, @NonNull String placementName) {
         return withMediationConfig(format, sdkKey, placementName);
     }
 
     @SuppressWarnings("WeakerAccess")
-    public TapjoyNetworkConfig withMediationConfig(@NonNull AdsFormat format, @Nullable final String sdkKey, @NonNull final String placementName) {
+    public TapjoyConfig withMediationConfig(@NonNull AdsFormat format, @Nullable final String sdkKey, @NonNull final String placementName) {
         withMediationConfig(format, new HashMap<String, String>() {{
             if (!TextUtils.isEmpty(sdkKey)) {
                 put(KEY_SDK, sdkKey);

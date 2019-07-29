@@ -30,7 +30,7 @@ public class TapjoyFullscreenAd extends UnifiedFullscreenAd {
         //TODO: fix this behavior
         Tapjoy.setActivity((Activity) context);
         TapjoyFullscreenAdListener listener = new TapjoyFullscreenAdListener(callback);
-        tjPlacement = Tapjoy.getLimitedPlacement(mediationParams.getString(TapjoyNetworkConfig.KEY_PLACEMENT_NAME), listener);
+        tjPlacement = Tapjoy.getLimitedPlacement(mediationParams.getString(TapjoyConfig.KEY_PLACEMENT_NAME), listener);
         tjPlacement.setVideoListener(listener);
         tjPlacement.setMediationName(BidMachine.NAME);
         tjPlacement.setAdapterVersion(BuildConfig.VERSION_NAME);
