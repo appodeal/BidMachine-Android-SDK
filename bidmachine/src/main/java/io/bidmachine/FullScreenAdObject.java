@@ -7,11 +7,9 @@ import io.bidmachine.models.AdObjectParams;
 import io.bidmachine.unified.UnifiedFullscreenAd;
 import io.bidmachine.unified.UnifiedFullscreenAdCallback;
 import io.bidmachine.unified.UnifiedFullscreenAdRequestParams;
-import io.bidmachine.utils.ContextProvider;
 
 public final class FullScreenAdObject<AdRequestType extends FullScreenAdRequest<AdRequestType>>
-        extends AdObjectImpl<AdRequestType, AdObjectParams, UnifiedFullscreenAd, UnifiedFullscreenAdCallback, UnifiedFullscreenAdRequestParams>
-        implements IFullScreenAd {
+        extends AdObjectImpl<AdRequestType, AdObjectParams, UnifiedFullscreenAd, UnifiedFullscreenAdCallback, UnifiedFullscreenAdRequestParams> {
 
     private final ImpressionThresholdTask thresholdTask = new ImpressionThresholdTask() {
         @Override
@@ -34,7 +32,6 @@ public final class FullScreenAdObject<AdRequestType extends FullScreenAdRequest<
         return new UnifiedFullscreenAdCallbackImpl(processCallback);
     }
 
-    @Override
     public void show(@NonNull Context context) {
         getUnifiedAd().show(context, getUnifiedAdCallback());
     }
@@ -52,8 +49,8 @@ public final class FullScreenAdObject<AdRequestType extends FullScreenAdRequest<
     }
 
     @Override
-    public void onClosed() {
-        super.onClosed();
+    public void onClosed(boolean finished) {
+        super.onClosed(finished);
         cancelImpressionThresholdTask();
     }
 

@@ -1,6 +1,5 @@
 package io.bidmachine;
 
-import android.content.Context;
 import android.graphics.Point;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -23,10 +22,10 @@ import io.bidmachine.protobuf.headerbidding.HeaderBiddingAd;
 import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.unified.UnifiedBannerAdRequestParams;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public enum AdsType {
 
@@ -34,7 +33,7 @@ public enum AdsType {
             new PlacementBuilder[]{
                     new DisplayPlacementBuilder<UnifiedBannerAdRequestParams>(false, true) {
                         @Override
-                        public Point getSize(Context context, UnifiedBannerAdRequestParams bannerRequest) {
+                        public Point getSize(ContextProvider contextProvider, UnifiedBannerAdRequestParams bannerRequest) {
                             BannerSize bannerSize = bannerRequest.getBannerSize();
                             return new Point(bannerSize.width, bannerSize.height);
                         }
@@ -54,6 +53,7 @@ public enum AdsType {
     private final ApiRequest.ApiAuctionDataBinder binder;
     private final PlacementBuilder[] placementBuilders;
     private final Map<String, NetworkConfig> networkConfigs = new HashMap<>();
+    private final Executor placementCreateExecutor = Executors.newFixedThreadPool(Math.max(8, Runtime.getRuntime().availableProcessors() * 4));
 
     AdsType(@NonNull ApiRequest.ApiAuctionDataBinder binder,
             @NonNull PlacementBuilder[] placementBuilders) {
@@ -61,26 +61,22 @@ public enum AdsType {
         this.placementBuilders = placementBuilders;
     }
 
-    NetworkConfig obtainNetworkConfig(@NonNull Context context,
-                                      @NonNull Ad ad,
-                                      @NonNull UnifiedAdRequestParams adRequestParams) {
-        NetworkConfig networkConfig = obtainHeaderBiddingAdNetworkConfig(context, ad, adRequestParams);
+    NetworkConfig obtainNetworkConfig(@NonNull Ad ad) {
+        NetworkConfig networkConfig = obtainHeaderBiddingAdNetworkConfig(ad);
         if (networkConfig == null) {
             if (this == AdsType.Native) {
-                networkConfig = obtainNetworkConfig(context, AdapterRegistry.Nast, adRequestParams);
+                networkConfig = NetworkRegistry.getConfig(NetworkRegistry.Nast);
             } else if (ad.hasDisplay()) {
-                networkConfig = obtainNetworkConfig(context, AdapterRegistry.Mraid, adRequestParams);
+                networkConfig = NetworkRegistry.getConfig(NetworkRegistry.Mraid);
             } else if (ad.hasVideo()) {
-                networkConfig = obtainNetworkConfig(context, AdapterRegistry.Vast, adRequestParams);
+                networkConfig = NetworkRegistry.getConfig(NetworkRegistry.Vast);
             }
         }
         return networkConfig;
     }
 
     @Nullable
-    private NetworkConfig obtainHeaderBiddingAdNetworkConfig(@NonNull Context context,
-                                                             @NonNull Ad ad,
-                                                             @NonNull UnifiedAdRequestParams adRequestParams) {
+    private NetworkConfig obtainHeaderBiddingAdNetworkConfig(@NonNull Ad ad) {
         List<Any> extensions = null;
         if (ad.hasDisplay()) {
             Ad.Display display = ad.getDisplay();
@@ -94,20 +90,18 @@ public enum AdsType {
             extensions = ad.getVideo().getExtList();
         }
         if (extensions != null) {
-            return obtainHeaderBiddingAdNetworkConfig(context, adRequestParams, extensions);
+            return obtainHeaderBiddingAdNetworkConfig(extensions);
         }
         return null;
     }
 
     @Nullable
-    private NetworkConfig obtainHeaderBiddingAdNetworkConfig(@NonNull Context context,
-                                                             @NonNull UnifiedAdRequestParams adRequestParams,
-                                                             @NonNull List<Any> extensions) {
+    private NetworkConfig obtainHeaderBiddingAdNetworkConfig(@NonNull List<Any> extensions) {
         for (Any extension : extensions) {
             if (extension.is(HeaderBiddingAd.class)) {
                 try {
                     HeaderBiddingAd headerBiddingAd = extension.unpack(HeaderBiddingAd.class);
-                    return obtainNetworkConfig(context, headerBiddingAd.getBidder(), adRequestParams);
+                    return NetworkRegistry.getConfig(headerBiddingAd.getBidder());
                 } catch (InvalidProtocolBufferException e) {
                     e.printStackTrace();
                 }
@@ -116,34 +110,19 @@ public enum AdsType {
         return null;
     }
 
-    private NetworkConfig obtainNetworkConfig(@NonNull Context context,
-                                              @NonNull String networkName,
-                                              @NonNull UnifiedAdRequestParams adRequestParams) {
-        NetworkConfig networkConfig = AdapterRegistry.getConfig(networkName);
-        if (networkConfig != null) {
-            try {
-                networkConfig.getAdapter().initialize(context, adRequestParams, networkConfig.getNetworkConfig());
-            } catch (Throwable throwable) {
-                Logger.log(throwable);
-                networkConfig = null;
-            }
-        }
-        return networkConfig;
-    }
-
     ApiRequest.ApiAuctionDataBinder getBinder() {
         return binder;
     }
 
     @SuppressWarnings("unchecked")
-    AdObjectParams createAdObjectParams(@NonNull Context context,
+    AdObjectParams createAdObjectParams(@NonNull ContextProvider contextProvider,
+                                        @NonNull UnifiedAdRequestParams adRequestParams,
                                         @NonNull Response.Seatbid seatbid,
                                         @NonNull Response.Seatbid.Bid bid,
-                                        @NonNull Ad ad,
-                                        @Deprecated AdRequest adRequest) {
+                                        @NonNull Ad ad) {
         for (PlacementBuilder builder : placementBuilders) {
             AdObjectParams params = builder.createAdObjectParams(
-                    context, adRequest.getUnifiedRequestParams(), seatbid, bid, ad);
+                    contextProvider, adRequestParams, seatbid, bid, ad);
             if (params != null) {
                 return params;
             }
@@ -152,45 +131,104 @@ public enum AdsType {
     }
 
     @SuppressWarnings("unchecked")
-    void collectDisplayPlacements(Context context, AdRequest adRequest, ArrayList<Message.Builder> outList) {
-        for (PlacementBuilder placementBuilder : placementBuilders) {
+    void collectDisplayPlacements(@NonNull final ContextProvider contextProvider,
+                                  @NonNull final AdRequest adRequest,
+                                  @NonNull final UnifiedAdRequestParams adRequestParams,
+                                  @NonNull final ArrayList<Message.Builder> outList) {
+        final CountDownLatch syncLock = new CountDownLatch(placementBuilders.length);
+        for (final PlacementBuilder placementBuilder : placementBuilders) {
             if (adRequest.isPlacementBuilderMatch(placementBuilder)) {
-                Message.Builder buildResult = placementBuilder.createPlacement(
-                        context, adRequest.getUnifiedRequestParams(), this, networkConfigs.values());
-                if (buildResult != null) {
-                    outList.add(buildResult);
-                }
+                placementCreateExecutor.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        placementBuilder.createPlacement(
+                                contextProvider,
+                                adRequestParams,
+                                AdsType.this,
+                                networkConfigs.values(),
+                                new PlacementBuilder.PlacementCreateCallback() {
+                                    @Override
+                                    public void onCreated(@Nullable Message.Builder placement) {
+                                        if (placement != null) {
+                                            synchronized (outList) {
+                                                outList.add(placement);
+                                            }
+                                        }
+                                        syncLock.countDown();
+                                    }
+                                });
+                    }
+                });
+            } else {
+                syncLock.countDown();
             }
+        }
+        try {
+            syncLock.await();
+        } catch (InterruptedException e) {
+            Logger.log(e);
         }
     }
 
     static {
-        AdapterRegistry.registerAdapter(new NetworkConfig(new MraidAdapter()));
-        AdapterRegistry.registerAdapter(new NetworkConfig(new VastAdapter()));
-        AdapterRegistry.registerAdapter(new NetworkConfig(new NastAdapter()));
+        NetworkRegistry.registerNetworks(
+                new NetworkConfig(new MraidAdapter()) {
+                },
+                new NetworkConfig(new NastAdapter()) {
+                },
+                new NetworkConfig(new VastAdapter()) {
+                });
     }
 
-    static class AdapterRegistry {
+    static class NetworkRegistry {
 
         static final String Mraid = "mraid";
         static final String Vast = "vast";
         static final String Nast = "nast";
 
         private static final HashMap<String, NetworkConfig> cache = new HashMap<>();
+        private static boolean isNetworksInitialized = false;
 
         @Nullable
         static NetworkConfig getConfig(String key) {
             return cache.get(key);
         }
 
-        static void registerAdapter(NetworkConfig networkConfig) {
-            BidMachineAdapter adapter = networkConfig.getAdapter();
-            if (!cache.containsKey(adapter.getKey())) {
-                cache.put(adapter.getKey(), networkConfig);
+        static void registerNetworks(NetworkConfig... networkConfigs) {
+            for (NetworkConfig config : networkConfigs) {
+                String key = config.getKey();
+                if (!cache.containsKey(key)) {
+                    cache.put(key, config);
+                }
+                for (AdsType type : config.getSupportedAdsTypes()) {
+                    type.networkConfigs.put(key, config);
+                }
             }
-            for (AdsType type : networkConfig.getSupportedAdsTypes()) {
-                type.networkConfigs.put(adapter.getKey(), networkConfig);
+        }
+
+        static void initializeNetworks(@NonNull final ContextProvider contextProvider,
+                                       @NonNull final UnifiedAdRequestParams unifiedAdRequestParams) {
+            if (isNetworksInitialized) {
+                return;
             }
+            isNetworksInitialized = true;
+            new Thread() {
+                @Override
+                public void run() {
+                    super.run();
+                    for (Iterator<Map.Entry<String, NetworkConfig>> iterator = cache.entrySet().iterator(); iterator.hasNext(); ) {
+                        Map.Entry<String, NetworkConfig> entry = iterator.next();
+                        try {
+                            NetworkConfig config = entry.getValue();
+                            config.getAdapter().initialize(contextProvider, unifiedAdRequestParams, config.getNetworkConfig());
+                        } catch (Throwable e) {
+                            Logger.log(e);
+                            Logger.log("Network initialization fail: " + entry.getKey() + " - removed from registered networks");
+                            iterator.remove();
+                        }
+                    }
+                }
+            }.start();
         }
 
         static void setLoggingEnabled(boolean enabled) {

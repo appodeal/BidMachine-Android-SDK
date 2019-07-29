@@ -2,52 +2,97 @@ package io.bidmachine;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import io.bidmachine.unified.UnifiedAdRequestParams;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class NetworkConfig {
+/**
+ * Class for store and provide Network specific configuration
+ */
+public abstract class NetworkConfig {
 
     @NonNull
-    private final BidMachineAdapter adapter;
+    private final NetworkAdapter adapter;
     @Nullable
-    private Map<String, Object> networkConfig;
+    private Map<String, String> networkConfig;
     @Nullable
-    private Map<String, Object> mediationConfig;
+    private Map<String, String> mediationConfig;
     @Nullable
-    private EnumMap<AdsFormat, Map<String, Object>> typedMediationConfigs;
+    private EnumMap<AdsFormat, Map<String, String>> typedMediationConfigs;
     @Nullable
     private AdsType[] supportedAdsTypes;
     @Nullable
     private AdsType[] mergedAdsTypes;
 
-    public NetworkConfig(@NonNull BidMachineAdapter adapter) {
+    protected NetworkConfig(@NonNull NetworkAdapter adapter) {
         this.adapter = adapter;
     }
 
+    /**
+     * @return unique Network key
+     */
+    public String getKey() {
+        return getAdapter().getKey();
+    }
+
+    /**
+     * @return Network version
+     */
+    public String getVersion() {
+        return getAdapter().getVersion();
+    }
+
+    /**
+     * @return Network {@link NetworkAdapter} implementation
+     */
     @NonNull
-    public BidMachineAdapter getAdapter() {
+    public NetworkAdapter getAdapter() {
         return adapter;
     }
 
+    /**
+     * @return Network global configuration (will be used for {@link NetworkAdapter#initialize(ContextProvider, UnifiedAdRequestParams, Map)})
+     */
     @Nullable
-    Map<String, Object> getNetworkConfig() {
+    Map<String, String> getNetworkConfig() {
         return networkConfig;
     }
 
-    public NetworkConfig withNetworkConfig(@Nullable Map<String, Object> config) {
+    /**
+     * Set Network global configuration (will be used for {@link NetworkAdapter#initialize(ContextProvider, UnifiedAdRequestParams, Map)})
+     *
+     * @param config map of parameters which will be used for Network initialization
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends NetworkConfig> T withNetworkConfig(@Nullable Map<String, String> config) {
         this.networkConfig = config;
-        return this;
+        return (T) this;
     }
 
-    public NetworkConfig withMediationConfig(@Nullable Map<String, Object> config) {
+    /**
+     * Set Network mediation configuration (will be used for {@link HeaderBiddingAdapter#collectHeaderBiddingParams(ContextProvider, UnifiedAdRequestParams, HeaderBiddingCollectParamsCallback, Map)}).
+     * Will be used as default for all {@link AdsFormat}
+     *
+     * @param config map of parameters which will be used for Network mediation process
+     */
+    @SuppressWarnings({"unchecked", "WeakerAccess"})
+    public <T extends NetworkConfig> T withMediationConfig(@Nullable Map<String, String> config) {
         this.mediationConfig = config;
-        return this;
+        return (T) this;
     }
 
-    public NetworkConfig withMediationConfig(@NonNull AdsFormat adsFormat, @Nullable Map<String, Object> config) {
+    /**
+     * Set Network mediation configuration (will be used for {@link HeaderBiddingAdapter#collectHeaderBiddingParams(ContextProvider, UnifiedAdRequestParams, HeaderBiddingCollectParamsCallback, Map)}).
+     * Will be used only for provided {@link AdsFormat}
+     *
+     * @param adsFormat specific {@link AdsFormat} for which should be used provide {@param config}
+     * @param config    map of parameters which will be used for Network mediation process
+     */
+    @SuppressWarnings({"unchecked", "WeakerAccess"})
+    public <T extends NetworkConfig> T withMediationConfig(@NonNull AdsFormat adsFormat, @Nullable Map<String, String> config) {
         if (config == null) {
             if (typedMediationConfigs != null) {
                 typedMediationConfigs.remove(adsFormat);
@@ -58,14 +103,51 @@ public final class NetworkConfig {
             }
             typedMediationConfigs.put(adsFormat, config);
         }
-        return this;
+        return (T) this;
     }
 
+    /**
+     * Set {@link AdsType}s for which Network can be used
+     *
+     * @param adsType required {@link AdsType}s
+     */
     public NetworkConfig forAdTypes(@NonNull AdsType... adsType) {
         this.supportedAdsTypes = adsType;
         return this;
     }
 
+    /**
+     * Method which return parameters which should be used for mediation process.
+     * If no specific parameters was provided will return default set by {@link NetworkConfig#withMediationConfig(Map)}
+     *
+     * @param adsType     required {@link AdsType}
+     * @param contentType required {@link AdContentType}
+     * @return map of parameters for provided {@link AdsType} and {@link AdContentType} which will be used for mediation process
+     */
+    @Nullable
+    public Map<String, String> peekMediationConfig(@NonNull AdsType adsType,
+                                                   @NonNull AdContentType contentType) {
+        Map<String, String> resultConfig = null;
+        if (typedMediationConfigs != null) {
+            for (Map.Entry<AdsFormat, Map<String, String>> entry : typedMediationConfigs.entrySet()) {
+                if (entry.getKey().isMatch(adsType, contentType)) {
+                    resultConfig = new HashMap<>(entry.getValue());
+                    break;
+                }
+            }
+        }
+        if (resultConfig == null && mediationConfig != null) {
+            resultConfig = new HashMap<>(mediationConfig);
+        }
+        return resultConfig;
+    }
+
+    /**
+     * Method which return array of merged {@link NetworkAdapter#getSupportedTypes()} and {@link NetworkConfig#getSupportedAdsTypes()}.
+     * Will be called only once per app session.
+     *
+     * @return array of supported {@link AdsType}s
+     */
     AdsType[] getSupportedAdsTypes() {
         if (mergedAdsTypes == null) {
             AdsType[] adapterSupportedTypes = getAdapter().getSupportedTypes();
@@ -78,24 +160,6 @@ public final class NetworkConfig {
             mergedAdsTypes = resultList.toArray(new AdsType[0]);
         }
         return mergedAdsTypes;
-    }
-
-    @Nullable
-    public Map<String, Object> peekMediationConfig(@NonNull AdsType adsType,
-                                                   @NonNull AdContentType contentType) {
-        Map<String, Object> resultConfig = null;
-        if (typedMediationConfigs != null) {
-            for (Map.Entry<AdsFormat, Map<String, Object>> entry : typedMediationConfigs.entrySet()) {
-                if (entry.getKey().isMatch(adsType, contentType)) {
-                    resultConfig = entry.getValue();
-                    break;
-                }
-            }
-        }
-        if (resultConfig != null && mediationConfig != null) {
-            resultConfig = new HashMap<>(mediationConfig);
-        }
-        return resultConfig;
     }
 
     private boolean contains(Object[] array, Object v) {

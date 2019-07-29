@@ -1,6 +1,5 @@
 package io.bidmachine.displays;
 
-import android.content.Context;
 import android.graphics.Point;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
@@ -8,10 +7,7 @@ import com.explorestack.protobuf.adcom.*;
 import com.explorestack.protobuf.openrtb.Response;
 import com.google.protobuf.Any;
 import com.google.protobuf.Message;
-import io.bidmachine.AdContentType;
-import io.bidmachine.AdsType;
-import io.bidmachine.Constants;
-import io.bidmachine.NetworkConfig;
+import io.bidmachine.*;
 import io.bidmachine.core.Utils;
 import io.bidmachine.models.AdObjectParams;
 import io.bidmachine.unified.UnifiedAdRequestParams;
@@ -31,10 +27,11 @@ public class DisplayPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedA
     }
 
     @Override
-    public Message.Builder createPlacement(@NonNull Context context,
-                                           @NonNull UnifiedAdRequestParamsType adRequestParams,
-                                           @NonNull AdsType adsType,
-                                           @NonNull Collection<NetworkConfig> networkConfigs) {
+    public void createPlacement(@NonNull ContextProvider contextProvider,
+                                @NonNull UnifiedAdRequestParamsType adRequestParams,
+                                @NonNull AdsType adsType,
+                                @NonNull Collection<NetworkConfig> networkConfigs,
+                                @NonNull PlacementCreateCallback callback) {
         Placement.DisplayPlacement.Builder builder = Placement.DisplayPlacement.newBuilder();
         builder.addApi(ApiFramework.API_FRAMEWORK_MRAID_2_0);
         builder.setUnit(SizeUnit.SIZE_UNIT_DIPS);
@@ -43,25 +40,24 @@ public class DisplayPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedA
             builder.setInstl(true);
             builder.setPos(PlacementPosition.PLACEMENT_POSITION_FULLSCREEN);
         }
-
-        Point displaySize = getSize(context, adRequestParams);
+        Point displaySize = getSize(contextProvider, adRequestParams);
         builder.setW(displaySize.x);
         builder.setH(displaySize.y);
         Message.Builder headerBiddingPlacement =
-                createHeaderBiddingPlacement(context, adRequestParams, adsType, getAdContentType(), networkConfigs);
+                createHeaderBiddingPlacement(contextProvider, adRequestParams, adsType, getAdContentType(), networkConfigs);
         if (headerBiddingPlacement != null) {
             builder.addExt(Any.pack(headerBiddingPlacement.build()));
         }
-        return builder;
+        callback.onCreated(builder);
     }
 
     @Override
-    public Point getSize(Context context, UnifiedAdRequestParamsType adRequestParams) {
-        return Utils.getScreenSize(context);
+    public Point getSize(ContextProvider contextProvider, UnifiedAdRequestParamsType adRequestParams) {
+        return Utils.getScreenSize(contextProvider.getContext());
     }
 
     @Override
-    public AdObjectParams createAdObjectParams(@NonNull Context context,
+    public AdObjectParams createAdObjectParams(@NonNull ContextProvider contextProvider,
                                                @NonNull UnifiedAdRequestParamsType adRequest,
                                                @NonNull Response.Seatbid seatbid,
                                                @NonNull Response.Seatbid.Bid bid,
@@ -69,7 +65,7 @@ public class DisplayPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedA
         if (!ad.hasDisplay()) {
             return null;
         }
-        AdObjectParams params = createHeaderBiddingAdObjectParams(context, adRequest, seatbid, bid, ad);
+        AdObjectParams params = createHeaderBiddingAdObjectParams(contextProvider, adRequest, seatbid, bid, ad);
         if (params == null) {
             Ad.Display display = ad.getDisplay();
             if (TextUtils.isEmpty(display.getAdm())) {

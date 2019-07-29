@@ -4,13 +4,12 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
-
-import java.net.URLConnection;
-import java.util.List;
-
 import io.bidmachine.core.Logger;
 import io.bidmachine.core.NetworkRequest;
 import io.bidmachine.utils.BMError;
+
+import java.net.URLConnection;
+import java.util.List;
 
 abstract class SessionTracker {
 
@@ -124,7 +123,7 @@ abstract class SessionTracker {
         if (error.getCode() == BMError.NOT_SET) {
             return;
         }
-        Logger.log("dispatch error event to server: (" + error.getCode() + ")" + error.getMessage());
+        Logger.log("dispatch error event to server: (" + processCode + "-" + error.getCode() + ") - " + error.getMessage());
         for (String url : urls) {
             executeNotify(replaceMacros(url, info, processCode, error.getCode()), new NetworkRequest.Callback<String, BMError>() {
                 @Override

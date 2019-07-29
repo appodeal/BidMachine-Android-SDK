@@ -2,6 +2,7 @@ package io.bidmachine;
 
 import android.support.annotation.NonNull;
 import io.bidmachine.displays.PlacementBuilder;
+import io.bidmachine.models.DataRestrictions;
 import io.bidmachine.models.RequestBuilder;
 import io.bidmachine.unified.UnifiedFullscreenAdRequestParams;
 
@@ -10,8 +11,8 @@ public abstract class FullScreenAdRequest<SelfType extends FullScreenAdRequest>
 
     AdContentType adContentType = AdContentType.All;
 
-    protected AdContentType getAdContentType() {
-        return adContentType;
+    protected FullScreenAdRequest(@NonNull AdsType adsType) {
+        super(adsType);
     }
 
     @Override
@@ -20,9 +21,11 @@ public abstract class FullScreenAdRequest<SelfType extends FullScreenAdRequest>
                 && super.isPlacementBuilderMatch(placementBuilder);
     }
 
+    @NonNull
     @Override
-    public UnifiedFullscreenAdRequestParams getUnifiedRequestParams() {
-        return new FullscreenUnifiedAdRequestParams();
+    protected UnifiedFullscreenAdRequestParams createUnifiedAdRequestParams(@NonNull TargetingParams targetingParams,
+                                                                            @NonNull DataRestrictions dataRestrictions) {
+        return new FullscreenUnifiedAdRequestParams(targetingParams, dataRestrictions);
     }
 
     protected abstract static class FullScreenRequestBuilder<
@@ -41,6 +44,12 @@ public abstract class FullScreenAdRequest<SelfType extends FullScreenAdRequest>
     private class FullscreenUnifiedAdRequestParams
             extends BaseUnifiedRequestParams
             implements UnifiedFullscreenAdRequestParams {
+
+        FullscreenUnifiedAdRequestParams(@NonNull TargetingParams targetingParams,
+                                         @NonNull DataRestrictions dataRestrictions) {
+            super(targetingParams, dataRestrictions);
+        }
+
         @Override
         public boolean isContentTypeMatch(@NonNull AdContentType adContentType) {
             return FullScreenAdRequest.this.adContentType == AdContentType.All

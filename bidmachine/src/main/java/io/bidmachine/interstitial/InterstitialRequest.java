@@ -9,12 +9,7 @@ import io.bidmachine.FullScreenAdRequest;
 public final class InterstitialRequest extends FullScreenAdRequest<InterstitialRequest> {
 
     private InterstitialRequest() {
-    }
-
-    @NonNull
-    @Override
-    protected AdsType getType() {
-        return AdsType.Interstitial;
+        super(AdsType.Interstitial);
     }
 
     public static final class Builder extends FullScreenRequestBuilder<Builder, InterstitialRequest> {

@@ -14,10 +14,7 @@ import com.google.protobuf.Message;
 import io.bidmachine.core.Logger;
 import io.bidmachine.core.NetworkRequest;
 import io.bidmachine.displays.PlacementBuilder;
-import io.bidmachine.models.AuctionResult;
-import io.bidmachine.models.DataRestrictions;
-import io.bidmachine.models.RequestBuilder;
-import io.bidmachine.models.TargetingInfo;
+import io.bidmachine.models.*;
 import io.bidmachine.protobuf.RequestExtension;
 import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.utils.BMError;
@@ -31,6 +28,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static io.bidmachine.Utils.getOrDefault;
+import static io.bidmachine.core.Utils.oneOf;
 
 public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestParamsType extends UnifiedAdRequestParams>
         implements TrackingObject {
@@ -40,6 +38,9 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
     private static final long DEF_EXPIRATION_TIME = TimeUnit.MINUTES.toSeconds(29);
 
     private final String trackingId = UUID.randomUUID().toString();
+
+    @NonNull
+    private final AdsType adsType;
 
     PriceFloorParams priceFloorParams;
     TargetingParams targetingParams;
@@ -60,6 +61,8 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
     private ApiRequest<Request, Response> currentApiRequest;
     @Nullable
     private ArrayList<AdRequestListener<SelfType>> adRequestListeners;
+    @Nullable
+    private UnifiedAdRequestParamsType unifiedAdRequestParams;
 
     private long expirationTime = -1;
 
@@ -73,10 +76,11 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
         }
     };
 
-    protected AdRequest() {
+    protected AdRequest(@NonNull AdsType adsType) {
+        this.adsType = adsType;
     }
 
-    Object build(android.content.Context context, AdsType adsType) {
+    private Object build(final android.content.Context context, AdsType adsType) {
         final String sellerId = BidMachineImpl.get().getSellerId();
         if (TextUtils.isEmpty(sellerId)) {
             return BMError.paramError("Seller Id not provided");
@@ -91,35 +95,26 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
         final BidMachineImpl bidMachine = BidMachineImpl.get();
 
         final Request.Builder requestBuilder = Request.newBuilder();
-        final TargetingParams targetingParams;
-        if (this.targetingParams == null) {
-            targetingParams = bidMachine.getTargetingParams();
-        } else {
-            targetingParams = this.targetingParams;
-            targetingParams.merge(bidMachine.getTargetingParams());
-        }
+        final TargetingParams targetingParams =
+                RequestParams.resolveParams(this.targetingParams, bidMachine.getTargetingParams());
         final BlockedParams blockedParams = targetingParams.getBlockedParams();
-        final UserRestrictionParams userRestrictionParams;
-        if (this.userRestrictionParams == null) {
-            userRestrictionParams = bidMachine.getUserRestrictionParams();
-        } else {
-            userRestrictionParams = this.userRestrictionParams;
-            userRestrictionParams.merge(bidMachine.getUserRestrictionParams());
-        }
+        final UserRestrictionParams userRestrictionParams =
+                RequestParams.resolveParams(this.userRestrictionParams, bidMachine.getUserRestrictionParams());
+        unifiedAdRequestParams = createUnifiedAdRequestParams(targetingParams, userRestrictionParams);
 
         //PriceFloor params
-        final ArrayList<Message.Builder> placements = new ArrayList<>();
-        adsType.collectDisplayPlacements(context, this, placements);
-
-        final PriceFloorParams priceFloorParams = this.priceFloorParams != null
-                ? this.priceFloorParams : bidMachine.getPriceFloorParams();
-        final Map<String, Double> priceFloorsMap = priceFloorParams.getPriceFloors() == null
-                || priceFloorParams.getPriceFloors().size() == 0
-                ? bidMachine.getPriceFloorParams().getPriceFloors() : priceFloorParams.getPriceFloors();
+        final PriceFloorParams priceFloorParams = oneOf(this.priceFloorParams, bidMachine.getPriceFloorParams());
+        final Map<String, Double> priceFloorsMap =
+                priceFloorParams.getPriceFloors() == null || priceFloorParams.getPriceFloors().size() == 0
+                        ? bidMachine.getPriceFloorParams().getPriceFloors() : priceFloorParams.getPriceFloors();
 
         if (priceFloorsMap == null) {
             return BMError.paramError("PriceFloors not provided");
         }
+
+        final ArrayList<Message.Builder> placements = new ArrayList<>();
+        adsType.collectDisplayPlacements(
+                new ContextProvider.SimpleContextProvider(context), this, unifiedAdRequestParams, placements);
 
         final Request.Item.Builder itemBuilder = Request.Item.newBuilder();
         itemBuilder.setId(UUID.randomUUID().toString());
@@ -211,7 +206,9 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
     }
 
     @NonNull
-    protected abstract AdsType getType();
+    protected final AdsType getType() {
+        return adsType;
+    }
 
     boolean isValid() {
         return !TextUtils.isEmpty(BidMachineImpl.get().getSellerId());
@@ -333,8 +330,11 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
         }
     }
 
-    @SuppressWarnings("WeakerAccess")
-    public void processShown() {
+    void onShown() {
+        unsubscribeExpireTracker();
+    }
+
+    void onExpired() {
         unsubscribeExpireTracker();
     }
 
@@ -357,47 +357,51 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
     private void processRequestSuccess(@Nullable Response response) {
         if (response != null && response.getSeatbidCount() > 0) {
             final Response.Seatbid seatbid = response.getSeatbid(0);
-            if (seatbid != null && seatbid.getBidCount() > 0) {
-                final Response.Seatbid.Bid bid = seatbid.getBid(0);
-                if (bid != null) {
-                    if (bid.getMedia() != null && bid.getMedia().is(Ad.class)) {
-                        try {
-                            if (bid.getMedia().is(Ad.class)) {
-                                Ad ad = bid.getMedia().unpack(Ad.class);
-                                if (ad != null) {
-                                    adResult = ad;
-                                    bidResult = bid;
-                                    seatBidResult = seatbid;
-                                    auctionResult = new AuctionResultImpl(seatbid, bid, ad);
-                                    expirationTime = getOrDefault(bid.getExp(),
-                                            Response.Seatbid.Bid.getDefaultInstance().getExp(),
-                                            DEF_EXPIRATION_TIME);
-                                    subscribeExpireTracker();
-                                    Logger.log(toString() + ": Request finished (" + auctionResult + ")");
-                                    if (adRequestListeners != null) {
-                                        for (AdRequestListener listener : adRequestListeners) {
-                                            listener.onRequestSuccess(this, auctionResult);
-                                        }
-                                    }
-                                    SessionTracker.eventFinish(
-                                            AdRequest.this,
-                                            TrackEventType.AuctionRequest,
-                                            getType(),
-                                            null);
-                                    return;
-                                }
-                            }
-                        } catch (InvalidProtocolBufferException e) {
-                            Logger.log(e);
-                        }
-                    } else {
-                        Logger.log(toString() + ": Media not found or not valid");
-                    }
-                } else {
-                    Logger.log(toString() + ": Bid not found or not valid");
-                }
-            } else {
+            if (seatbid == null || seatbid.getBidCount() == 0) {
                 Logger.log(toString() + ": Seatbid not found or not valid");
+                processRequestFail(BMError.requestError("Seatbid not found or not valid"));
+                return;
+            }
+            final Response.Seatbid.Bid bid = seatbid.getBid(0);
+            if (bid == null) {
+                Logger.log(toString() + ": Bid not found or not valid");
+                processRequestFail(BMError.requestError("Bid not found or not valid"));
+                return;
+            }
+            Any media = bid.getMedia();
+            if (media == null || !media.is(Ad.class)) {
+                Logger.log(toString() + ": Media not found or not valid");
+                processRequestFail(BMError.requestError("Media not found or not valid"));
+                return;
+            }
+            try {
+                Ad ad = bid.getMedia().unpack(Ad.class);
+                if (ad != null) {
+                    adResult = ad;
+                    bidResult = bid;
+                    seatBidResult = seatbid;
+                    auctionResult = new AuctionResultImpl(seatbid, bid, ad);
+                    expirationTime = getOrDefault(bid.getExp(),
+                            Response.Seatbid.Bid.getDefaultInstance().getExp(),
+                            DEF_EXPIRATION_TIME);
+                    subscribeExpireTracker();
+                    Logger.log(toString() + ": Request finished (" + auctionResult + ")");
+                    if (adRequestListeners != null) {
+                        for (AdRequestListener listener : adRequestListeners) {
+                            listener.onRequestSuccess(this, auctionResult);
+                        }
+                    }
+                    SessionTracker.eventFinish(
+                            AdRequest.this,
+                            TrackEventType.AuctionRequest,
+                            getType(),
+                            null);
+                    return;
+                } else {
+                    Logger.log(toString() + ": Ad not found or not valid");
+                }
+            } catch (InvalidProtocolBufferException e) {
+                Logger.log(e);
             }
         } else {
             Logger.log(toString() + ": Response not found or not valid");
@@ -430,7 +434,14 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
         return BidMachineImpl.get().getTrackingUrls(eventType);
     }
 
-    public abstract UnifiedAdRequestParamsType getUnifiedRequestParams();
+    @NonNull
+    protected abstract UnifiedAdRequestParamsType createUnifiedAdRequestParams(@NonNull TargetingParams targetingParams,
+                                                                               @NonNull DataRestrictions dataRestrictions);
+
+    @Nullable
+    final UnifiedAdRequestParamsType getUnifiedRequestParams() {
+        return unifiedAdRequestParams;
+    }
 
     @NonNull
     @Override
@@ -525,31 +536,25 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
 
     }
 
-    protected class BaseUnifiedRequestParams implements UnifiedAdRequestParams {
+    protected static class BaseUnifiedRequestParams implements UnifiedAdRequestParams {
+
+        private final DataRestrictions dataRestrictions;
+        private final TargetingInfo targetingInfo;
+
+        public BaseUnifiedRequestParams(@NonNull TargetingParams targetingParams,
+                                        @NonNull DataRestrictions dataRestrictions) {
+            this.targetingInfo = new TargetingInfoImpl(dataRestrictions, targetingParams);
+            this.dataRestrictions = dataRestrictions;
+        }
+
         @Override
         public DataRestrictions getDataRestrictions() {
-            final UserRestrictionParams userRestrictionParams;
-            final UserRestrictionParams defaultUserRestrictionParams = BidMachineImpl.get().getUserRestrictionParams();
-            if (AdRequest.this.userRestrictionParams == null) {
-                userRestrictionParams = defaultUserRestrictionParams;
-            } else {
-                userRestrictionParams = AdRequest.this.userRestrictionParams;
-                userRestrictionParams.merge(defaultUserRestrictionParams);
-            }
-            return userRestrictionParams;
+            return dataRestrictions;
         }
 
         @Override
         public TargetingInfo getTargetingParams() {
-            final TargetingParams targetingParams;
-            final TargetingParams defaultTargetingParams = BidMachineImpl.get().getTargetingParams();
-            if (AdRequest.this.targetingParams == null) {
-                targetingParams = defaultTargetingParams;
-            } else {
-                targetingParams = AdRequest.this.targetingParams;
-                targetingParams.merge(defaultTargetingParams);
-            }
-            return new TargetingInfoImpl(getDataRestrictions(), targetingParams);
+            return targetingInfo;
         }
 
         @Override

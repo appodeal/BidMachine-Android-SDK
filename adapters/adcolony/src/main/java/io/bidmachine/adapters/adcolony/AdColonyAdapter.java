@@ -6,12 +6,8 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
-import android.util.Log;
 import com.adcolony.sdk.*;
-import io.bidmachine.AdsType;
-import io.bidmachine.BidMachineAdapter;
-import io.bidmachine.HeaderBiddingAdapter;
-import io.bidmachine.HeaderBiddingCollectParamsCallback;
+import io.bidmachine.*;
 import io.bidmachine.models.DataRestrictions;
 import io.bidmachine.models.TargetingInfo;
 import io.bidmachine.unified.UnifiedAdRequestParams;
@@ -23,11 +19,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-public class AdColonyAdapter extends BidMachineAdapter implements HeaderBiddingAdapter {
+class AdColonyAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
 
     private static HashSet<String> zonesCache = new HashSet<>();
 
-    public AdColonyAdapter() {
+    AdColonyAdapter() {
         super("adcolony", AdColony.getSDKVersion(), new AdsType[]{AdsType.Interstitial, AdsType.Rewarded});
     }
 
@@ -42,24 +38,23 @@ public class AdColonyAdapter extends BidMachineAdapter implements HeaderBiddingA
     }
 
     @Override
-    public void collectHeaderBiddingParams(@NonNull Context context,
+    public void collectHeaderBiddingParams(@NonNull ContextProvider contextProvider,
                                            @NonNull UnifiedAdRequestParams requestParams,
                                            @NonNull final HeaderBiddingCollectParamsCallback callback,
-                                           @NonNull final Map<String, Object> config) {
-        final long startTime = System.currentTimeMillis();
-        String appId = (String) config.get("app_id");
+                                           @NonNull Map<String, String> mediationConfig) {
+        String appId = mediationConfig.get("app_id");
         if (TextUtils.isEmpty(appId)) {
             callback.onCollectFail(BMError.requestError("App id not provided"));
             return;
         }
         assert appId != null;
-        String zoneId = (String) config.get("zone_id");
+        String zoneId = mediationConfig.get("zone_id");
         if (TextUtils.isEmpty(zoneId)) {
             callback.onCollectFail(BMError.requestError("Zone id not provided"));
             return;
         }
         assert zoneId != null;
-        String storeId = (String) config.get("store_id");
+        String storeId = mediationConfig.get("store_id");
         if (TextUtils.isEmpty(storeId)) {
             callback.onCollectFail(BMError.requestError("Store id not provided"));
             return;
@@ -70,8 +65,8 @@ public class AdColonyAdapter extends BidMachineAdapter implements HeaderBiddingA
         }
         zonesCache.add(zoneId);
         AdColony.configure(
-                (Application) context.getApplicationContext(),
-                createAppOptions(context, requestParams, storeId),
+                (Application) contextProvider.getContext().getApplicationContext(),
+                createAppOptions(contextProvider.getContext(), requestParams, storeId),
                 appId,
                 zonesCache.toArray(new String[0]));
 
@@ -87,13 +82,11 @@ public class AdColonyAdapter extends BidMachineAdapter implements HeaderBiddingA
                 @Override
                 public void onRequestFilled(AdColonyInterstitial adColonyInterstitial) {
                     callback.onCollectFinished(params);
-                    Log.e("AdColony", "configureTime (success): " + (System.currentTimeMillis() - startTime));
                 }
 
                 @Override
                 public void onRequestNotFilled(AdColonyZone zone) {
                     callback.onCollectFail(BMError.NoContent);
-                    Log.e("AdColony", "configureTime (fail): " + (System.currentTimeMillis() - startTime));
                 }
             }, createAdOptions(requestParams));
         }

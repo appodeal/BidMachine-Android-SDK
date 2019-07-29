@@ -1,18 +1,21 @@
 package io.bidmachine;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.view.ViewGroup;
 import io.bidmachine.models.AdObjectParams;
+import io.bidmachine.unified.UnifiedAdRequestParams;
 
 public abstract class ViewAd<
-        AdType extends ViewAd<AdType, AdRequestType, AdObjectType, AdListenerType>,
-        AdRequestType extends AdRequest<AdRequestType, ?>,
-        AdObjectType extends ViewAdObject<AdRequestType, ?, ?>,
+        AdType extends ViewAd<AdType, AdRequestType, AdObjectType, UnifiedAdRequestParamsType, AdListenerType>,
+        AdRequestType extends AdRequest<AdRequestType, UnifiedAdRequestParamsType>,
+        AdObjectType extends ViewAdObject<AdRequestType, ?, UnifiedAdRequestParamsType>,
+        UnifiedAdRequestParamsType extends UnifiedAdRequestParams,
         AdListenerType extends AdListener<AdType>>
-        extends BidMachineAd<AdType, AdRequestType, AdObjectType, AdObjectParams, AdListenerType> {
+        extends BidMachineAd<AdType, AdRequestType, AdObjectType, AdObjectParams, UnifiedAdRequestParamsType, AdListenerType> {
 
-    public ViewAd(Context context) {
-        super(context);
+    protected ViewAd(@NonNull Context context, @NonNull AdsType adsType) {
+        super(context, adsType);
     }
 
     void show(ViewGroup container) {

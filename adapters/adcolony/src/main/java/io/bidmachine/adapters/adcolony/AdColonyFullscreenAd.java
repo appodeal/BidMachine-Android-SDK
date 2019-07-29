@@ -2,18 +2,17 @@ package io.bidmachine.adapters.adcolony;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import com.adcolony.sdk.AdColony;
 import com.adcolony.sdk.AdColonyInterstitial;
+import io.bidmachine.ContextProvider;
 import io.bidmachine.unified.UnifiedFullscreenAd;
 import io.bidmachine.unified.UnifiedFullscreenAdCallback;
 import io.bidmachine.unified.UnifiedFullscreenAdRequestParams;
 import io.bidmachine.unified.UnifiedMediationParams;
 import io.bidmachine.utils.BMError;
 
-import java.util.Map;
-
-class AdColonyFullscreenAd implements UnifiedFullscreenAd {
+class AdColonyFullscreenAd extends UnifiedFullscreenAd {
 
     private AdColonyInterstitial adColonyInterstitial;
     private AdColonyFullscreenAdListener listener;
@@ -24,12 +23,16 @@ class AdColonyFullscreenAd implements UnifiedFullscreenAd {
     }
 
     @Override
-    public void load(@NonNull Context context,
+    public void load(@NonNull ContextProvider context,
                      @NonNull UnifiedFullscreenAdCallback callback,
                      @NonNull UnifiedFullscreenAdRequestParams requestParams,
-                     @NonNull UnifiedMediationParams mediationParams,
-                     @Nullable Map<String, Object> localExtra) {
+                     @NonNull UnifiedMediationParams mediationParams) throws Throwable {
         String zoneId = mediationParams.getString("zone_id");
+        if (TextUtils.isEmpty(zoneId)) {
+            callback.onAdLoadFailed(BMError.requestError("zone id not provided"));
+            return;
+        }
+        assert zoneId != null;
         listener = new AdColonyFullscreenAdListener(zoneId, this, callback);
         if (isRewarded) {
             AdColonyRewardListenerWrapper.get().addListener(listener);

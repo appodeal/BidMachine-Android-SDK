@@ -14,6 +14,8 @@ import io.bidmachine.core.AdvertisingIdClientInfo;
 import io.bidmachine.core.Logger;
 import io.bidmachine.core.NetworkRequest;
 import io.bidmachine.core.Utils;
+import io.bidmachine.models.DataRestrictions;
+import io.bidmachine.models.TargetingInfo;
 import io.bidmachine.protobuf.InitRequest;
 import io.bidmachine.protobuf.InitResponse;
 import io.bidmachine.utils.ActivityHelper;
@@ -102,8 +104,16 @@ final class BidMachineImpl implements TrackingObject {
         }
     };
 
-    synchronized void initialize(Context context, String sellerId) {
+    synchronized void initialize(@NonNull Context context, @NonNull String sellerId) {
         if (isInitialized) return;
+        if (context == null) {
+            Logger.log("Initialization fail: Context not provided");
+            return;
+        }
+        if (TextUtils.isEmpty(sellerId)) {
+            Logger.log("Initialization fail: Seller id not provided");
+            return;
+        }
         this.sellerId = sellerId;
         appContext = context.getApplicationContext();
         sessionTracker = new SessionTrackerImpl();
@@ -119,10 +129,15 @@ final class BidMachineImpl implements TrackingObject {
         topActivity = ActivityHelper.getTopActivity();
         ((Application) context.getApplicationContext())
                 .registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks());
+        final DataRestrictions dataRestrictions = getUserRestrictionParams();
+        final TargetingInfo targetingInfo = new TargetingInfoImpl(dataRestrictions, getTargetingParams());
+        AdsType.NetworkRegistry.initializeNetworks(
+                new ContextProvider.SimpleContextProvider(context),
+                new SimpleUnifiedAdRequestParams(dataRestrictions, targetingInfo));
         isInitialized = true;
     }
 
-    private void requestInitData(final Context context, String sellerId) {
+    private void requestInitData(@NonNull final Context context, @NonNull String sellerId) {
         if (currentInitRequest != null) return;
         SessionTracker.eventStart(this, TrackEventType.InitLoading, null);
         currentInitRequest = new ApiRequest.Builder<InitRequest, InitResponse>()
@@ -176,12 +191,12 @@ final class BidMachineImpl implements TrackingObject {
         OrtbUtils.prepareEvents(trackingEventTypes, response.getEventList());
     }
 
-    private void storeInitResponse(Context context, InitResponse response) {
+    private void storeInitResponse(@NonNull Context context, @NonNull InitResponse response) {
         SharedPreferences preferences = context.getSharedPreferences("BidMachinePref", Context.MODE_PRIVATE);
         preferences.edit().putString(PREF_INIT_DATA, Base64.encodeToString(response.toByteArray(), Base64.DEFAULT)).apply();
     }
 
-    private void loadStoredInitResponse(Context context) {
+    private void loadStoredInitResponse(@NonNull Context context) {
         SharedPreferences preferences = context.getSharedPreferences("BidMachinePref", Context.MODE_PRIVATE);
         if (preferences.contains(PREF_INIT_DATA)) {
             try {
@@ -215,11 +230,6 @@ final class BidMachineImpl implements TrackingObject {
 
     boolean isTestMode() {
         return isTestMode;
-    }
-
-    @Nullable
-    Context getAppContext() {
-        return appContext;
     }
 
     @Nullable

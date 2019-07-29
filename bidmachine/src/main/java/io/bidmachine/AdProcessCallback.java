@@ -24,4 +24,6 @@ public interface AdProcessCallback {
 
     void processDestroy();
 
+    void log(String message);
+
 }

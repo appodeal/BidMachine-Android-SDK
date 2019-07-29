@@ -12,7 +12,8 @@ import io.bidmachine.unified.UnifiedMediationParams;
 class HeaderBiddingAdObjectParams extends AdObjectParams {
 
     @NonNull
-    private HeaderBiddingAd headerBiddingAd;
+    private final HeaderBiddingAd headerBiddingAd;
+    private final HeaderBiddingUnifiedMediationParams mediationParams = new HeaderBiddingUnifiedMediationParams();
 
     HeaderBiddingAdObjectParams(@NonNull Response.Seatbid seatbid,
                                 @NonNull Response.Seatbid.Bid bid,
@@ -42,7 +43,7 @@ class HeaderBiddingAdObjectParams extends AdObjectParams {
     @NonNull
     @Override
     public UnifiedMediationParams toMediationParams() {
-        return new HeaderBiddingUnifiedMediationParams();
+        return mediationParams;
     }
 
     private class HeaderBiddingUnifiedMediationParams extends UnifiedMediationParams {
@@ -56,6 +57,20 @@ class HeaderBiddingAdObjectParams extends AdObjectParams {
 
         @Override
         public int getInt(@Nullable String key, int fallback) {
+            String value = getParam(key);
+            if (value != null) {
+                try {
+                    return Integer.parseInt(value);
+                } catch (Exception e) {
+                    Logger.log(e);
+                }
+            }
+            return fallback;
+        }
+
+        @Nullable
+        @Override
+        public Integer getInteger(@Nullable String key, @Nullable Integer fallback) {
             String value = getParam(key);
             if (value != null) {
                 try {
