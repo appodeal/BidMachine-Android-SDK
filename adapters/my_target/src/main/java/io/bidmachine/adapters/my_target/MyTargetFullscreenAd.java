@@ -4,36 +4,32 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import com.my.target.ads.InterstitialAd;
+import io.bidmachine.ContextProvider;
 import io.bidmachine.unified.UnifiedFullscreenAd;
 import io.bidmachine.unified.UnifiedFullscreenAdCallback;
 import io.bidmachine.unified.UnifiedFullscreenAdRequestParams;
 import io.bidmachine.unified.UnifiedMediationParams;
 import io.bidmachine.utils.BMError;
 
-import java.util.Map;
-
-public class MyTargetFullscreenAd implements UnifiedFullscreenAd {
+public class MyTargetFullscreenAd extends UnifiedFullscreenAd {
 
     @Nullable
     private InterstitialAd interstitialAd;
 
     @Override
-    public void load(@NonNull Context context,
+    public void load(@NonNull ContextProvider contextProvider,
                      @NonNull UnifiedFullscreenAdCallback callback,
                      @NonNull UnifiedFullscreenAdRequestParams requestParams,
-                     @NonNull UnifiedMediationParams mediationParams,
-                     @Nullable Map<String, Object> localExtra) {
-        if (!mediationParams.contains("slot_id")) {
-            callback.onAdLoadFailed(BMError.requestError("slot_id not provided"));
-            return;
-        }
+                     @NonNull UnifiedMediationParams mediationParams) {
         MyTargetParams params = new MyTargetParams(mediationParams);
         if (!params.isValid(callback)) {
             return;
         }
-        interstitialAd = new InterstitialAd(params.slotId, context);
+        assert params.slotId != null; // it's shouldn't be null since we already check it in {@link MyTargetParams}
+        interstitialAd = new InterstitialAd(params.slotId, contextProvider.getContext());
         interstitialAd.setListener(new MyTargetFullscreenListener(callback));
         MyTargetAdapter.updateTargeting(requestParams, interstitialAd.getCustomParams());
+        assert params.bidId != null; // it's shouldn't be null since we already check it in {@link MyTargetParams}
         interstitialAd.loadFromBid(params.bidId);
     }
 

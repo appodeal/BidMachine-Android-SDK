@@ -1,5 +1,6 @@
 package io.bidmachine;
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
@@ -9,10 +10,8 @@ import io.bidmachine.models.AdObjectParams;
 import io.bidmachine.unified.UnifiedAd;
 import io.bidmachine.unified.UnifiedAdCallback;
 import io.bidmachine.unified.UnifiedAdRequestParams;
+import io.bidmachine.unified.UnifiedFullscreenAd;
 import io.bidmachine.utils.BMError;
-import io.bidmachine.utils.ContextProvider;
-
-import java.util.Map;
 
 public abstract class AdObjectImpl<
         AdRequestType extends AdRequest<AdRequestType, UnifiedAdRequestParamsType>,
@@ -20,7 +19,7 @@ public abstract class AdObjectImpl<
         UnifiedAdType extends UnifiedAd<UnifiedAdCallbackType, UnifiedAdRequestParamsType>,
         UnifiedAdCallbackType extends UnifiedAdCallback,
         UnifiedAdRequestParamsType extends UnifiedAdRequestParams>
-        implements AdObject<AdObjectParamsType>, ContextProvider {
+        implements AdObject<AdObjectParamsType, UnifiedAdRequestParamsType, UnifiedAdCallbackType>, ContextProvider {
 
     @NonNull
     private final ContextProvider contextProvider;
@@ -48,14 +47,17 @@ public abstract class AdObjectImpl<
         this.unifiedAdCallback = createUnifiedCallback(processCallback);
     }
 
-    @Nullable
+    @NonNull
     @Override
     public Context getContext() {
         return contextProvider.getContext();
     }
 
-    @NonNull
-    public abstract UnifiedAdCallbackType createUnifiedCallback(@NonNull AdProcessCallback processCallback);
+    @Nullable
+    @Override
+    public Activity getActivity() {
+        return contextProvider.getActivity();
+    }
 
     @NonNull
     public AdRequestType getAdRequest() {
@@ -84,42 +86,65 @@ public abstract class AdObjectImpl<
     }
 
     @Override
-    public void load(@NonNull Context context, @Nullable Map<String, Object> extra) {
-        unifiedAd.load(context,
+    public void load(@NonNull ContextProvider contextProvider,
+                     @NonNull UnifiedAdRequestParamsType adRequestParams) throws Throwable {
+        unifiedAd.load(contextProvider,
                 unifiedAdCallback,
-                adRequest.getUnifiedRequestParams(),
-                adObjectParams.toMediationParams(),
-                extra);
+                adRequestParams,
+                adObjectParams.toMediationParams());
     }
 
     @CallSuper
     @Override
     public void onShown() {
+        getUnifiedAd().onShown();
+    }
+
+    @CallSuper
+    @Override
+    public void onShowFailed() {
+        getUnifiedAd().onShowFailed();
     }
 
     @CallSuper
     @Override
     public void onImpression() {
+        getUnifiedAd().onImpression();
     }
 
     @CallSuper
     @Override
     public void onClicked() {
+        getUnifiedAd().onClicked();
     }
 
     @CallSuper
     @Override
     public void onFinished() {
+        UnifiedAdType unifiedAd = getUnifiedAd();
+        if (unifiedAd instanceof UnifiedFullscreenAd) {
+            ((UnifiedFullscreenAd) unifiedAd).onFinished();
+        }
     }
 
     @CallSuper
     @Override
-    public void onClosed() {
+    public void onClosed(boolean finished) {
+        UnifiedAdType unifiedAd = getUnifiedAd();
+        if (unifiedAd instanceof UnifiedFullscreenAd) {
+            ((UnifiedFullscreenAd) unifiedAd).onClosed(finished);
+        }
+    }
+
+    @Override
+    public void onExpired() {
+        getUnifiedAd().onExpired();
     }
 
     @CallSuper
     @Override
     public void onDestroy() {
+        getUnifiedAd().onDestroy();
     }
 
     protected static class BaseUnifiedAdCallback implements UnifiedAdCallback {
@@ -149,6 +174,11 @@ public abstract class AdObjectImpl<
         @Override
         public void onAdExpired() {
             processCallback.processExpired();
+        }
+
+        @Override
+        public void log(String message) {
+            processCallback.log(message);
         }
     }
 }

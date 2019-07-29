@@ -1,8 +1,9 @@
 package io.bidmachine.adapters.mraid;
 
-import android.content.Context;
+import android.app.Activity;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import io.bidmachine.ContextProvider;
 import io.bidmachine.unified.UnifiedBannerAd;
 import io.bidmachine.unified.UnifiedBannerAdCallback;
 import io.bidmachine.unified.UnifiedBannerAdRequestParams;
@@ -10,21 +11,23 @@ import io.bidmachine.unified.UnifiedMediationParams;
 import io.bidmachine.utils.BMError;
 import org.nexage.sourcekit.mraid.MRAIDView;
 
-import java.util.Map;
-
 import static io.bidmachine.core.Utils.onUiThread;
 
-class MraidBannerAd implements UnifiedBannerAd {
+class MraidBannerAd extends UnifiedBannerAd {
 
     @Nullable
     MRAIDView mraidView;
 
     @Override
-    public void load(@NonNull final Context context,
+    public void load(@NonNull final ContextProvider contextProvider,
                      @NonNull UnifiedBannerAdCallback callback,
                      @NonNull UnifiedBannerAdRequestParams requestParams,
-                     @NonNull UnifiedMediationParams mediationParams,
-                     @Nullable Map<String, Object> localExtra) {
+                     @NonNull UnifiedMediationParams mediationParams) {
+        final Activity activity = contextProvider.getActivity();
+        if (activity == null) {
+            BMError.requestError("Activity not provided");
+            return;
+        }
         final MraidParams mraidParams = new MraidParams(mediationParams);
         if (!mraidParams.isValid(callback)) {
             return;
@@ -33,7 +36,7 @@ class MraidBannerAd implements UnifiedBannerAd {
         onUiThread(new Runnable() {
             @Override
             public void run() {
-                mraidView = new MRAIDView.builder(context, mraidParams.creativeAdm, mraidParams.width, mraidParams.height)
+                mraidView = new MRAIDView.builder(activity, mraidParams.creativeAdm, mraidParams.width, mraidParams.height)
                         .setListener(mraidBannerAdListener)
                         .setNativeFeatureListener(mraidBannerAdListener)
                         .setPreload(mraidParams.canPreload)

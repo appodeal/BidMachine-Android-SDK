@@ -7,31 +7,25 @@ import io.bidmachine.*;
 import io.bidmachine.models.AdObjectParams;
 import io.bidmachine.unified.UnifiedBannerAd;
 import io.bidmachine.unified.UnifiedBannerAdRequestParams;
-import io.bidmachine.utils.ContextProvider;
 
 @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
 public final class BannerAd extends ViewAd<
         BannerAd,
         BannerRequest,
         ViewAdObject<BannerRequest, UnifiedBannerAd, UnifiedBannerAdRequestParams>,
+        UnifiedBannerAdRequestParams,
         AdListener<BannerAd>> {
 
     @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
-    public BannerAd(Context context) {
-        super(context);
-    }
-
-    @NonNull
-    @Override
-    protected AdsType getType() {
-        return AdsType.Banner;
+    public BannerAd(@NonNull Context context) {
+        super(context, AdsType.Banner);
     }
 
     @Override
     protected ViewAdObject<BannerRequest, UnifiedBannerAd, UnifiedBannerAdRequestParams> createAdObject(
             @NonNull ContextProvider contextProvider,
             @NonNull BannerRequest adRequest,
-            @NonNull BidMachineAdapter adapter,
+            @NonNull NetworkAdapter adapter,
             @NonNull AdObjectParams adObjectParams,
             @NonNull AdProcessCallback processCallback
     ) {

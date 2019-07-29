@@ -1,14 +1,11 @@
 package io.bidmachine.adapters.my_target;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import com.my.target.common.CustomParams;
 import com.my.target.common.MyTargetPrivacy;
-import io.bidmachine.AdsType;
-import io.bidmachine.BidMachineAdapter;
-import io.bidmachine.HeaderBiddingAdapter;
-import io.bidmachine.HeaderBiddingCollectParamsCallback;
+import io.bidmachine.*;
 import io.bidmachine.models.DataRestrictions;
 import io.bidmachine.models.TargetingInfo;
 import io.bidmachine.unified.UnifiedAdRequestParams;
@@ -17,13 +14,15 @@ import io.bidmachine.unified.UnifiedFullscreenAd;
 import io.bidmachine.utils.BMError;
 import io.bidmachine.utils.Gender;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 
-public class MyTargetAdapter extends BidMachineAdapter implements HeaderBiddingAdapter {
+class MyTargetAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
 
-    public MyTargetAdapter() {
-        super("my_target", BuildConfig.VERSION_NAME, new AdsType[]{AdsType.Banner, AdsType.Interstitial, AdsType.Rewarded});
+    MyTargetAdapter() {
+        super("my_target",
+                BuildConfig.VERSION_NAME,
+                new AdsType[]{AdsType.Banner, AdsType.Interstitial, AdsType.Rewarded});
     }
 
     @Override
@@ -42,25 +41,24 @@ public class MyTargetAdapter extends BidMachineAdapter implements HeaderBiddingA
     }
 
     @Override
-    protected void onInitialize(@NonNull Context context,
+    protected void onInitialize(@NonNull ContextProvider contextProvider,
                                 @NonNull UnifiedAdRequestParams adRequestParams,
-                                @Nullable Map<String, Object> config) {
+                                @Nullable Map<String, String> networkConfig) {
         updateRestrictions(adRequestParams);
     }
 
     @Override
-    public void collectHeaderBiddingParams(@NonNull Context context,
+    public void collectHeaderBiddingParams(@NonNull ContextProvider contextProvider,
                                            @NonNull UnifiedAdRequestParams requestParams,
                                            @NonNull HeaderBiddingCollectParamsCallback callback,
-                                           @NonNull Map<String, Object> config) {
-        Object slotId = config.get("slot_id");
-        if (!(slotId instanceof String)) {
+                                           @NonNull Map<String, String> mediationConfig) {
+        String slotId = mediationConfig.get(MyTargetConfig.KEY_SLOT_ID);
+        if (TextUtils.isEmpty(slotId)) {
             callback.onCollectFail(BMError.requestError("slot_id not provided"));
             return;
         }
         updateRestrictions(requestParams);
-        HashMap<String, String> params = new HashMap<>();
-        params.put("slot_id", (String) slotId);
+        Map<String, String> params = Collections.singletonMap(MyTargetConfig.KEY_SLOT_ID, slotId);
         callback.onCollectFinished(params);
     }
 

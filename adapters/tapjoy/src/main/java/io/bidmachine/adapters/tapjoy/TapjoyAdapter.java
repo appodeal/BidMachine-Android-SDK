@@ -1,14 +1,11 @@
 package io.bidmachine.adapters.tapjoy;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import com.tapjoy.TJConnectListener;
 import com.tapjoy.Tapjoy;
-import io.bidmachine.AdsType;
-import io.bidmachine.BidMachineAdapter;
-import io.bidmachine.HeaderBiddingAdapter;
-import io.bidmachine.HeaderBiddingCollectParamsCallback;
+import io.bidmachine.*;
 import io.bidmachine.models.DataRestrictions;
 import io.bidmachine.models.TargetingInfo;
 import io.bidmachine.unified.UnifiedAdRequestParams;
@@ -17,10 +14,11 @@ import io.bidmachine.utils.BMError;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
-public class TapjoyAdapter extends BidMachineAdapter implements HeaderBiddingAdapter {
+class TapjoyAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
 
-    public TapjoyAdapter() {
+    TapjoyAdapter() {
         super("tapjoy", Tapjoy.getVersion(), new AdsType[]{AdsType.Interstitial, AdsType.Rewarded});
     }
 
@@ -35,53 +33,56 @@ public class TapjoyAdapter extends BidMachineAdapter implements HeaderBiddingAda
     }
 
     @Override
-    public void collectHeaderBiddingParams(@NonNull Context context,
-                                           @NonNull UnifiedAdRequestParams requestParams,
+    protected void onInitialize(@NonNull ContextProvider contextProvider,
+                                @NonNull UnifiedAdRequestParams adRequestParams,
+                                @Nullable Map<String, String> networkConfig) {
+        super.onInitialize(contextProvider, adRequestParams, networkConfig);
+        configure(adRequestParams);
+        if (networkConfig != null) {
+            final String sdkKey = networkConfig.get(TapjoyNetworkConfig.KEY_SDK);
+            if (!TextUtils.isEmpty(sdkKey)) {
+                assert sdkKey != null;
+                initializeTapjoy(contextProvider, sdkKey, null);
+            }
+        }
+    }
+
+    @Override
+    public void collectHeaderBiddingParams(@NonNull ContextProvider contextProvider,
+                                           @NonNull UnifiedAdRequestParams adRequestParams,
                                            @NonNull final HeaderBiddingCollectParamsCallback callback,
-                                           @NonNull Map<String, Object> config) {
-        final String sdkKey = (String) config.get("sdk_key");
+                                           @NonNull Map<String, String> mediationConfig) {
+        final String sdkKey = mediationConfig.get(TapjoyNetworkConfig.KEY_SDK);
         if (TextUtils.isEmpty(sdkKey)) {
             callback.onCollectFail(BMError.requestError("sdk_key not provided"));
             return;
         }
         assert sdkKey != null;
-        final String placementName = (String) config.get("placement_name");
+        final String placementName = mediationConfig.get(TapjoyNetworkConfig.KEY_PLACEMENT_NAME);
         if (TextUtils.isEmpty(placementName)) {
             callback.onCollectFail(BMError.requestError("placement_name not provided"));
             return;
         }
         assert placementName != null;
-        configureRestrictions(requestParams);
-        configureParams(requestParams);
-        if (Tapjoy.isLimitedConnected()) {
-            finalizeHeaderBiddingCollecting(sdkKey, placementName, Tapjoy.getUserToken(), callback);
-        } else {
-            Tapjoy.limitedConnect(context, sdkKey, new TJConnectListener() {
-                @Override
-                public void onConnectSuccess() {
-                    finalizeHeaderBiddingCollecting(sdkKey, placementName, Tapjoy.getUserToken(), callback);
-                }
+        configure(adRequestParams);
+        initializeTapjoy(contextProvider, sdkKey, new TapjoyInitializeListener() {
+            @Override
+            public void onInitialized() {
+                Map<String, String> params = new HashMap<>();
+                params.put(TapjoyNetworkConfig.KEY_SDK, sdkKey);
+                params.put(TapjoyNetworkConfig.KEY_PLACEMENT_NAME, placementName);
+                params.put(TapjoyNetworkConfig.KEY_TOKEN, Tapjoy.getUserToken());
+                callback.onCollectFinished(params);
+            }
 
-                @Override
-                public void onConnectFailure() {
-                    callback.onCollectFail(BMError.IncorrectAdUnit);
-                }
-            });
-        }
+            @Override
+            public void onInitializationFail(BMError error) {
+                callback.onCollectFail(error);
+            }
+        });
     }
 
-    private void finalizeHeaderBiddingCollecting(@NonNull String sdkKey,
-                                                 @NonNull String placementName,
-                                                 @NonNull String token,
-                                                 @NonNull HeaderBiddingCollectParamsCallback callback) {
-        Map<String, String> params = new HashMap<>();
-        params.put("sdk_key", sdkKey);
-        params.put("placement_name", placementName);
-        params.put("token", token);
-        callback.onCollectFinished(params);
-    }
-
-    private static void configureRestrictions(@NonNull UnifiedAdRequestParams adRequestParams) {
+    private static void configure(@NonNull UnifiedAdRequestParams adRequestParams) {
         DataRestrictions dataRestrictions = adRequestParams.getDataRestrictions();
         if (dataRestrictions.isUserInGdprScope()) {
             Tapjoy.subjectToGDPR(true);
@@ -90,14 +91,47 @@ public class TapjoyAdapter extends BidMachineAdapter implements HeaderBiddingAda
             Tapjoy.subjectToGDPR(false);
         }
         Tapjoy.belowConsentAge(dataRestrictions.isUserAgeRestricted());
-    }
-
-    private static void configureParams(@NonNull UnifiedAdRequestParams adRequestParams) {
         TargetingInfo targetingInfo = adRequestParams.getTargetingParams();
         String userId = targetingInfo.getUserId();
         if (userId != null) {
             Tapjoy.setUserID(targetingInfo.getUserId());
         }
+    }
+
+    private static synchronized void initializeTapjoy(@NonNull ContextProvider contextProvider,
+                                                      @NonNull String sdkKey,
+                                                      @Nullable final TapjoyInitializeListener listener) {
+        if (Tapjoy.isLimitedConnected()) {
+            if (listener != null) {
+                listener.onInitialized();
+            }
+        } else {
+            final CountDownLatch syncLock = new CountDownLatch(1);
+            Tapjoy.limitedConnect(contextProvider.getContext(), sdkKey, new TJConnectListener() {
+                @Override
+                public void onConnectSuccess() {
+                    if (listener != null) {
+                        listener.onInitialized();
+                    }
+                    syncLock.countDown();
+                }
+
+                @Override
+                public void onConnectFailure() {
+                    if (listener != null) {
+                        listener.onInitializationFail(BMError.IncorrectAdUnit);
+                    }
+                    syncLock.countDown();
+                }
+            });
+            syncLock.countDown();
+        }
+    }
+
+    private interface TapjoyInitializeListener {
+        void onInitialized();
+
+        void onInitializationFail(BMError error);
     }
 
 }

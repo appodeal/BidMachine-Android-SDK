@@ -1,9 +1,7 @@
 package io.bidmachine;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import io.bidmachine.models.AdObject;
 import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.unified.UnifiedBannerAd;
 import io.bidmachine.unified.UnifiedFullscreenAd;
@@ -12,9 +10,9 @@ import io.bidmachine.unified.UnifiedNativeAd;
 import java.util.Map;
 
 /**
- * All adapters must extends this class
+ * Class for implement Network initialization and specific Ads types creation
  */
-public abstract class BidMachineAdapter {
+public abstract class NetworkAdapter {
 
     private final String key;
     private final String version;
@@ -22,66 +20,80 @@ public abstract class BidMachineAdapter {
 
     private boolean isInitialized;
 
-    public BidMachineAdapter(@NonNull String key, @NonNull String version, @NonNull AdsType[] supportedTypes) {
+    protected NetworkAdapter(@NonNull String key, @NonNull String version, @NonNull AdsType[] supportedTypes) {
         this.key = key;
         this.version = version;
         this.supportedTypes = supportedTypes;
     }
 
+    /**
+     * @return unique Network key
+     */
     public String getKey() {
         return key;
     }
 
+    /**
+     * @return Network version
+     */
     public String getVersion() {
         return version;
     }
 
+    /**
+     * @return Network supported ads types
+     */
     AdsType[] getSupportedTypes() {
         return supportedTypes;
     }
 
     /**
-     * Call for initialize BidMachine
+     * Call for initialize Network
      */
-    public final void initialize(@NonNull Context context,
+    public final void initialize(@NonNull ContextProvider contextProvider,
                                  @NonNull UnifiedAdRequestParams adRequestParams,
-                                 @Nullable Map<String, Object> config) throws Throwable {
+                                 @Nullable Map<String, String> networkConfig) throws Throwable {
         if (!isInitialized) {
-            onInitialize(context, adRequestParams, config);
+            onInitialize(contextProvider, adRequestParams, networkConfig);
             isInitialized = true;
         }
     }
 
-    protected void onInitialize(@NonNull Context context,
+    protected void onInitialize(@NonNull ContextProvider contextProvider,
                                 @NonNull UnifiedAdRequestParams adRequestParams,
-                                @Nullable Map<String, Object> config) {
+                                @Nullable Map<String, String> networkConfig) {
     }
 
+    /**
+     * Method for create specific per Network Banner Ads
+     */
     public UnifiedBannerAd createBanner() {
         throw new IllegalArgumentException(getKey() + " adapter not supported banner");
     }
 
+    /**
+     * Method for create specific per Network Interstitial Ads
+     */
     public UnifiedFullscreenAd createInterstitial() {
         throw new IllegalArgumentException(getKey() + " adapter not supported static interstitial");
     }
 
+    /**
+     * Method for create specific per Network Rewarded Ads
+     */
     public UnifiedFullscreenAd createRewarded() {
         throw new IllegalArgumentException(getKey() + " adapter not supported rewarded interstitial");
     }
 
+    /**
+     * Method for create specific per Network Native Ads
+     */
     public UnifiedNativeAd createNativeAd() {
         throw new IllegalArgumentException(getKey() + " adapter not supported native");
     }
 
     /**
-     * Load ad with server response
-     */
-    public void load(@NonNull Context context, @NonNull AdObject response, @Nullable Map<String, String> extra) {
-        response.load(context, extra);
-    }
-
-    /**
-     * Enable logging in adapter. Will be called before load of any ad type
+     * Enable logging in adapter. Will be called after this parameter was changed via {@link BidMachine#setLoggingEnabled(boolean)}
      *
      * @param enabled {@code true} to enable logging
      */

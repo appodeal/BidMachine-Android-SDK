@@ -15,7 +15,7 @@ import io.bidmachine.utils.ParamsHelper;
 
 public abstract class AdView<
         SelfType extends AdView<SelfType, AdType, AdRequestType, AdObjectType, ExternalAdListenerType>,
-        AdType extends ViewAd<AdType, AdRequestType, AdObjectType, AdListener<AdType>>,
+        AdType extends ViewAd<AdType, AdRequestType, AdObjectType, ?, AdListener<AdType>>,
         AdRequestType extends AdRequest<AdRequestType, ?>,
         AdObjectType extends ViewAdObject<AdRequestType, ?, ?>,
         ExternalAdListenerType extends AdListener<SelfType>>
@@ -154,6 +154,16 @@ public abstract class AdView<
     @Override
     public boolean isLoading() {
         return pendingAd != null && pendingAd.isLoading();
+    }
+
+    @Override
+    public boolean isExpired() {
+        return pendingAd != null ? pendingAd.isExpired() : currentAd != null && currentAd.isExpired();
+    }
+
+    @Override
+    public boolean isDestroyed() {
+        return pendingAd != null ? pendingAd.isDestroyed() : currentAd != null && currentAd.isDestroyed();
     }
 
     @Nullable

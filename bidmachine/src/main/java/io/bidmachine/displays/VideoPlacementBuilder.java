@@ -1,16 +1,12 @@
 package io.bidmachine.displays;
 
-import android.content.Context;
 import android.graphics.Point;
 import android.support.annotation.NonNull;
 import com.explorestack.protobuf.adcom.*;
 import com.explorestack.protobuf.openrtb.Response;
 import com.google.protobuf.Any;
 import com.google.protobuf.Message;
-import io.bidmachine.AdContentType;
-import io.bidmachine.AdsType;
-import io.bidmachine.Constants;
-import io.bidmachine.NetworkConfig;
+import io.bidmachine.*;
 import io.bidmachine.core.Utils;
 import io.bidmachine.models.AdObjectParams;
 import io.bidmachine.unified.UnifiedAdRequestParams;
@@ -30,16 +26,17 @@ public class VideoPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAdR
     }
 
     @Override
-    public Message.Builder createPlacement(@NonNull Context context,
-                                           @NonNull UnifiedAdRequestParamsType adRequestParams,
-                                           @NonNull AdsType adsType,
-                                           @NonNull Collection<NetworkConfig> networkConfigs) {
+    public void createPlacement(@NonNull ContextProvider contextProvider,
+                                @NonNull UnifiedAdRequestParamsType adRequestParams,
+                                @NonNull AdsType adsType,
+                                @NonNull Collection<NetworkConfig> networkConfigs,
+                                @NonNull PlacementCreateCallback callback) {
         Placement.VideoPlacement.Builder builder = Placement.VideoPlacement.newBuilder();
         builder.setSkip(canSkip);
         builder.setUnit(SizeUnit.SIZE_UNIT_DIPS);
         builder.setPos(PlacementPosition.PLACEMENT_POSITION_FULLSCREEN);
 
-        Point screenSize = getSize(context, adRequestParams);
+        Point screenSize = getSize(contextProvider, adRequestParams);
         builder.setW(screenSize.x);
         builder.setH(screenSize.y);
 
@@ -54,21 +51,21 @@ public class VideoPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAdR
         builder.setMindur(Constants.VIDEO_MINDUR);
         builder.setMaxdur(Constants.VIDEO_MAXDUR);
         builder.setLinearValue(Constants.VIDEO_LINEARITY);
-        Message.Builder headerBiddingPlacement =
-                createHeaderBiddingPlacement(context, adRequestParams, adsType, getAdContentType(), networkConfigs);
+        Message.Builder headerBiddingPlacement = createHeaderBiddingPlacement(
+                contextProvider, adRequestParams, adsType, getAdContentType(), networkConfigs);
         if (headerBiddingPlacement != null) {
             builder.addExt(Any.pack(headerBiddingPlacement.build()));
         }
-        return builder;
+        callback.onCreated(builder);
     }
 
     @Override
-    public Point getSize(Context context, UnifiedAdRequestParamsType adRequestParams) {
-        return Utils.getScreenSize(context);
+    public Point getSize(ContextProvider contextProvider, UnifiedAdRequestParamsType adRequestParams) {
+        return Utils.getScreenSize(contextProvider.getContext());
     }
 
     @Override
-    public AdObjectParams createAdObjectParams(@NonNull Context context,
+    public AdObjectParams createAdObjectParams(@NonNull ContextProvider contextProvider,
                                                @NonNull UnifiedAdRequestParamsType adRequestParams,
                                                @NonNull Response.Seatbid seatbid,
                                                @NonNull Response.Seatbid.Bid bid,
@@ -76,7 +73,7 @@ public class VideoPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAdR
         if (!ad.hasVideo()) {
             return null;
         }
-        AdObjectParams params = createHeaderBiddingAdObjectParams(context, adRequestParams, seatbid, bid, ad);
+        AdObjectParams params = createHeaderBiddingAdObjectParams(contextProvider, adRequestParams, seatbid, bid, ad);
         if (params == null) {
             Ad.Video video = ad.getVideo();
             VideoAdObjectParams videoParams = new VideoAdObjectParams(seatbid, bid, ad);

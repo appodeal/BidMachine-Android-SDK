@@ -1,9 +1,9 @@
 package io.bidmachine.adapters.my_target;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import com.my.target.ads.MyTargetView;
+import io.bidmachine.ContextProvider;
 import io.bidmachine.banner.BannerSize;
 import io.bidmachine.unified.UnifiedBannerAd;
 import io.bidmachine.unified.UnifiedBannerAdCallback;
@@ -11,19 +11,20 @@ import io.bidmachine.unified.UnifiedBannerAdRequestParams;
 import io.bidmachine.unified.UnifiedMediationParams;
 import io.bidmachine.utils.BMError;
 
-import java.util.Map;
-
-class MyTargetBanner implements UnifiedBannerAd {
+class MyTargetBanner extends UnifiedBannerAd {
 
     @Nullable
     private MyTargetView adView;
 
     @Override
-    public void load(@NonNull Context context,
+    public void load(@NonNull ContextProvider contextProvider,
                      @NonNull UnifiedBannerAdCallback callback,
                      @NonNull UnifiedBannerAdRequestParams requestParams,
-                     @NonNull UnifiedMediationParams mediationParams,
-                     @Nullable Map<String, Object> localExtra) {
+                     @NonNull UnifiedMediationParams mediationParams) {
+        MyTargetParams params = new MyTargetParams(mediationParams);
+        if (!params.isValid(callback)) {
+            return;
+        }
         BannerSize size = requestParams.getBannerSize();
         int adSize;
         switch (size) {
@@ -40,18 +41,13 @@ class MyTargetBanner implements UnifiedBannerAd {
                 break;
             }
         }
-        if (!mediationParams.contains("slot_id")) {
-            callback.onAdLoadFailed(BMError.requestError("slot_id not provided"));
-            return;
-        }
-        MyTargetParams params = new MyTargetParams(mediationParams);
-        if (!params.isValid(callback)) {
-            return;
-        }
-        adView = new MyTargetView(context);
+        adView = new MyTargetView(contextProvider.getContext());
+        assert params.slotId != null; // it's shouldn't be null since we already check it in {@link MyTargetParams}
         adView.init(params.slotId, adSize, false);
         adView.setListener(new MyTargetListener(callback));
+        assert adView.getCustomParams() != null; // it's shouldn't be null at this point
         MyTargetAdapter.updateTargeting(requestParams, adView.getCustomParams());
+        assert params.bidId != null; // it's shouldn't be null since we already check it in {@link MyTargetParams}
         adView.loadFromBid(params.bidId);
     }
 

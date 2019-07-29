@@ -6,10 +6,7 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.View;
-import io.bidmachine.AdProcessCallback;
-import io.bidmachine.AdsType;
-import io.bidmachine.BidMachineAd;
-import io.bidmachine.BidMachineAdapter;
+import io.bidmachine.*;
 import io.bidmachine.core.Logger;
 import io.bidmachine.models.AdObjectParams;
 import io.bidmachine.nativead.utils.NativeContainer;
@@ -19,33 +16,27 @@ import io.bidmachine.nativead.utils.NativePublicData;
 import io.bidmachine.nativead.view.NativeIconView;
 import io.bidmachine.nativead.view.NativeMediaView;
 import io.bidmachine.unified.UnifiedNativeAd;
-import io.bidmachine.utils.ContextProvider;
+import io.bidmachine.unified.UnifiedNativeAdRequestParams;
 
 public final class NativeAd
-        extends BidMachineAd<NativeAd, NativeRequest, NativeAdObject, AdObjectParams, NativeListener>
+        extends BidMachineAd<NativeAd, NativeRequest, NativeAdObject, AdObjectParams, UnifiedNativeAdRequestParams, NativeListener>
         implements NativePublicData, NativeMediaPublicData, NativeContainer, NativeInteractor {
 
-    public NativeAd(Context context) {
-        super(context);
+    public NativeAd(@NonNull Context context) {
+        super(context, AdsType.Native);
     }
 
     @Override
     protected NativeAdObject createAdObject(@NonNull ContextProvider contextProvider,
                                             @NonNull NativeRequest adRequest,
-                                            @NonNull BidMachineAdapter adapter,
+                                            @NonNull NetworkAdapter adapter,
                                             @NonNull AdObjectParams adObjectParams,
                                             @NonNull AdProcessCallback processCallback) {
         UnifiedNativeAd unifiedNativeAd = adapter.createNativeAd();
         if (unifiedNativeAd == null) {
             return null;
         }
-        return new NativeAdObject(this, processCallback, adRequest, adObjectParams, unifiedNativeAd);
-    }
-
-    @NonNull
-    @Override
-    protected AdsType getType() {
-        return AdsType.Native;
+        return new NativeAdObject(contextProvider, processCallback, adRequest, adObjectParams, unifiedNativeAd);
     }
 
     @Nullable

@@ -1,13 +1,13 @@
 package io.bidmachine.adapters.mraid;
 
 import io.bidmachine.AdsType;
-import io.bidmachine.BidMachineAdapter;
+import io.bidmachine.NetworkAdapter;
 import io.bidmachine.unified.UnifiedBannerAd;
 import io.bidmachine.unified.UnifiedFullscreenAd;
 import org.nexage.sourcekit.mraid.internal.MRAIDLog;
 import org.nexage.sourcekit.util.Video;
 
-public class MraidAdapter extends BidMachineAdapter {
+public class MraidAdapter extends NetworkAdapter {
 
     public MraidAdapter() {
         super("mraid", "2.0", new AdsType[]{AdsType.Banner, AdsType.Interstitial, AdsType.Rewarded});

@@ -8,6 +8,7 @@ import com.tapjoy.TJPlacement;
 import com.tapjoy.Tapjoy;
 import com.tapjoy.TapjoyAuctionFlags;
 import io.bidmachine.BidMachine;
+import io.bidmachine.ContextProvider;
 import io.bidmachine.unified.UnifiedFullscreenAd;
 import io.bidmachine.unified.UnifiedFullscreenAdCallback;
 import io.bidmachine.unified.UnifiedFullscreenAdRequestParams;
@@ -15,23 +16,21 @@ import io.bidmachine.unified.UnifiedMediationParams;
 import io.bidmachine.utils.BMError;
 
 import java.util.HashMap;
-import java.util.Map;
 
-public class TapjoyFullscreenAd implements UnifiedFullscreenAd {
+public class TapjoyFullscreenAd extends UnifiedFullscreenAd {
 
     @Nullable
     private TJPlacement tjPlacement;
 
     @Override
-    public void load(@NonNull Context context,
+    public void load(@NonNull ContextProvider context,
                      @NonNull UnifiedFullscreenAdCallback callback,
                      @NonNull UnifiedFullscreenAdRequestParams requestParams,
-                     @NonNull UnifiedMediationParams mediationParams,
-                     @Nullable Map<String, Object> localExtra) {
+                     @NonNull UnifiedMediationParams mediationParams) throws Throwable {
         //TODO: fix this behavior
         Tapjoy.setActivity((Activity) context);
         TapjoyFullscreenAdListener listener = new TapjoyFullscreenAdListener(callback);
-        tjPlacement = Tapjoy.getLimitedPlacement(mediationParams.getString("placement_name"), listener);
+        tjPlacement = Tapjoy.getLimitedPlacement(mediationParams.getString(TapjoyNetworkConfig.KEY_PLACEMENT_NAME), listener);
         tjPlacement.setVideoListener(listener);
         tjPlacement.setMediationName(BidMachine.NAME);
         tjPlacement.setAdapterVersion(BuildConfig.VERSION_NAME);

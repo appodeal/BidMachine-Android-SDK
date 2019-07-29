@@ -22,6 +22,14 @@ public abstract class UnifiedMediationParams {
 
     public abstract int getInt(@Nullable String key, int fallback);
 
+    @Nullable
+    public Integer getInteger(@Nullable String key) {
+        return getInteger(key, null);
+    }
+
+    @Nullable
+    public abstract Integer getInteger(@Nullable String key, @Nullable Integer fallback);
+
     public boolean getBool(@Nullable String key) {
         return getBool(key, false);
     }
@@ -64,6 +72,11 @@ public abstract class UnifiedMediationParams {
 
         @Override
         public int getInt(@Nullable String key, int fallback) {
+            return resolve(key, fallback);
+        }
+
+        @Override
+        public Integer getInteger(@Nullable String key, @Nullable Integer fallback) {
             return resolve(key, fallback);
         }
 

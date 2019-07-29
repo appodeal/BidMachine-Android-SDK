@@ -17,10 +17,7 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import io.bidmachine.AdObjectImpl;
-import io.bidmachine.AdProcessCallback;
-import io.bidmachine.BMException;
-import io.bidmachine.MediaAssetType;
+import io.bidmachine.*;
 import io.bidmachine.core.Logger;
 import io.bidmachine.core.Utils;
 import io.bidmachine.core.VisibilityTracker;
@@ -33,7 +30,6 @@ import io.bidmachine.unified.UnifiedNativeAd;
 import io.bidmachine.unified.UnifiedNativeAdCallback;
 import io.bidmachine.unified.UnifiedNativeAdRequestParams;
 import io.bidmachine.utils.BMError;
-import io.bidmachine.utils.ContextProvider;
 import org.nexage.sourcekit.vast.model.VASTModel;
 
 import java.io.File;
@@ -74,11 +70,11 @@ public final class NativeAdObject
     @Nullable
     private NativeData nativeData;
 
-    public NativeAdObject(@NonNull ContextProvider contextProvider,
-                          @NonNull AdProcessCallback processCallback,
-                          @NonNull NativeRequest adRequest,
-                          @NonNull AdObjectParams adObjectParams,
-                          @NonNull UnifiedNativeAd unifiedAd) {
+    NativeAdObject(@NonNull ContextProvider contextProvider,
+                   @NonNull AdProcessCallback processCallback,
+                   @NonNull NativeRequest adRequest,
+                   @NonNull AdObjectParams adObjectParams,
+                   @NonNull UnifiedNativeAd unifiedAd) {
         super(contextProvider, processCallback, adRequest, adObjectParams, unifiedAd);
     }
 
@@ -501,16 +497,12 @@ public final class NativeAdObject
     @Override
     public void onClicked() {
         super.onClicked();
-        Context context = getContext();
-        if (context == null) {
-            return;
-        }
         String clickUrl = getClickUrl();
         if (TextUtils.isEmpty(clickUrl)) {
             return;
         }
-        showProgressDialog(context);
-        Utils.openBrowser(context, clickUrl, NativeNetworkExecutor.getInstance(),
+        showProgressDialog(getContext());
+        Utils.openBrowser(getContext(), clickUrl, NativeNetworkExecutor.getInstance(),
                 new Runnable() {
                     @Override
                     public void run() {
@@ -541,11 +533,6 @@ public final class NativeAdObject
 
         @Override
         public void onAdLoaded(@NonNull NativeData nativeData) {
-            Context context = getContext();
-            if (context == null) {
-                processCallback.processLoadFail(BMError.Internal);
-                return;
-            }
             NativeAdObject.this.nativeData = nativeData;
             try {
                 loadAsset(getContext(), nativeData);

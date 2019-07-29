@@ -6,7 +6,7 @@ import com.explorestack.protobuf.adcom.Ad;
 import com.explorestack.protobuf.openrtb.Response;
 import io.bidmachine.models.AuctionResult;
 
-public final class AuctionResultImpl implements AuctionResult {
+final class AuctionResultImpl implements AuctionResult {
 
     @NonNull
     private final String id;

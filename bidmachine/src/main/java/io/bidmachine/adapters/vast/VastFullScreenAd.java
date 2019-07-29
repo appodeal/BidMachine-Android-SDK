@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import io.bidmachine.ContextProvider;
 import io.bidmachine.unified.UnifiedFullscreenAd;
 import io.bidmachine.unified.UnifiedFullscreenAdCallback;
 import io.bidmachine.unified.UnifiedFullscreenAdRequestParams;
@@ -13,9 +14,7 @@ import io.bidmachine.utils.IabUtils;
 import org.nexage.sourcekit.util.Video;
 import org.nexage.sourcekit.vast.view.AppodealVASTPlayer;
 
-import java.util.Map;
-
-class VastFullScreenAdObject implements UnifiedFullscreenAd {
+class VastFullScreenAd extends UnifiedFullscreenAd {
 
     private Video.Type videoType;
     @Nullable
@@ -23,23 +22,22 @@ class VastFullScreenAdObject implements UnifiedFullscreenAd {
     @Nullable
     private VastFullScreenAdapterListener vastListener;
 
-    VastFullScreenAdObject(Video.Type videoType) {
+    VastFullScreenAd(Video.Type videoType) {
         this.videoType = videoType;
     }
 
     @Override
-    public void load(@NonNull Context context,
+    public void load(@NonNull ContextProvider contextProvider,
                      @NonNull UnifiedFullscreenAdCallback callback,
                      @NonNull UnifiedFullscreenAdRequestParams requestParams,
-                     @NonNull UnifiedMediationParams mediationParams,
-                     @Nullable Map<String, Object> localExtra) {
+                     @NonNull UnifiedMediationParams mediationParams) {
         final String creativeAdm = mediationParams.getString(IabUtils.KEY_CREATIVE_ADM);
         if (TextUtils.isEmpty(creativeAdm)) {
             callback.onAdLoadFailed(BMError.IncorrectAdUnit);
             return;
         }
         int skipAfterTimeSec = mediationParams.getInt(IabUtils.KEY_SKIP_AFTER_TIME_SEC);
-        vastPlayer = new AppodealVASTPlayer(context);
+        vastPlayer = new AppodealVASTPlayer(contextProvider.getContext());
         vastPlayer.setPrecache(true);
         vastPlayer.setCloseTime(skipAfterTimeSec);
         vastListener = new VastFullScreenAdapterListener(callback);

@@ -8,6 +8,8 @@ import android.util.AttributeSet;
 import io.bidmachine.AdRequest;
 import io.bidmachine.AdsType;
 import io.bidmachine.R;
+import io.bidmachine.TargetingParams;
+import io.bidmachine.models.DataRestrictions;
 import io.bidmachine.models.IBannerRequestBuilder;
 import io.bidmachine.unified.UnifiedBannerAdRequestParams;
 import io.bidmachine.utils.BMError;
@@ -17,16 +19,11 @@ public final class BannerRequest extends AdRequest<BannerRequest, UnifiedBannerA
     private BannerSize bannerSize;
 
     private BannerRequest() {
+        super(AdsType.Banner);
     }
 
     public BannerSize getSize() {
         return bannerSize;
-    }
-
-    @NonNull
-    @Override
-    protected AdsType getType() {
-        return AdsType.Banner;
     }
 
     @Override
@@ -37,9 +34,11 @@ public final class BannerRequest extends AdRequest<BannerRequest, UnifiedBannerA
         return super.verifyRequest();
     }
 
+    @NonNull
     @Override
-    public UnifiedBannerAdRequestParams getUnifiedRequestParams() {
-        return new BannerUnifiedRequestParams();
+    protected UnifiedBannerAdRequestParams createUnifiedAdRequestParams(@NonNull TargetingParams targetingParams,
+                                                                        @NonNull DataRestrictions dataRestrictions) {
+        return new BannerUnifiedRequestParams(targetingParams, dataRestrictions);
     }
 
     public static final class Builder extends AdRequestBuilderImpl<Builder, BannerRequest>
@@ -71,6 +70,11 @@ public final class BannerRequest extends AdRequest<BannerRequest, UnifiedBannerA
     }
 
     private class BannerUnifiedRequestParams extends BaseUnifiedRequestParams implements UnifiedBannerAdRequestParams {
+
+        BannerUnifiedRequestParams(@NonNull TargetingParams targetingParams,
+                                   @NonNull DataRestrictions dataRestrictions) {
+            super(targetingParams, dataRestrictions);
+        }
 
         @Override
         public BannerSize getBannerSize() {
