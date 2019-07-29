@@ -4,16 +4,17 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
-
 import io.bidmachine.AdView;
 import io.bidmachine.ViewAdObject;
 import io.bidmachine.models.RequestBuilder;
+import io.bidmachine.unified.UnifiedBannerAd;
+import io.bidmachine.unified.UnifiedBannerAdRequestParams;
 
 public class BannerView extends AdView<
         BannerView,
         BannerAd,
         BannerRequest,
-        ViewAdObject<BannerAd>,
+        ViewAdObject<BannerRequest, UnifiedBannerAd, UnifiedBannerAdRequestParams>,
         BannerListener> {
 
     public BannerView(@NonNull Context context) {

@@ -1,18 +1,15 @@
 package io.bidmachine.adapters.vast;
 
+import io.bidmachine.AdsType;
+import io.bidmachine.NetworkAdapter;
+import io.bidmachine.unified.UnifiedFullscreenAd;
 import org.nexage.sourcekit.util.VASTLog;
 import org.nexage.sourcekit.util.Video;
 
-import io.bidmachine.FullScreenAdObject;
-import io.bidmachine.adapters.OrtbAdapter;
-import io.bidmachine.displays.FullScreenAdObjectParams;
-import io.bidmachine.displays.VideoAdObjectParams;
-import io.bidmachine.models.AdObjectParams;
-
-public class VastAdapter extends OrtbAdapter {
+public class VastAdapter extends NetworkAdapter {
 
     public VastAdapter() {
-        super("vast", "2.0");
+        super("vast", "2.0", new AdsType[]{AdsType.Interstitial, AdsType.Rewarded});
     }
 
     @Override
@@ -21,13 +18,13 @@ public class VastAdapter extends OrtbAdapter {
     }
 
     @Override
-    public FullScreenAdObject createInterstitialAdObject(FullScreenAdObjectParams adObjectParams) {
-        return new VastFullScreenAdObject<>(Video.Type.NON_REWARDED, adObjectParams);
+    public UnifiedFullscreenAd createInterstitial() {
+        return new VastFullScreenAd(Video.Type.NON_REWARDED);
     }
 
     @Override
-    public FullScreenAdObject createRewardedAdObject(FullScreenAdObjectParams adObjectParams) {
-        return new VastFullScreenAdObject<>(Video.Type.REWARDED, adObjectParams);
+    public UnifiedFullscreenAd createRewarded() {
+        return new VastFullScreenAd(Video.Type.REWARDED);
     }
 
 }

@@ -5,7 +5,7 @@ import android.support.annotation.Nullable;
 
 import java.util.List;
 
-public interface TrackingObject {
+interface TrackingObject {
 
     Object getTrackingKey();
 

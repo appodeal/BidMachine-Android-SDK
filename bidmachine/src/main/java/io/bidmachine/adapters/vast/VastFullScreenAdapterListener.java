@@ -2,24 +2,24 @@ package io.bidmachine.adapters.vast;
 
 import android.app.Activity;
 import android.support.annotation.NonNull;
-
+import io.bidmachine.unified.UnifiedFullscreenAdCallback;
+import io.bidmachine.utils.BMError;
 import org.nexage.sourcekit.util.Utils;
 import org.nexage.sourcekit.vast.VASTPlayer;
 import org.nexage.sourcekit.vast.activity.VASTActivity;
 
-import io.bidmachine.utils.BMError;
-
 class VastFullScreenAdapterListener implements VASTPlayer.VASTPlayerListener {
 
-    private VastFullScreenAdObject adObject;
+    @NonNull
+    private UnifiedFullscreenAdCallback callback;
 
-    VastFullScreenAdapterListener(@NonNull VastFullScreenAdObject adObject) {
-        this.adObject = adObject;
+    VastFullScreenAdapterListener(@NonNull UnifiedFullscreenAdCallback callback) {
+        this.callback = callback;
     }
 
     @Override
     public void vastReady() {
-        adObject.processLoadSuccess();
+        callback.onAdLoaded();
     }
 
     @Override
@@ -27,11 +27,11 @@ class VastFullScreenAdapterListener implements VASTPlayer.VASTPlayerListener {
         //TODO: implement vast error mapping
         switch (error) {
             case VASTPlayer.ERROR_NO_NETWORK: {
-                adObject.processLoadFail(BMError.noFillError(BMError.Connection));
+                callback.onAdLoadFailed(BMError.noFillError(BMError.Connection));
                 break;
             }
             default: {
-                adObject.processLoadFail(BMError.noFillError(null));
+                callback.onAdLoadFailed(BMError.noFillError(null));
                 break;
             }
         }
@@ -39,12 +39,12 @@ class VastFullScreenAdapterListener implements VASTPlayer.VASTPlayerListener {
 
     @Override
     public void vastShown() {
-        adObject.processShown();
+        callback.onAdShown();
     }
 
     @Override
     public void vastClick(String url, final Activity activity) {
-        adObject.processClicked();
+        callback.onAdClicked();
         if (url != null) {
             if (activity instanceof VASTActivity) {
                 ((VASTActivity) activity).showProgressBar();
@@ -62,12 +62,12 @@ class VastFullScreenAdapterListener implements VASTPlayer.VASTPlayerListener {
 
     @Override
     public void vastComplete() {
-        adObject.processFinished();
+        callback.onAdFinished();
     }
 
     @Override
     public void vastDismiss(boolean finished) {
-        adObject.processClosed(finished);
+        callback.onAdClosed();
     }
 
 }

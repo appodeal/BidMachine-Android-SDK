@@ -36,9 +36,8 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
-public abstract class BaseRequestTestImpl<AdType extends OrtbAd, AdRequestType extends AdRequest>
-        implements AdRequestTests, AdListener<AdType>, AdFullScreenListener<AdType>,
-        AdRewardedListener<AdType> {
+public abstract class BaseRequestTestImpl<AdType extends BidMachineAd, AdRequestType extends AdRequest>
+        implements AdRequestTests, AdListener<AdType>, AdFullScreenListener<AdType> {
 
     protected MockWebServer mockWebServer;
 

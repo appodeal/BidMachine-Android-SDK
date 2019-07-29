@@ -20,7 +20,7 @@ import io.bidmachine.nativead.tasks.DownloadVastVideoTask;
 import io.bidmachine.nativead.tasks.DownloadVideoTask;
 import io.bidmachine.nativead.utils.NativeMediaPrivateData;
 import io.bidmachine.nativead.utils.NativeNetworkExecutor;
-import io.bidmachine.nativead.utils.NativePrivateData;
+import io.bidmachine.nativead.utils.NativeData;
 import io.bidmachine.utils.BMError;
 
 class AssetLoader {
@@ -32,13 +32,13 @@ class AssetLoader {
     private Context context;
     private NativeRequest adRequest;
     private AdProcessCallback callback;
-    private NativePrivateData nativeData;
+    private NativeData nativeData;
     private NativeMediaPrivateData nativeMediaData;
 
     AssetLoader(@NonNull Context context,
                 @NonNull NativeRequest request,
                 @NonNull AdProcessCallback callback,
-                @NonNull NativePrivateData nativeData,
+                @NonNull NativeData nativeData,
                 @NonNull NativeMediaPrivateData nativeMediaData) {
         this.context = context;
         this.adRequest = request;

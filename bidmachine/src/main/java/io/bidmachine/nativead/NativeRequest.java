@@ -1,20 +1,28 @@
 package io.bidmachine.nativead;
 
 import android.support.annotation.NonNull;
+import io.bidmachine.AdRequest;
+import io.bidmachine.AdsType;
+import io.bidmachine.MediaAssetType;
+import io.bidmachine.TargetingParams;
+import io.bidmachine.models.DataRestrictions;
+import io.bidmachine.models.INativeRequestBuilder;
+import io.bidmachine.unified.UnifiedNativeAdRequestParams;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import io.bidmachine.AdRequest;
-import io.bidmachine.AdsType;
-import io.bidmachine.MediaAssetType;
-import io.bidmachine.models.INativeRequestBuilder;
-
-public final class NativeRequest extends AdRequest<NativeRequest> {
+public final class NativeRequest extends AdRequest<NativeRequest, UnifiedNativeAdRequestParams> {
 
     private List<MediaAssetType> mediaAssetTypes = new ArrayList<>(MediaAssetType.values().length);
 
+    @SuppressWarnings("WeakerAccess")
+    public NativeRequest() {
+        super(AdsType.Native);
+    }
+
+    @SuppressWarnings("WeakerAccess")
     public boolean containsAssetType(MediaAssetType assetType) {
         return mediaAssetTypes.isEmpty()
                 || mediaAssetTypes.contains(assetType)
@@ -23,8 +31,9 @@ public final class NativeRequest extends AdRequest<NativeRequest> {
 
     @NonNull
     @Override
-    protected AdsType getType() {
-        return AdsType.Native;
+    protected UnifiedNativeAdRequestParams createUnifiedAdRequestParams(@NonNull TargetingParams targetingParams,
+                                                                        @NonNull DataRestrictions dataRestrictions) {
+        return new NativeUnifiedRequestParams(targetingParams, dataRestrictions);
     }
 
     public static final class Builder extends AdRequestBuilderImpl<Builder, NativeRequest>
@@ -45,7 +54,17 @@ public final class NativeRequest extends AdRequest<NativeRequest> {
 
     }
 
-    public interface AdRequestListener extends AdRequest.AdRequestListener<NativeRequest> {
+    private class NativeUnifiedRequestParams extends BaseUnifiedRequestParams implements UnifiedNativeAdRequestParams {
+
+        NativeUnifiedRequestParams(@NonNull TargetingParams targetingParams,
+                                   @NonNull DataRestrictions dataRestrictions) {
+            super(targetingParams, dataRestrictions);
+        }
+
+        @Override
+        public boolean containsAssetType(MediaAssetType assetType) {
+            return NativeRequest.this.containsAssetType(assetType);
+        }
     }
 
 }

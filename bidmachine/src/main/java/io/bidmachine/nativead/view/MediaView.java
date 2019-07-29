@@ -40,7 +40,7 @@ import io.bidmachine.nativead.utils.ImageHelper;
 import io.bidmachine.nativead.utils.NativeInteractor;
 import io.bidmachine.nativead.utils.NativeMediaPrivateData;
 import io.bidmachine.nativead.utils.NativeNetworkExecutor;
-import io.bidmachine.nativead.utils.NativePrivateData;
+import io.bidmachine.nativead.utils.NativeData;
 
 import static io.bidmachine.core.Utils.getScreenDensity;
 
@@ -52,7 +52,7 @@ public class MediaView extends RelativeLayout implements MediaPlayer.OnCompletio
     private static final float ASPECT_MULTIPLIER_HEIGHT_TO_WIDTH = 16f / 9;
 
     @Nullable
-    NativePrivateData nativeData;
+    NativeData nativeData;
     @Nullable
     NativeMediaPrivateData nativeMediaData;
     @Nullable
@@ -107,7 +107,7 @@ public class MediaView extends RelativeLayout implements MediaPlayer.OnCompletio
         applyNative(nativeAdObject, nativeAdObject, nativeAdObject);
     }
 
-    public void applyNative(@NonNull NativePrivateData nativeData,
+    public void applyNative(@NonNull NativeData nativeData,
                             @NonNull NativeMediaPrivateData nativeMediaData,
                             @NonNull NativeInteractor nativeInteractor) {
         this.nativeData = nativeData;

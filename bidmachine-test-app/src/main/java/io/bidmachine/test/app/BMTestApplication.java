@@ -1,10 +1,9 @@
 package io.bidmachine.test.app;
 
-import android.app.Application;
-
+import android.support.multidex.MultiDexApplication;
 import io.bidmachine.BidMachine;
 
-public class BMTestApplication extends Application {
+public class BMTestApplication extends MultiDexApplication {
 
     @Override
     public void onCreate() {

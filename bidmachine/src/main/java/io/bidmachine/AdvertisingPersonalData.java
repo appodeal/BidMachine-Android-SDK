@@ -1,6 +1,7 @@
 package io.bidmachine;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 
@@ -27,7 +28,7 @@ class AdvertisingPersonalData {
         AdvertisingPersonalData.deviceAdvertisingId = deviceAdvertisingId;
     }
 
-    @Nullable
+    @NonNull
     static String getAdvertisingId(Context context, boolean blocked) {
         if (blocked) {
             return DEFAULT_ADVERTISING_ID;

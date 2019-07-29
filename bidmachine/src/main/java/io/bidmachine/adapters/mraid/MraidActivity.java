@@ -9,26 +9,20 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.util.TypedValue;
-import android.view.Gravity;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
+import android.view.*;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
-
+import io.bidmachine.utils.BMError;
 import org.nexage.sourcekit.util.Utils;
 import org.nexage.sourcekit.util.Video;
 import org.nexage.sourcekit.vast.view.CircleCountdownView;
-
-import io.bidmachine.utils.BMError;
 
 public class MraidActivity extends Activity {
 
     private static final int CLOSE_REGION_SIZE = 50;
 
-    private static MraidFullScreenAdObject mraidInterstitial;
+    private static MraidFullScreenAd mraidInterstitial;
 
     private ProgressBar progressBar;
     private CircleCountdownView circleCountdownView;
@@ -37,7 +31,9 @@ public class MraidActivity extends Activity {
     private Runnable showCloseTime;
     private boolean canSkip;
 
-    public static void show(Context context, MraidFullScreenAdObject mraidInterstitial, Video.Type adType) {
+    public static void show(Context context,
+                            MraidFullScreenAd mraidInterstitial,
+                            Video.Type adType) {
         MraidActivity.mraidInterstitial = mraidInterstitial;
         try {
             Intent adActivityIntent = new Intent(context, MraidActivity.class);
@@ -47,8 +43,8 @@ public class MraidActivity extends Activity {
             context.startActivity(adActivityIntent);
         } catch (Exception e) {
             e.printStackTrace();
-            if (mraidInterstitial != null && mraidInterstitial.getAd() != null) {
-                mraidInterstitial.processLoadFail(BMError.Internal);
+            if (mraidInterstitial != null && mraidInterstitial.getCallback() != null) {
+                mraidInterstitial.getCallback().onAdShowFailed(BMError.Internal);
             }
             MraidActivity.mraidInterstitial = null;
         }
@@ -73,7 +69,7 @@ public class MraidActivity extends Activity {
             if (mraidInterstitial != null) {
                 mraidInterstitial.setShowingActivity(this);
                 showMraidInterstitial();
-                if (!mraidInterstitial.getParams().canPreload()) {
+                if (!mraidInterstitial.canPreload()) {
                     mraidInterstitial.getAdapterListener().setAfterStartShowRunnable(new Runnable() {
                         @Override
                         public void run() {
@@ -84,8 +80,8 @@ public class MraidActivity extends Activity {
                 }
             }
         } catch (Exception e) {
-            if (mraidInterstitial != null) {
-                mraidInterstitial.processLoadFail(BMError.Internal);
+            if (mraidInterstitial != null && mraidInterstitial.getCallback() != null) {
+                mraidInterstitial.getCallback().onAdShowFailed(BMError.Internal);
             }
             finishActivity();
         }
@@ -138,8 +134,8 @@ public class MraidActivity extends Activity {
         circleCountdownView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mraidInterstitial != null) {
-                    mraidInterstitial.processShowFail(BMError.TimeoutError);
+                if (mraidInterstitial != null && mraidInterstitial.getCallback() != null) {
+                    mraidInterstitial.getCallback().onAdShowFailed(BMError.TimeoutError);
                 }
                 finishActivity();
             }
@@ -200,7 +196,7 @@ public class MraidActivity extends Activity {
         setContentView(mainView);
     }
 
-    private synchronized void verifyClosedDispatched(@Nullable MraidFullScreenAdObject mraidInterstitial) {
+    private synchronized void verifyClosedDispatched(@Nullable MraidFullScreenAd mraidInterstitial) {
         if (mraidInterstitial != null
                 && mraidInterstitial.getMraidInterstitial() != null
                 && !mraidInterstitial.getMraidInterstitial().isClosed()) {
