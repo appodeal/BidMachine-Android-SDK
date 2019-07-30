@@ -14,7 +14,6 @@ import io.bidmachine.protobuf.headerbidding.HeaderBiddingAd;
 import io.bidmachine.protobuf.headerbidding.HeaderBiddingPlacement;
 import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.utils.BMError;
-import io.bidmachine.ContextProvider;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,8 +22,11 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAdRequestParams> {
+
+    private static final long HEADER_BIDDING_PREPARE_TIMEOUT_SEC = 10;
 
     Message.Builder createPlacement(@NonNull ContextProvider contextProvider,
                                     @NonNull UnifiedAdRequestParamsType adRequestParams,
@@ -49,7 +51,7 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
                 task.execute(syncLock);
             }
             try {
-                syncLock.await();
+                syncLock.await(HEADER_BIDDING_PREPARE_TIMEOUT_SEC, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 Logger.log(e);
             }
@@ -61,6 +63,9 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
                         adUnitList = new ArrayList<>();
                     }
                     adUnitList.add(adUnit);
+                } else if (!task.isFinished()) {
+                    // In case when we reach this block after lock timeout - cancel tasks which are not finished yet
+                    task.cancel();
                 }
             }
             if (adUnitList != null && !adUnitList.isEmpty()) {
@@ -123,6 +128,8 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
         private CountDownLatch syncLock;
         private HeaderBiddingPlacement.AdUnit adUnit;
 
+        private boolean isFinished = false;
+
         AdUnitPreloadTask(@NonNull ContextProvider contextProvider,
                           @NonNull HeaderBiddingAdapter adapter,
                           @NonNull UnifiedAdRequestParamsType adRequestParams,
@@ -140,20 +147,27 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
 
         @Override
         public void onCollectFinished(@Nullable Map<String, String> params) {
+            if (isFinished) {
+                return;
+            }
             HeaderBiddingPlacement.AdUnit.Builder builder = HeaderBiddingPlacement.AdUnit.newBuilder();
             builder.setBidder(adapter.getKey());
             builder.setBidderSdkver(adapter.getVersion());
             builder.putAllClientParams(params);
             adUnit = builder.build();
-            syncLock.countDown();
+            Logger.log(String.format("%s: Header bidding collect finished", adapter.getKey()));
+            finish();
         }
 
         @Override
         public void onCollectFail(@Nullable BMError error) {
-            if (error != null) {
-                Logger.log("Header bidding collect fail: " + error.getMessage());
+            if (isFinished) {
+                return;
             }
-            syncLock.countDown();
+            if (error != null) {
+                Logger.log(String.format("%s: Header bidding collect fail: %s", adapter.getKey(), error.getMessage()));
+            }
+            finish();
         }
 
         void execute(@NonNull CountDownLatch syncLock) {
@@ -161,8 +175,25 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
             executor.execute(this);
         }
 
+        void cancel() {
+            if (isFinished) {
+                return;
+            }
+            Logger.log(String.format("%s: Header bidding collect fail: timeout", adapter.getKey()));
+            finish();
+        }
+
         HeaderBiddingPlacement.AdUnit getAdUnit() {
             return adUnit;
+        }
+
+        boolean isFinished() {
+            return isFinished;
+        }
+
+        private void finish() {
+            isFinished = true;
+            syncLock.countDown();
         }
     }
 
