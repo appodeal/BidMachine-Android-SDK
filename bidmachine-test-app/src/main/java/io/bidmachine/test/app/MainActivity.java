@@ -21,6 +21,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SwitchCompat;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.view.MenuItem;
@@ -77,9 +78,10 @@ public class MainActivity extends AppCompatActivity {
                             .withMediationConfig(AdsFormat.InterstitialStatic, "365991")
                             .withMediationConfig(AdsFormat.InterstitialVideo, "365991")
                             .withMediationConfig(AdsFormat.RewardedVideo, "482205")),
-            new OptionalNetwork(3, "Tapjoy", new TapjoyConfig("tmyN5ZcXTMyjeJNJmUD5ggECAbnEGtJREmLDd0fvqKBXcIr7e1dvboNKZI4y")
-                    .withMediationConfig(AdsFormat.InterstitialVideo, "video_without_cap_pb")
-                    .withMediationConfig(AdsFormat.RewardedVideo, "rewarded_video_without_cap_pb"))
+            new OptionalNetwork(3, "Tapjoy",
+                    new TapjoyConfig("tmyN5ZcXTMyjeJNJmUD5ggECAbnEGtJREmLDd0fvqKBXcIr7e1dvboNKZI4y")
+                            .withMediationConfig(AdsFormat.InterstitialVideo, "video_without_cap_pb")
+                            .withMediationConfig(AdsFormat.RewardedVideo, "rewarded_video_without_cap_pb"))
     };
 
     private final Collection<OptionalNetwork> checkedOptionalNetworks = new HashSet<>(Arrays.asList(optionalNetworks));
@@ -515,7 +517,10 @@ public class MainActivity extends AppCompatActivity {
         for (OptionalNetwork network : checkedOptionalNetworks) {
             BidMachine.registerNetworks(network.networkConfig);
         }
-        BidMachine.setEndpoint(ParamsHelper.getInstance(this).getInitUrl());
+        String initUrl = ParamsHelper.getInstance(this).getInitUrl();
+        if (!TextUtils.isEmpty(initUrl)) {
+            BidMachine.setEndpoint(initUrl);
+        }
         BidMachine.initialize(new TestActivityWrapper(this), ParamsHelper.getInstance(this).getSellerId());
     }
 

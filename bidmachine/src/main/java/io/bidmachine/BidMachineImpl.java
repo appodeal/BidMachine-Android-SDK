@@ -277,9 +277,13 @@ final class BidMachineImpl implements TrackingObject {
         return deviceParams;
     }
 
-    void setInitUrl(@NonNull String url) {
+    void setEndpoint(@NonNull String url) {
         if (isInitialized) {
             Logger.log("Can't change endpoint url after initialization was triggered");
+            return;
+        }
+        if (TextUtils.isEmpty(url)) {
+            Logger.log("Endpoint empty or null, skip setting...");
             return;
         }
         currentInitUrl = url + "/init";

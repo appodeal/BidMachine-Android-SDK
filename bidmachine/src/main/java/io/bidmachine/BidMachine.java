@@ -31,7 +31,7 @@ public class BidMachine {
      * @param url - BidMachine endpoint URL
      */
     public static void setEndpoint(@NonNull String url) {
-        BidMachineImpl.get().setInitUrl(url);
+        BidMachineImpl.get().setEndpoint(url);
     }
 
     /**
