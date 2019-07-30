@@ -14,12 +14,8 @@ import io.bidmachine.protobuf.headerbidding.HeaderBiddingAd;
 import io.bidmachine.protobuf.headerbidding.HeaderBiddingPlacement;
 import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.utils.BMError;
-import io.bidmachine.ContextProvider;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -28,8 +24,8 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
 
     Message.Builder createPlacement(@NonNull ContextProvider contextProvider,
                                     @NonNull UnifiedAdRequestParamsType adRequestParams,
-                                    @NonNull AdsType adsType,
-                                    @NonNull AdContentType contentType,
+                                    @NonNull final AdsType adsType,
+                                    @NonNull final AdContentType contentType,
                                     @NonNull Collection<NetworkConfig> networkConfigs) {
         List<AdUnitPreloadTask> preloadTasks = new ArrayList<>();
         for (NetworkConfig networkConfig : networkConfigs) {
@@ -37,36 +33,59 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
             if (adapter instanceof HeaderBiddingAdapter) {
                 Map<String, String> mediationConfig = networkConfig.peekMediationConfig(adsType, contentType);
                 if (mediationConfig != null) {
-                    preloadTasks.add(
-                            new AdUnitPreloadTask<>(
-                                    contextProvider, (HeaderBiddingAdapter) adapter, adRequestParams, mediationConfig));
+                    preloadTasks.add(new AdUnitPreloadTask<>(
+                            contextProvider,
+                            (HeaderBiddingAdapter) adapter,
+                            adsType,
+                            adRequestParams,
+                            mediationConfig));
                 }
             }
         }
         if (!preloadTasks.isEmpty()) {
-            CountDownLatch syncLock = new CountDownLatch(preloadTasks.size());
-            for (AdUnitPreloadTask task : preloadTasks) {
-                task.execute(syncLock);
-            }
-            try {
-                syncLock.await();
-            } catch (InterruptedException e) {
-                Logger.log(e);
-            }
-            List<HeaderBiddingPlacement.AdUnit> adUnitList = null;
-            for (AdUnitPreloadTask task : preloadTasks) {
-                HeaderBiddingPlacement.AdUnit adUnit = task.getAdUnit();
-                if (adUnit != null) {
-                    if (adUnitList == null) {
-                        adUnitList = new ArrayList<>();
-                    }
-                    adUnitList.add(adUnit);
+            TrackingObject trackingObject = new TrackingObject() {
+                private String key = UUID.randomUUID().toString();
+
+                @Override
+                public Object getTrackingKey() {
+                    return key;
                 }
-            }
-            if (adUnitList != null && !adUnitList.isEmpty()) {
-                HeaderBiddingPlacement.Builder placementBuilder = HeaderBiddingPlacement.newBuilder();
-                placementBuilder.addAllAdUnits(adUnitList);
-                return placementBuilder;
+            };
+            try {
+                BidMachineEvents.eventStart(
+                        trackingObject,
+                        TrackEventType.HeaderBiddingNetworksPrepare,
+                        adsType);
+                CountDownLatch syncLock = new CountDownLatch(preloadTasks.size());
+                for (AdUnitPreloadTask task : preloadTasks) {
+                    task.execute(syncLock);
+                }
+                try {
+                    syncLock.await();
+                } catch (InterruptedException e) {
+                    Logger.log(e);
+                }
+                List<HeaderBiddingPlacement.AdUnit> adUnitList = null;
+                for (AdUnitPreloadTask task : preloadTasks) {
+                    HeaderBiddingPlacement.AdUnit adUnit = task.getAdUnit();
+                    if (adUnit != null) {
+                        if (adUnitList == null) {
+                            adUnitList = new ArrayList<>();
+                        }
+                        adUnitList.add(adUnit);
+                    }
+                }
+                if (adUnitList != null && !adUnitList.isEmpty()) {
+                    HeaderBiddingPlacement.Builder placementBuilder = HeaderBiddingPlacement.newBuilder();
+                    placementBuilder.addAllAdUnits(adUnitList);
+                    return placementBuilder;
+                }
+            } finally {
+                BidMachineEvents.eventFinish(
+                        trackingObject,
+                        TrackEventType.HeaderBiddingNetworksPrepare,
+                        adsType,
+                        null);
             }
         }
         return null;
@@ -116,6 +135,8 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
         @NonNull
         private HeaderBiddingAdapter adapter;
         @NonNull
+        private AdsType adsType;
+        @NonNull
         private UnifiedAdRequestParamsType adRequestParams;
         @NonNull
         private Map<String, String> mediationConfig;
@@ -123,12 +144,23 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
         private CountDownLatch syncLock;
         private HeaderBiddingPlacement.AdUnit adUnit;
 
+        private final TrackingObject trackingObject = new TrackingObject() {
+            private String key = UUID.randomUUID().toString();
+
+            @Override
+            public Object getTrackingKey() {
+                return key;
+            }
+        };
+
         AdUnitPreloadTask(@NonNull ContextProvider contextProvider,
                           @NonNull HeaderBiddingAdapter adapter,
+                          @NonNull AdsType adsType,
                           @NonNull UnifiedAdRequestParamsType adRequestParams,
                           @NonNull Map<String, String> mediationConfig) {
             this.contextProvider = contextProvider;
             this.adapter = adapter;
+            this.adsType = adsType;
             this.adRequestParams = adRequestParams;
             this.mediationConfig = mediationConfig;
         }
@@ -146,6 +178,11 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
             builder.putAllClientParams(params);
             adUnit = builder.build();
             syncLock.countDown();
+            BidMachineEvents.eventFinish(
+                    trackingObject,
+                    TrackEventType.HeaderBiddingNetworkPrepare,
+                    adsType,
+                    null);
         }
 
         @Override
@@ -154,9 +191,21 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
                 Logger.log("Header bidding collect fail: " + error.getMessage());
             }
             syncLock.countDown();
+            BidMachineEvents.eventFinish(
+                    trackingObject,
+                    TrackEventType.HeaderBiddingNetworkPrepare,
+                    adsType,
+                    error);
         }
 
         void execute(@NonNull CountDownLatch syncLock) {
+            BidMachineEvents.eventStart(
+                    trackingObject,
+                    TrackEventType.HeaderBiddingNetworkPrepare,
+                    new TrackEventInfo()
+                            .withParameter("HB_NETWORK", adapter.getKey())
+                            .withParameter("BM_AD_TYPE", adsType.ordinal()),
+                    adsType);
             this.syncLock = syncLock;
             executor.execute(this);
         }

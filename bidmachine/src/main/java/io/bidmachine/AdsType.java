@@ -21,6 +21,7 @@ import io.bidmachine.models.AdObjectParams;
 import io.bidmachine.protobuf.headerbidding.HeaderBiddingAd;
 import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.unified.UnifiedBannerAdRequestParams;
+import io.bidmachine.utils.BMError;
 
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
@@ -217,14 +218,32 @@ public enum AdsType {
                 public void run() {
                     super.run();
                     for (Iterator<Map.Entry<String, NetworkConfig>> iterator = cache.entrySet().iterator(); iterator.hasNext(); ) {
-                        Map.Entry<String, NetworkConfig> entry = iterator.next();
+                        final Map.Entry<String, NetworkConfig> entry = iterator.next();
+                        TrackingObject trackingObject = new TrackingObject() {
+                            @Override
+                            public Object getTrackingKey() {
+                                return entry.getKey() + "_initialize";
+                            }
+                        };
                         try {
+                            BidMachineEvents.eventStart(
+                                    trackingObject,
+                                    TrackEventType.HeaderBiddingNetworkInitialize,
+                                    new TrackEventInfo()
+                                            .withParameter("HB_NETWORK", entry.getKey()),
+                                    null);
                             NetworkConfig config = entry.getValue();
                             config.getAdapter().initialize(contextProvider, unifiedAdRequestParams, config.getNetworkConfig());
+                            if (config.getAdapter() instanceof HeaderBiddingAdapter) {
+                                BidMachineEvents.eventFinish(trackingObject, TrackEventType.HeaderBiddingNetworkInitialize, null, null);
+                            } else {
+                                BidMachineEvents.clearEvent(trackingObject, TrackEventType.HeaderBiddingNetworkInitialize);
+                            }
                         } catch (Throwable e) {
                             Logger.log(e);
                             Logger.log("Network initialization fail: " + entry.getKey() + " - removed from registered networks");
                             iterator.remove();
+                            BidMachineEvents.eventFinish(trackingObject, TrackEventType.HeaderBiddingNetworkInitialize, null, BMError.Internal);
                         }
                     }
                 }

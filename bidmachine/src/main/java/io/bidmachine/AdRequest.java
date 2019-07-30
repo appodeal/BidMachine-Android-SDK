@@ -20,7 +20,6 @@ import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.utils.BMError;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Executor;
@@ -30,8 +29,7 @@ import java.util.concurrent.TimeUnit;
 import static io.bidmachine.Utils.getOrDefault;
 import static io.bidmachine.core.Utils.oneOf;
 
-public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestParamsType extends UnifiedAdRequestParams>
-        implements TrackingObject {
+public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestParamsType extends UnifiedAdRequestParams> {
 
     private static final Executor buildExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
 
@@ -73,6 +71,13 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
         @Override
         public void run() {
             processExpired();
+        }
+    };
+
+    private final TrackingObject trackingObject = new TrackingObject() {
+        @Override
+        public Object getTrackingKey() {
+            return trackingId;
         }
     };
 
@@ -229,7 +234,7 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
             processRequestFail(BMError.NotInitialized);
             return;
         }
-        SessionTracker.eventStart(this, TrackEventType.AuctionRequest, getType());
+        BidMachineEvents.eventStart(trackingObject, TrackEventType.AuctionRequest, getType());
         try {
             if (currentApiRequest != null) {
                 currentApiRequest.cancel();
@@ -263,13 +268,13 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
                                 .setCancelCallback(new NetworkRequest.CancelCallback() {
                                     @Override
                                     public void onCanceled() {
-                                        SessionTracker.eventFinish(
-                                                AdRequest.this,
+                                        BidMachineEvents.eventFinish(
+                                                trackingObject,
                                                 TrackEventType.AuctionRequestCancel,
                                                 getType(),
                                                 null);
-                                        SessionTracker.clearEvent(
-                                                AdRequest.this,
+                                        BidMachineEvents.clearEvent(
+                                                trackingObject,
                                                 TrackEventType.AuctionRequest);
                                     }
                                 })
@@ -391,8 +396,8 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
                             listener.onRequestSuccess(this, auctionResult);
                         }
                     }
-                    SessionTracker.eventFinish(
-                            AdRequest.this,
+                    BidMachineEvents.eventFinish(
+                            trackingObject,
                             TrackEventType.AuctionRequest,
                             getType(),
                             null);
@@ -416,22 +421,11 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
                 listener.onRequestFailed(this, error);
             }
         }
-        SessionTracker.eventFinish(
-                AdRequest.this,
+        BidMachineEvents.eventFinish(
+                trackingObject,
                 TrackEventType.AuctionRequest,
                 getType(),
                 error);
-    }
-
-    @Override
-    public Object getTrackingKey() {
-        return trackingId;
-    }
-
-    @Nullable
-    @Override
-    public List<String> getTrackingUrls(@NonNull TrackEventType eventType) {
-        return BidMachineImpl.get().getTrackingUrls(eventType);
     }
 
     @NonNull

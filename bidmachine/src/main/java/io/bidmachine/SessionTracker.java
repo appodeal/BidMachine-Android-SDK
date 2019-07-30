@@ -9,7 +9,9 @@ import io.bidmachine.core.NetworkRequest;
 import io.bidmachine.utils.BMError;
 
 import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 abstract class SessionTracker {
 
@@ -17,6 +19,7 @@ abstract class SessionTracker {
 
     abstract void trackEventStart(@Nullable TrackingObject trackingObject,
                                   @Nullable TrackEventType trackEventType,
+                                  @Nullable TrackEventInfo trackEventInfo,
                                   @Nullable AdsType adsType);
 
     abstract void trackEventFinish(@Nullable TrackingObject trackingObject,
@@ -33,57 +36,47 @@ abstract class SessionTracker {
 
     abstract int getTotalEventCount(@Nullable TrackEventType eventType);
 
-    static void eventStart(@Nullable TrackingObject trackingObject,
-                           @Nullable TrackEventType trackEventType,
-                           @Nullable AdsType adsType) {
-        SessionTrackerImpl sessionTracker = BidMachineImpl.get().getSessionTracker();
-        if (sessionTracker != null) {
-            sessionTracker.trackEventStart(trackingObject, trackEventType, adsType);
-        }
-    }
-
-    static void eventFinish(@Nullable TrackingObject trackingObject,
-                            @Nullable TrackEventType trackEventType,
-                            @Nullable AdsType adsType,
-                            @Nullable BMError error) {
-        SessionTrackerImpl sessionTracker = BidMachineImpl.get().getSessionTracker();
-        if (sessionTracker != null) {
-            sessionTracker.trackEventFinish(trackingObject, trackEventType, adsType, error);
-        }
-    }
-
-    static void clearEvent(@Nullable TrackingObject trackingObject,
-                           @Nullable TrackEventType trackEventType) {
-        SessionTrackerImpl sessionTracker = BidMachineImpl.get().getSessionTracker();
-        if (sessionTracker != null) {
-            sessionTracker.clearTrackingEvent(trackingObject, trackEventType);
-        }
-    }
-
-    static void clear(@Nullable TrackingObject trackingObject) {
-        SessionTrackerImpl sessionTracker = BidMachineImpl.get().getSessionTracker();
-        if (sessionTracker != null) {
-            sessionTracker.clearTrackers(trackingObject);
-        }
-    }
-
     static void notifyTrack(@NonNull TrackingObject trackingObject,
                             @NonNull TrackEventType eventType,
                             @Nullable TrackEventInfo eventInfo,
                             @Nullable BMError error) {
         if (error != null) {
-            notifyError(trackingObject.getTrackingUrls(TrackEventType.Error),
-                    trackingObject.getTrackingUrls(TrackEventType.TrackingError),
+            notifyError(
+                    collectTrackingUrls(trackingObject, TrackEventType.Error),
+                    collectTrackingUrls(trackingObject, TrackEventType.TrackingError),
                     eventInfo,
                     eventType.getOrtbActionValue(),
                     error);
         } else {
             notifyTrack(
-                    trackingObject.getTrackingUrls(eventType),
-                    trackingObject.getTrackingUrls(TrackEventType.TrackingError),
+                    collectTrackingUrls(trackingObject, eventType),
+                    collectTrackingUrls(trackingObject, TrackEventType.TrackingError),
                     eventInfo,
                     eventType);
         }
+    }
+
+    @Nullable
+    private static List<String> collectTrackingUrls(@NonNull TrackingObject trackingObject,
+                                                    @NonNull TrackEventType trackEventType) {
+        List<String> outList = null;
+        List<String> baseUrls = BidMachineImpl.get().getTrackingUrls(trackEventType);
+        if (baseUrls != null) {
+            if (outList == null) {
+                outList = new ArrayList<>(baseUrls);
+            } else {
+                outList.addAll(baseUrls);
+            }
+        }
+        List<String> trackingObjectUrls = trackingObject.getTrackingUrls(trackEventType);
+        if (trackingObjectUrls != null) {
+            if (outList == null) {
+                outList = new ArrayList<>(trackingObjectUrls);
+            } else {
+                outList.addAll(trackingObjectUrls);
+            }
+        }
+        return outList;
     }
 
     private static void notifyTrack(@Nullable List<String> urls,
@@ -164,21 +157,27 @@ abstract class SessionTracker {
                                 int errorCode) {
         if (TextUtils.isEmpty(url)) return null;
         assert url != null;
-        String outUrl = url
-                .replace("${BM_EVENT_CODE}", String.valueOf(processCode))
-                .replace("%24%7BBM_EVENT_CODE%7D", String.valueOf(processCode))
-                .replace("${BM_ACTION_CODE}", String.valueOf(processCode))
-                .replace("%24%7BBM_ACTION_CODE%7D", String.valueOf(processCode))
-                .replace("${BM_ERROR_REASON}", String.valueOf(errorCode))
-                .replace("%24%7BBM_ERROR_REASON%7D", String.valueOf(errorCode));
+        String outUrl = url;
+        outUrl = replaceMacros(outUrl, "BM_EVENT_CODE", processCode);
+        outUrl = replaceMacros(outUrl, "BM_ACTION_CODE", processCode);
+        outUrl = replaceMacros(outUrl, "BM_ERROR_REASON", errorCode);
         if (info != null) {
-            outUrl = outUrl
-                    .replace("${BM_ACTION_START}", String.valueOf(info.startTimeMs))
-                    .replace("%24%7BBM_ACTION_START%7D", String.valueOf(info.startTimeMs))
-                    .replace("${BM_ACTION_FINISH}", String.valueOf(info.finishTimeMs))
-                    .replace("%24%7BBM_ACTION_FINISH%7D", String.valueOf(info.finishTimeMs));
+            outUrl = replaceMacros(outUrl, "BM_ACTION_START", info.startTimeMs);
+            outUrl = replaceMacros(outUrl, "BM_ACTION_FINISH", info.finishTimeMs);
+            Map<String, Object> eventParameters = info.getEventParameters();
+            if (eventParameters != null) {
+                for (Map.Entry<String, Object> parameter : eventParameters.entrySet()) {
+                    outUrl = replaceMacros(outUrl, parameter.getKey(), parameter.getValue());
+                }
+            }
         }
         return outUrl;
+    }
+
+    private static String replaceMacros(@NonNull String url, @NonNull String macros, @NonNull Object replace) {
+        return url
+                .replace("${" + macros + "}", String.valueOf(replace))
+                .replace("%24%7B" + macros + "%7D", String.valueOf(replace));
     }
 
     private static void executeNotify(@Nullable String url,

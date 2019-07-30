@@ -16,7 +16,6 @@ import io.bidmachine.rewarded.RewardedListener;
 import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.utils.BMError;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public abstract class BidMachineAd<
@@ -63,23 +62,8 @@ public abstract class BidMachineAd<
         @Nullable
         @Override
         public List<String> getTrackingUrls(@NonNull TrackEventType eventType) {
-            ArrayList<String> outList = null;
-            List<String> urls = loadedObject != null && loadedObject.getParams() != null
+            return loadedObject != null && loadedObject.getParams() != null
                     ? loadedObject.getParams().getTrackUrls(eventType) : null;
-            if (urls != null) {
-                if (outList == null) {
-                    outList = new ArrayList<>();
-                }
-                outList.addAll(urls);
-            }
-            List<String> baseUrls = BidMachineImpl.get().getTrackingUrls(eventType);
-            if (baseUrls != null) {
-                if (outList == null) {
-                    outList = new ArrayList<>();
-                }
-                outList.addAll(baseUrls);
-            }
-            return outList;
         }
     };
 
@@ -151,7 +135,7 @@ public abstract class BidMachineAd<
     @Override
     public void destroy() {
         processCallback.processDestroy();
-        SessionTracker.clear(trackingObject);
+        BidMachineEvents.clear(trackingObject);
     }
 
     @Override
@@ -224,7 +208,7 @@ public abstract class BidMachineAd<
                                        @Nullable Response.Seatbid.Bid bid,
                                        @Nullable Ad ad) {
         if (currentState.ordinal() > State.Loading.ordinal()) return;
-        SessionTracker.eventStart(trackingObject, TrackEventType.Load, getType());
+        BidMachineEvents.eventStart(trackingObject, TrackEventType.Load, getType());
         currentState = State.Loading;
         if (request == null || seatbid == null || bid == null || ad == null) {
             processRequestFail(BMError.Internal);
@@ -287,7 +271,7 @@ public abstract class BidMachineAd<
 
     private void processRequestFail(BMError error) {
         if (currentState.ordinal() > State.Loading.ordinal()) return;
-        SessionTracker.eventStart(trackingObject, TrackEventType.Load, getType());
+        BidMachineEvents.eventStart(trackingObject, TrackEventType.Load, getType());
         processCallback.processLoadFail(error);
     }
 
@@ -557,7 +541,7 @@ public abstract class BidMachineAd<
     };
 
     private void trackEvent(TrackEventType eventType, @Nullable BMError error) {
-        SessionTracker.eventFinish(trackingObject, eventType, getType(), error);
+        BidMachineEvents.eventFinish(trackingObject, eventType, getType(), error);
     }
 
     @NonNull
