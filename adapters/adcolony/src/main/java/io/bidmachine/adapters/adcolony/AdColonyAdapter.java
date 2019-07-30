@@ -42,19 +42,19 @@ class AdColonyAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
                                            @NonNull UnifiedAdRequestParams requestParams,
                                            @NonNull final HeaderBiddingCollectParamsCallback callback,
                                            @NonNull Map<String, String> mediationConfig) {
-        String appId = mediationConfig.get("app_id");
+        String appId = mediationConfig.get(AdColonyConfig.KEY_APP_ID);
         if (TextUtils.isEmpty(appId)) {
             callback.onCollectFail(BMError.requestError("App id not provided"));
             return;
         }
         assert appId != null;
-        String zoneId = mediationConfig.get("zone_id");
+        String zoneId = mediationConfig.get(AdColonyConfig.KEY_ZONE_ID);
         if (TextUtils.isEmpty(zoneId)) {
             callback.onCollectFail(BMError.requestError("Zone id not provided"));
             return;
         }
         assert zoneId != null;
-        String storeId = mediationConfig.get("store_id");
+        String storeId = mediationConfig.get(AdColonyConfig.KEY_STORE_ID);
         if (TextUtils.isEmpty(storeId)) {
             callback.onCollectFail(BMError.requestError("Store id not provided"));
             return;
@@ -71,8 +71,8 @@ class AdColonyAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
                 zonesCache.toArray(new String[0]));
 
         final Map<String, String> params = new HashMap<>();
-        params.put("app_id", appId);
-        params.put("zone_id", zoneId);
+        params.put(AdColonyConfig.KEY_APP_ID, appId);
+        params.put(AdColonyConfig.KEY_ZONE_ID, zoneId);
 
         AdColonyZone zone = AdColony.getZone(zoneId);
         if (zone != null && zone.isValid()) {
