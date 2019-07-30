@@ -26,6 +26,8 @@ import java.util.concurrent.TimeUnit;
 
 class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAdRequestParams> {
 
+    private static final long HEADER_BIDDING_PREPARE_TIMEOUT_SEC = 10;
+
     Message.Builder createPlacement(@NonNull ContextProvider contextProvider,
                                     @NonNull UnifiedAdRequestParamsType adRequestParams,
                                     @NonNull AdsType adsType,
@@ -49,7 +51,7 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
                 task.execute(syncLock);
             }
             try {
-                syncLock.await(10, TimeUnit.SECONDS);
+                syncLock.await(HEADER_BIDDING_PREPARE_TIMEOUT_SEC, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 Logger.log(e);
             }
@@ -190,8 +192,8 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
         }
 
         private void finish() {
-            syncLock.countDown();
             isFinished = true;
+            syncLock.countDown();
         }
     }
 
