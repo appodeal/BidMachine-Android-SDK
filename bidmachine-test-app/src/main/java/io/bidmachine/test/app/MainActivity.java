@@ -2,6 +2,7 @@ package io.bidmachine.test.app;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -15,10 +16,12 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SwitchCompat;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.view.MenuItem;
@@ -48,8 +51,7 @@ import io.bidmachine.utils.BMError;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.*;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -65,6 +67,25 @@ public class MainActivity extends AppCompatActivity {
     private boolean isStaticMode;
     private boolean isResumed;
 
+    private static final OptionalNetwork[] optionalNetworks = {
+            new OptionalNetwork(1, "AdColony",
+                    new AdColonyConfig("app185a7e71e1714831a49ec7")
+                            .withMediationParams(AdsFormat.InterstitialVideo, "vz06e8c32a037749699e7050")
+                            .withMediationParams(AdsFormat.RewardedVideo, "vz1fd5a8b2bf6841a0a4b826")),
+            new OptionalNetwork(2, "myTarget",
+                    new MyTargetConfig()
+                            .withMediationConfig(AdsFormat.Banner, "437933")
+                            .withMediationConfig(AdsFormat.InterstitialStatic, "365991")
+                            .withMediationConfig(AdsFormat.InterstitialVideo, "365991")
+                            .withMediationConfig(AdsFormat.RewardedVideo, "482205")),
+            new OptionalNetwork(3, "Tapjoy",
+                    new TapjoyConfig("tmyN5ZcXTMyjeJNJmUD5ggECAbnEGtJREmLDd0fvqKBXcIr7e1dvboNKZI4y")
+                            .withMediationConfig(AdsFormat.InterstitialVideo, "video_without_cap_pb")
+                            .withMediationConfig(AdsFormat.RewardedVideo, "rewarded_video_without_cap_pb"))
+    };
+
+    private final Collection<OptionalNetwork> checkedOptionalNetworks = new HashSet<>(Arrays.asList(optionalNetworks));
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,19 +96,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        BidMachine.registerNetworks(
-                new AdColonyConfig("app185a7e71e1714831a49ec7")
-                        .withMediationParams(AdsFormat.InterstitialVideo, "vz06e8c32a037749699e7050")
-                        .withMediationParams(AdsFormat.RewardedVideo, "vz1fd5a8b2bf6841a0a4b826"),
-                new MyTargetConfig()
-                        .withMediationConfig(AdsFormat.Banner, "437933")
-                        .withMediationConfig(AdsFormat.InterstitialStatic, "365991")
-                        .withMediationConfig(AdsFormat.InterstitialVideo, "365991")
-                        .withMediationConfig(AdsFormat.RewardedVideo, "482205"),
-                new TapjoyConfig("tmyN5ZcXTMyjeJNJmUD5ggECAbnEGtJREmLDd0fvqKBXcIr7e1dvboNKZI4y")
-                        .withMediationConfig(AdsFormat.InterstitialVideo, "video_without_cap_pb")
-                        .withMediationConfig(AdsFormat.RewardedVideo, "rewarded_video_without_cap_pb"));
 
         final SpannableStringBuilder appInfoBuilder = new SpannableStringBuilder();
         appInfoBuilder.append("Version: ");
@@ -506,6 +514,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void initSdk(View view) {
+        for (OptionalNetwork network : checkedOptionalNetworks) {
+            BidMachine.registerNetworks(network.networkConfig);
+        }
+        String initUrl = ParamsHelper.getInstance(this).getInitUrl();
+        if (!TextUtils.isEmpty(initUrl)) {
+            BidMachine.setEndpoint(initUrl);
+        }
         BidMachine.initialize(new TestActivityWrapper(this), ParamsHelper.getInstance(this).getSellerId());
     }
 
@@ -566,4 +581,33 @@ public class MainActivity extends AppCompatActivity {
         field.set(null, newValue);
     }
 
+    public void configureNetworks(View view) {
+        String[] titles = new String[optionalNetworks.length];
+        boolean[] checkedItems = new boolean[optionalNetworks.length];
+        for (int i = 0; i < optionalNetworks.length; i++) {
+            OptionalNetwork network = optionalNetworks[i];
+            titles[i] = network.displayName;
+            checkedItems[i] = checkedOptionalNetworks.contains(network);
+        }
+        new AlertDialog.Builder(this)
+                .setTitle("Select networks")
+                .setMultiChoiceItems(titles, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+                        OptionalNetwork network = optionalNetworks[which];
+                        if (isChecked) {
+                            checkedOptionalNetworks.add(network);
+                        } else {
+                            checkedOptionalNetworks.remove(network);
+                        }
+                    }
+                })
+                .setPositiveButton("Done", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                })
+                .show();
+    }
 }
