@@ -29,10 +29,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
 import com.appodeal.ads.core.BuildConfig;
-import io.bidmachine.AdContentType;
-import io.bidmachine.AdsFormat;
-import io.bidmachine.BidMachine;
-import io.bidmachine.MediaAssetType;
+import io.bidmachine.*;
 import io.bidmachine.adapters.adcolony.AdColonyConfig;
 import io.bidmachine.adapters.my_target.MyTargetConfig;
 import io.bidmachine.adapters.tapjoy.TapjoyConfig;
@@ -521,7 +518,15 @@ public class MainActivity extends AppCompatActivity {
         if (!TextUtils.isEmpty(initUrl)) {
             BidMachine.setEndpoint(initUrl);
         }
-        BidMachine.initialize(new TestActivityWrapper(this), ParamsHelper.getInstance(this).getSellerId());
+        BidMachine.initialize(
+                new TestActivityWrapper(this),
+                ParamsHelper.getInstance(this).getSellerId(),
+                new InitializationCallback() {
+                    @Override
+                    public void onInitialized() {
+                        Utils.showToast(MainActivity.this, "onInitialized");
+                    }
+                });
     }
 
     public void showAppParams(View view) {
