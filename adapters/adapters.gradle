@@ -13,7 +13,6 @@ android {
     }
 }
 
-
 dependencies {
     api "com.android.support:support-annotations:$supportVersion"
 
@@ -24,3 +23,5 @@ dependencies {
     testImplementation "org.robolectric:robolectric:$robolectricVersion"
     testImplementation "com.squareup.okhttp3:mockwebserver:$mockwebserver"
 }
+
+apply from: '../builder.gradle'

@@ -23,17 +23,36 @@
                 android:orientation="vertical"
                 android:showDividers="middle">
 
-            <TextView
-                    android:id="@+id/txtAppInfo"
+            <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:showDividers="middle"
                     android:layout_marginStart="16dp"
                     android:layout_marginLeft="16dp"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginRight="16dp"
+                    android:minHeight="36dp"
+                    android:layout_marginTop="8dp"
                     android:layout_marginBottom="8dp"
-                    android:textSize="16sp"/>
+                    android:gravity="center_vertical"
+                    android:divider="?android:dividerVertical">
+
+                <TextView
+                        android:id="@+id/txtAppInfo"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textSize="16sp"/>
+
+                <android.support.v7.widget.SwitchCompat
+                        android:id="@+id/switchTestMode"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:paddingLeft="16dp"
+                        android:paddingRight="16dp"
+                        android:text="Test mode"
+                        tools:ignore="HardcodedText"/>
+
+            </LinearLayout>
 
             <LinearLayout
                     android:layout_width="match_parent"
@@ -62,14 +81,14 @@
                         tools:ignore="HardcodedText"/>
 
                 <android.support.v7.widget.SwitchCompat
-                        android:id="@+id/switchTestMode"
+                        android:id="@+id/switchUseNetworksJson"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:minHeight="48dp"
                         android:paddingLeft="16dp"
                         android:paddingRight="16dp"
-                        android:text="Test mode"
+                        android:text="Use json networks"
                         tools:ignore="HardcodedText"/>
 
             </LinearLayout>

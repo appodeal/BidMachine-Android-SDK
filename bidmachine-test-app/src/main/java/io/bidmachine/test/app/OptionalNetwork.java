@@ -2,6 +2,7 @@ package io.bidmachine.test.app;
 
 import android.support.annotation.NonNull;
 import io.bidmachine.NetworkConfig;
+import org.json.JSONObject;
 
 import java.util.Arrays;
 
@@ -12,11 +13,17 @@ class OptionalNetwork {
     final String displayName;
     @NonNull
     final NetworkConfig networkConfig;
+    @NonNull
+    final String jsonData;
 
-    OptionalNetwork(int id, @NonNull String displayName, @NonNull NetworkConfig networkConfig) {
+    OptionalNetwork(int id,
+                    @NonNull String displayName,
+                    @NonNull NetworkConfig networkConfig,
+                    @NonNull String jsonData) {
         this.id = id;
         this.displayName = displayName;
         this.networkConfig = networkConfig;
+        this.jsonData = jsonData;
     }
 
     @Override

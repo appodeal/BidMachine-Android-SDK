@@ -70,7 +70,7 @@ public abstract class BidMachineAd<
     public BidMachineAd(@NonNull Context context, @NonNull AdsType adsType) {
         this.context = context;
         this.adsType = adsType;
-        contextProvider = new ContextProvider.SimpleContextProvider(context);
+        contextProvider = new SimpleContextProvider(context);
     }
 
     @NonNull
@@ -248,7 +248,11 @@ public abstract class BidMachineAd<
                         contextProvider, adRequestParams, seatbid, bid, ad);
                 if (adObjectParams != null && adObjectParams.isValid()) {
                     loadedObject = createAdObject(
-                            contextProvider, adRequest, networkConfig.getAdapter(), adObjectParams, processCallback);
+                            contextProvider,
+                            adRequest,
+                            networkConfig.obtainNetworkAdapter(),
+                            adObjectParams,
+                            processCallback);
                     if (loadedObject != null) {
                         loadedObject.load(contextProvider, adRequestParams);
                         return null;

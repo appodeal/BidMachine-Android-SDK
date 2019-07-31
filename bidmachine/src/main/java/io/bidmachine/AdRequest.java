@@ -119,7 +119,7 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
 
         final ArrayList<Message.Builder> placements = new ArrayList<>();
         adsType.collectDisplayPlacements(
-                new ContextProvider.SimpleContextProvider(context), this, unifiedAdRequestParams, placements);
+                new SimpleContextProvider(context), this, unifiedAdRequestParams, placements);
 
         final Request.Item.Builder itemBuilder = Request.Item.newBuilder();
         itemBuilder.setId(UUID.randomUUID().toString());

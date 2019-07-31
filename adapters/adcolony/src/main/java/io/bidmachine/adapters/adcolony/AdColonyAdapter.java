@@ -15,6 +15,7 @@ import io.bidmachine.unified.UnifiedFullscreenAd;
 import io.bidmachine.utils.BMError;
 import io.bidmachine.utils.Gender;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -24,7 +25,7 @@ class AdColonyAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
     private static HashSet<String> zonesCache = new HashSet<>();
 
     AdColonyAdapter() {
-        super("adcolony", AdColony.getSDKVersion(), new AdsType[]{AdsType.Interstitial, AdsType.Rewarded});
+        super("adcolony", obtainAdColonyVersion(), new AdsType[]{AdsType.Interstitial, AdsType.Rewarded});
     }
 
     @Override
@@ -148,6 +149,20 @@ class AdColonyAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
             metadata.setUserLocation(location);
         }
         return new AdColonyAdOptions().setUserMetadata(metadata);
+    }
+
+    private static String obtainAdColonyVersion() {
+        String version = AdColony.getSDKVersion();
+        if (TextUtils.isEmpty(version)) {
+            try {
+                Class<?> versionClass = Class.forName("com.adcolony.sdk.j");
+                Field buildVersionField = versionClass.getDeclaredField("a");
+                buildVersionField.setAccessible(true);
+                version = (String) buildVersionField.get(versionClass);
+            } catch (Exception ignore) {
+            }
+        }
+        return version;
     }
 
 }
