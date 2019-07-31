@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-final class BidMachineImpl implements TrackingObject {
+final class BidMachineImpl {
 
     @SuppressLint("StaticFieldLeak")
     private static volatile BidMachineImpl instance;
@@ -64,7 +64,7 @@ final class BidMachineImpl implements TrackingObject {
     @Nullable
     private Context appContext;
     @Nullable
-    private SessionTrackerImpl sessionTracker;
+    private SessionTracker sessionTracker;
     @Nullable
     private String sellerId;
     @NonNull
@@ -106,6 +106,13 @@ final class BidMachineImpl implements TrackingObject {
         }
     };
 
+    private final TrackingObject trackingObject = new TrackingObject() {
+        @Override
+        public Object getTrackingKey() {
+            return BidMachineImpl.class.getSimpleName();
+        }
+    };
+
     synchronized void initialize(@NonNull Context context, @NonNull String sellerId) {
         if (isInitialized) return;
         if (context == null) {
@@ -141,7 +148,7 @@ final class BidMachineImpl implements TrackingObject {
 
     private void requestInitData(@NonNull final Context context, @NonNull String sellerId) {
         if (currentInitRequest != null) return;
-        SessionTracker.eventStart(this, TrackEventType.InitLoading, null);
+        BidMachineEvents.eventStart(trackingObject, TrackEventType.InitLoading, null);
         currentInitRequest = new ApiRequest.Builder<InitRequest, InitResponse>()
                 .url(currentInitUrl)
                 .setDataBinder(new ApiRequest.ApiInitDataBinder())
@@ -156,7 +163,7 @@ final class BidMachineImpl implements TrackingObject {
                         }
                         initRequestDelayMs = 0;
                         Utils.cancelBackgroundThreadTask(rescheduleInitRunnable);
-                        SessionTracker.eventFinish(BidMachineImpl.this,
+                        BidMachineEvents.eventFinish(trackingObject,
                                 TrackEventType.InitLoading,
                                 null,
                                 null);
@@ -175,8 +182,8 @@ final class BidMachineImpl implements TrackingObject {
                         }
                         Logger.log("reschedule init request (" + initRequestDelayMs + ")");
                         Utils.onBackgroundThread(rescheduleInitRunnable, initRequestDelayMs);
-                        SessionTracker.eventFinish(
-                                BidMachineImpl.this,
+                        BidMachineEvents.eventFinish(
+                                trackingObject,
                                 TrackEventType.InitLoading,
                                 null,
                                 result);
@@ -211,14 +218,8 @@ final class BidMachineImpl implements TrackingObject {
         }
     }
 
-    @Override
-    public Object getTrackingKey() {
-        return getClass().getSimpleName();
-    }
-
     @Nullable
-    @Override
-    public List<String> getTrackingUrls(@NonNull TrackEventType eventType) {
+    List<String> getTrackingUrls(@NonNull TrackEventType eventType) {
         return trackingEventTypes.get(eventType);
     }
 
@@ -235,7 +236,7 @@ final class BidMachineImpl implements TrackingObject {
     }
 
     @Nullable
-    SessionTrackerImpl getSessionTracker() {
+    SessionTracker getSessionTracker() {
         return sessionTracker;
     }
 
