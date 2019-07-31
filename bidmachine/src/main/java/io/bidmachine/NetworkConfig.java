@@ -33,6 +33,7 @@ public abstract class NetworkConfig {
         withNetworkConfig(networkConfig);
     }
 
+    @NonNull
     protected abstract NetworkAdapter createNetworkAdapter();
 
     /**

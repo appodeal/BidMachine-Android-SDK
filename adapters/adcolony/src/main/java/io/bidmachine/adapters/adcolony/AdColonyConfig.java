@@ -28,9 +28,10 @@ public class AdColonyConfig extends NetworkConfig {
     }
 
     @SuppressWarnings("WeakerAccess")
-    public AdColonyConfig(@NonNull final String appId, @NonNull String storeId) {
+    public AdColonyConfig(@NonNull final String appId, @NonNull final String storeId) {
         super(new HashMap<String, String>() {{
             put(KEY_APP_ID, appId);
+            put(KEY_STORE_ID, storeId);
         }});
         this.appId = appId;
         this.storeId = storeId;
@@ -49,6 +50,7 @@ public class AdColonyConfig extends NetworkConfig {
         }
     }
 
+    @NonNull
     @Override
     protected NetworkAdapter createNetworkAdapter() {
         return new AdColonyAdapter();
@@ -72,7 +74,7 @@ public class AdColonyConfig extends NetworkConfig {
                                               @NonNull final String zoneId,
                                               @Nullable final String storeId) {
         return withMediationConfig(adsFormat, new HashMap<String, String>() {{
-            if (TextUtils.isEmpty(appId)) {
+            if (!TextUtils.isEmpty(appId)) {
                 put(KEY_APP_ID, appId);
             }
             put(KEY_ZONE_ID, zoneId);

@@ -68,6 +68,7 @@ public enum AdsFormat {
         return matcher.isMatch(adsType, adContentType);
     }
 
+    @Nullable
     static AdsFormat byRemoteName(@Nullable String name) {
         if (!TextUtils.isEmpty(name)) {
             for (AdsFormat type : values()) {

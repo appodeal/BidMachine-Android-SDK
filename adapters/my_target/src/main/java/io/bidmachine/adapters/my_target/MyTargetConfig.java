@@ -23,6 +23,7 @@ public class MyTargetConfig extends NetworkConfig {
         super(networkConfig);
     }
 
+    @NonNull
     @Override
     protected NetworkAdapter createNetworkAdapter() {
         return new MyTargetAdapter();

@@ -23,18 +23,21 @@ class NetworkRegistry {
     static {
         NetworkRegistry.registerNetworks(
                 new NetworkConfig(null) {
+                    @NonNull
                     @Override
                     protected NetworkAdapter createNetworkAdapter() {
                         return new MraidAdapter();
                     }
                 },
                 new NetworkConfig(null) {
+                    @NonNull
                     @Override
                     protected NetworkAdapter createNetworkAdapter() {
                         return new VastAdapter();
                     }
                 },
                 new NetworkConfig(null) {
+                    @NonNull
                     @Override
                     protected NetworkAdapter createNetworkAdapter() {
                         return new NastAdapter();
@@ -58,7 +61,7 @@ class NetworkRegistry {
         return cache.get(key);
     }
 
-    static void registerNetworks(NetworkConfig... networkConfigs) {
+    static void registerNetworks(@Nullable NetworkConfig... networkConfigs) {
         if (networkConfigs != null && networkConfigs.length > 0) {
             for (NetworkConfig config : networkConfigs) {
                 if (pendingNetworks == null) {

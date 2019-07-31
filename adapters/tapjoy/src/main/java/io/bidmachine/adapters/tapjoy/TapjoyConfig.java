@@ -36,6 +36,7 @@ public class TapjoyConfig extends NetworkConfig {
         }
     }
 
+    @NonNull
     @Override
     protected NetworkAdapter createNetworkAdapter() {
         return new TapjoyAdapter();
