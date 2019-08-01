@@ -102,7 +102,7 @@ final class BidMachineImpl {
     private final Runnable rescheduleInitRunnable = new Runnable() {
         @Override
         public void run() {
-            requestInitData(appContext, sellerId);
+            requestInitData(appContext, sellerId, null);
         }
     };
 
@@ -113,8 +113,12 @@ final class BidMachineImpl {
         }
     };
 
-    synchronized void initialize(@NonNull Context context, @NonNull String sellerId) {
-        if (isInitialized) return;
+    synchronized void initialize(@NonNull Context context,
+                                 @NonNull String sellerId,
+                                 @Nullable InitializationCallback callback) {
+        if (isInitialized) {
+            return;
+        }
         if (context == null) {
             Logger.log("Initialization fail: Context not provided");
             return;
@@ -134,7 +138,7 @@ final class BidMachineImpl {
             }
         });
         loadStoredInitResponse(context);
-        requestInitData(context, sellerId);
+        requestInitData(context, sellerId, callback);
         topActivity = ActivityHelper.getTopActivity();
         ((Application) context.getApplicationContext())
                 .registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks());
@@ -146,7 +150,9 @@ final class BidMachineImpl {
         isInitialized = true;
     }
 
-    private void requestInitData(@NonNull final Context context, @NonNull String sellerId) {
+    private void requestInitData(@NonNull final Context context,
+                                 @NonNull final String sellerId,
+                                 @Nullable final InitializationCallback callback) {
         if (currentInitRequest != null) return;
         BidMachineEvents.eventStart(trackingObject, TrackEventType.InitLoading, null);
         currentInitRequest = new ApiRequest.Builder<InitRequest, InitResponse>()
@@ -163,6 +169,9 @@ final class BidMachineImpl {
                         }
                         initRequestDelayMs = 0;
                         Utils.cancelBackgroundThreadTask(rescheduleInitRunnable);
+                        if (callback != null) {
+                            callback.onInitialized();
+                        }
                         BidMachineEvents.eventFinish(trackingObject,
                                 TrackEventType.InitLoading,
                                 null,
@@ -182,6 +191,10 @@ final class BidMachineImpl {
                         }
                         Logger.log("reschedule init request (" + initRequestDelayMs + ")");
                         Utils.onBackgroundThread(rescheduleInitRunnable, initRequestDelayMs);
+                        // According requirements we should notify that SDK is initialized event if init request fail
+                        if (callback != null) {
+                            callback.onInitialized();
+                        }
                         BidMachineEvents.eventFinish(
                                 trackingObject,
                                 TrackEventType.InitLoading,

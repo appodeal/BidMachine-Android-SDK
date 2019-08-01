@@ -22,7 +22,20 @@ public class BidMachine {
      * @param sellerId - your Seller Id
      */
     public static void initialize(@NonNull Context context, @NonNull String sellerId) {
-        BidMachineImpl.get().initialize(context, sellerId);
+        initialize(context, sellerId, null);
+    }
+
+    /**
+     * Initialize BidMachine SDK
+     *
+     * @param context  - your application context
+     * @param sellerId - your Seller Id
+     * @param callback - you {@link InitializationCallback}
+     */
+    public static void initialize(@NonNull Context context,
+                                  @NonNull String sellerId,
+                                  @Nullable InitializationCallback callback) {
+        BidMachineImpl.get().initialize(context, sellerId, callback);
     }
 
     /**
