@@ -28,7 +28,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
-import com.appodeal.ads.core.BuildConfig;
+import io.bidmachine.BuildConfig;
 import io.bidmachine.*;
 import io.bidmachine.adapters.adcolony.AdColonyConfig;
 import io.bidmachine.adapters.my_target.MyTargetConfig;
@@ -44,6 +44,9 @@ import io.bidmachine.nativead.view.NativeMediaView;
 import io.bidmachine.test.app.params.*;
 import io.bidmachine.test.app.utils.TestActivityWrapper;
 import io.bidmachine.utils.BMError;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -63,23 +66,6 @@ public class MainActivity extends AppCompatActivity {
     private RequestHelper requestHelper;
     private boolean isStaticMode;
     private boolean isResumed;
-
-    private static final OptionalNetwork[] optionalNetworks = {
-            new OptionalNetwork(1, "AdColony",
-                    new AdColonyConfig("app185a7e71e1714831a49ec7")
-                            .withMediationParams(AdsFormat.InterstitialVideo, "vz06e8c32a037749699e7050")
-                            .withMediationParams(AdsFormat.RewardedVideo, "vz1fd5a8b2bf6841a0a4b826")),
-            new OptionalNetwork(2, "myTarget",
-                    new MyTargetConfig()
-                            .withMediationConfig(AdsFormat.Banner, "437933")
-                            .withMediationConfig(AdsFormat.InterstitialStatic, "365991")
-                            .withMediationConfig(AdsFormat.InterstitialVideo, "365991")
-                            .withMediationConfig(AdsFormat.RewardedVideo, "482205")),
-            new OptionalNetwork(3, "Tapjoy",
-                    new TapjoyConfig("tmyN5ZcXTMyjeJNJmUD5ggECAbnEGtJREmLDd0fvqKBXcIr7e1dvboNKZI4y")
-                            .withMediationConfig(AdsFormat.InterstitialVideo, "video_without_cap_pb")
-                            .withMediationConfig(AdsFormat.RewardedVideo, "rewarded_video_without_cap_pb"))
-    };
 
     private final Collection<OptionalNetwork> checkedOptionalNetworks = new HashSet<>(Arrays.asList(optionalNetworks));
 
@@ -511,8 +497,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void initSdk(View view) {
-        for (OptionalNetwork network : checkedOptionalNetworks) {
-            BidMachine.registerNetworks(network.networkConfig);
+        if (this.<SwitchCompat>findViewById(R.id.switchUseNetworksJson).isChecked()) {
+            JSONArray array = new JSONArray();
+            for (OptionalNetwork network : checkedOptionalNetworks) {
+                try {
+                    array.put(new JSONObject(network.jsonData));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+            BidMachine.registerNetworks(array.toString());
+        } else {
+            for (OptionalNetwork network : checkedOptionalNetworks) {
+                BidMachine.registerNetworks(network.networkConfig);
+            }
         }
         String initUrl = ParamsHelper.getInstance(this).getInitUrl();
         if (!TextUtils.isEmpty(initUrl)) {
@@ -615,4 +613,78 @@ public class MainActivity extends AppCompatActivity {
                 })
                 .show();
     }
+
+    private static final OptionalNetwork[] optionalNetworks = {
+            new OptionalNetwork(1, "AdColony",
+                    new AdColonyConfig("app185a7e71e1714831a49ec7")
+                            .withMediationParams(AdsFormat.InterstitialVideo, "vz06e8c32a037749699e7050")
+                            .withMediationParams(AdsFormat.RewardedVideo, "vz1fd5a8b2bf6841a0a4b826"),
+                    "{\n" +
+                            "        \"network\": \"adcolony\",\n" +
+                            "        \"network_config\": {\n" +
+                            "            \"app_id\": \"app185a7e71e1714831a49ec7\"\n" +
+                            "        },\n" +
+                            "        \"adunits\": [\n" +
+                            "            {\n" +
+                            "                \"format\": \"interstitial_video\",\n" +
+                            "                \"app_id\": \"app185a7e71e1714831a49ec7\", // optinonal\n" +
+                            "                \"zone_id\": \"vz06e8c32a037749699e7050\",\n" +
+                            "                \"store_id\": \"google\" // optional\n" +
+                            "            },\n" +
+                            "            {\n" +
+                            "                \"format\": \"rewarded_video\",\n" +
+                            "                \"app_id\": \"app185a7e71e1714831a49ec7\",\n" +
+                            "                \"zone_id\": \"vz1fd5a8b2bf6841a0a4b826\",\n" +
+                            "                \"store_id\": \"google\" // optional\n" +
+                            "            }\n" +
+                            "        ]\n" +
+                            "    }"),
+            new OptionalNetwork(2, "myTarget",
+                    new MyTargetConfig()
+                            .withMediationConfig(AdsFormat.Banner, "437933")
+                            .withMediationConfig(AdsFormat.InterstitialStatic, "365991")
+                            .withMediationConfig(AdsFormat.InterstitialVideo, "365991")
+                            .withMediationConfig(AdsFormat.RewardedVideo, "482205"),
+                    "{\n" +
+                            "        \"network\": \"my_target\",\n" +
+                            "        \"adunits\": [\n" +
+                            "            {\n" +
+                            "                \"format\": \"banner\",\n" +
+                            "                \"slot_id\": \"437933\"\n" +
+                            "            },\n" +
+                            "            {\n" +
+                            "                \"format\": \"interstitial_static\",\n" +
+                            "                \"slot_id\": \"365991\"\n" +
+                            "            },\n" +
+                            "            {\n" +
+                            "                \"format\": \"interstitial_video\",\n" +
+                            "                \"slot_id\": \"365991\"\n" +
+                            "            },\n" +
+                            "            {\n" +
+                            "                \"format\": \"rewarded_video\",\n" +
+                            "                \"slot_id\": \"482205\"\n" +
+                            "            }\n" +
+                            "        ]\n" +
+                            "    }"),
+            new OptionalNetwork(3, "Tapjoy",
+                    new TapjoyConfig("tmyN5ZcXTMyjeJNJmUD5ggECAbnEGtJREmLDd0fvqKBXcIr7e1dvboNKZI4y")
+                            .withMediationConfig(AdsFormat.InterstitialVideo, "video_without_cap_pb")
+                            .withMediationConfig(AdsFormat.RewardedVideo, "rewarded_video_without_cap_pb"),
+                    "{\n" +
+                            "        \"network\": \"tapjoy\",\n" +
+                            "        \"sdk_key\": \"tmyN5ZcXTMyjeJNJmUD5ggECAbnEGtJREmLDd0fvqKBXcIr7e1dvboNKZI4y\",\n" +
+                            "        \"adunits\": [\n" +
+                            "            {\n" +
+                            "                \"format\": \"interstitial_video\",\n" +
+                            "                \"sdk_key\": \"tmyN5ZcXTMyjeJNJmUD5ggECAbnEGtJREmLDd0fvqKBXcIr7e1dvboNKZI4y\", // optional\n" +
+                            "                \"placement_name\": \"video_without_cap_pb\"\n" +
+                            "            },\n" +
+                            "            {\n" +
+                            "                \"format\": \"rewarded_video\",\n" +
+                            "                \"sdk_key\": \"tmyN5ZcXTMyjeJNJmUD5ggECAbnEGtJREmLDd0fvqKBXcIr7e1dvboNKZI4y\", // optional\n" +
+                            "                \"placement_name\": \"rewarded_video_without_cap_pb\"\n" +
+                            "            }\n" +
+                            "        ]\n" +
+                            "    }")
+    };
 }

@@ -8,9 +8,6 @@ import com.explorestack.protobuf.openrtb.Response;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
-import io.bidmachine.adapters.mraid.MraidAdapter;
-import io.bidmachine.adapters.nast.NastAdapter;
-import io.bidmachine.adapters.vast.VastAdapter;
 import io.bidmachine.banner.BannerSize;
 import io.bidmachine.core.Logger;
 import io.bidmachine.displays.DisplayPlacementBuilder;
@@ -21,9 +18,11 @@ import io.bidmachine.models.AdObjectParams;
 import io.bidmachine.protobuf.headerbidding.HeaderBiddingAd;
 import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.unified.UnifiedBannerAdRequestParams;
-import io.bidmachine.utils.BMError;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -171,90 +170,8 @@ public enum AdsType {
         }
     }
 
-    static {
-        NetworkRegistry.registerNetworks(
-                new NetworkConfig(new MraidAdapter()) {
-                },
-                new NetworkConfig(new NastAdapter()) {
-                },
-                new NetworkConfig(new VastAdapter()) {
-                });
-    }
-
-    static class NetworkRegistry {
-
-        static final String Mraid = "mraid";
-        static final String Vast = "vast";
-        static final String Nast = "nast";
-
-        private static final HashMap<String, NetworkConfig> cache = new HashMap<>();
-        private static boolean isNetworksInitialized = false;
-
-        @Nullable
-        static NetworkConfig getConfig(String key) {
-            return cache.get(key);
-        }
-
-        static void registerNetworks(NetworkConfig... networkConfigs) {
-            for (NetworkConfig config : networkConfigs) {
-                String key = config.getKey();
-                if (!cache.containsKey(key)) {
-                    cache.put(key, config);
-                }
-                for (AdsType type : config.getSupportedAdsTypes()) {
-                    type.networkConfigs.put(key, config);
-                }
-            }
-        }
-
-        static void initializeNetworks(@NonNull final ContextProvider contextProvider,
-                                       @NonNull final UnifiedAdRequestParams unifiedAdRequestParams) {
-            if (isNetworksInitialized) {
-                return;
-            }
-            isNetworksInitialized = true;
-            new Thread() {
-                @Override
-                public void run() {
-                    super.run();
-                    for (Iterator<Map.Entry<String, NetworkConfig>> iterator = cache.entrySet().iterator(); iterator.hasNext(); ) {
-                        final Map.Entry<String, NetworkConfig> entry = iterator.next();
-                        TrackingObject trackingObject = new TrackingObject() {
-                            @Override
-                            public Object getTrackingKey() {
-                                return entry.getKey() + "_initialize";
-                            }
-                        };
-                        try {
-                            BidMachineEvents.eventStart(
-                                    trackingObject,
-                                    TrackEventType.HeaderBiddingNetworkInitialize,
-                                    new TrackEventInfo()
-                                            .withParameter("HB_NETWORK", entry.getKey()),
-                                    null);
-                            NetworkConfig config = entry.getValue();
-                            config.getAdapter().initialize(contextProvider, unifiedAdRequestParams, config.getNetworkConfig());
-                            if (config.getAdapter() instanceof HeaderBiddingAdapter) {
-                                BidMachineEvents.eventFinish(trackingObject, TrackEventType.HeaderBiddingNetworkInitialize, null, null);
-                            } else {
-                                BidMachineEvents.clearEvent(trackingObject, TrackEventType.HeaderBiddingNetworkInitialize);
-                            }
-                        } catch (Throwable e) {
-                            Logger.log(e);
-                            Logger.log("Network initialization fail: " + entry.getKey() + " - removed from registered networks");
-                            iterator.remove();
-                            BidMachineEvents.eventFinish(trackingObject, TrackEventType.HeaderBiddingNetworkInitialize, null, BMError.Internal);
-                        }
-                    }
-                }
-            }.start();
-        }
-
-        static void setLoggingEnabled(boolean enabled) {
-            for (Map.Entry<String, NetworkConfig> entry : cache.entrySet()) {
-                entry.getValue().getAdapter().setLogging(enabled);
-            }
-        }
+    void addNetworkConfig(@NonNull String key, @NonNull NetworkConfig networkConfig) {
+        networkConfigs.put(key, networkConfig);
     }
 
 }

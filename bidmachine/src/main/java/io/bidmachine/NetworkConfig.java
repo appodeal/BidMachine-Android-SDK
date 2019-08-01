@@ -10,12 +10,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Class for store and provide Network specific configuration
+ * Class for store and provide Network specific configuration.
+ * Inherits should implement at least constructor with {@link Map<String, String>} argument, which is required for load
+ * config from json.
  */
 public abstract class NetworkConfig {
 
-    @NonNull
-    private final NetworkAdapter adapter;
+    @Nullable
+    private NetworkAdapter networkAdapter;
     @Nullable
     private Map<String, String> networkConfig;
     @Nullable
@@ -27,30 +29,38 @@ public abstract class NetworkConfig {
     @Nullable
     private AdsType[] mergedAdsTypes;
 
-    protected NetworkConfig(@NonNull NetworkAdapter adapter) {
-        this.adapter = adapter;
+    protected NetworkConfig(@Nullable Map<String, String> networkConfig) {
+        withNetworkConfig(networkConfig);
     }
+
+    @NonNull
+    protected abstract NetworkAdapter createNetworkAdapter();
 
     /**
      * @return unique Network key
      */
+    @NonNull
     public String getKey() {
-        return getAdapter().getKey();
+        return obtainNetworkAdapter().getKey();
     }
 
     /**
      * @return Network version
      */
+    @Nullable
     public String getVersion() {
-        return getAdapter().getVersion();
+        return obtainNetworkAdapter().getVersion();
     }
 
     /**
      * @return Network {@link NetworkAdapter} implementation
      */
     @NonNull
-    public NetworkAdapter getAdapter() {
-        return adapter;
+    public NetworkAdapter obtainNetworkAdapter() {
+        if (networkAdapter == null) {
+            networkAdapter = createNetworkAdapter();
+        }
+        return networkAdapter;
     }
 
     /**
@@ -101,9 +111,13 @@ public abstract class NetworkConfig {
             if (typedMediationConfigs == null) {
                 typedMediationConfigs = new EnumMap<>(AdsFormat.class);
             }
+            onMediationConfigAdded(adsFormat, config);
             typedMediationConfigs.put(adsFormat, config);
         }
         return (T) this;
+    }
+
+    protected void onMediationConfigAdded(@NonNull AdsFormat adsFormat, @NonNull Map<String, String> config) {
     }
 
     /**
@@ -150,7 +164,7 @@ public abstract class NetworkConfig {
      */
     AdsType[] getSupportedAdsTypes() {
         if (mergedAdsTypes == null) {
-            AdsType[] adapterSupportedTypes = getAdapter().getSupportedTypes();
+            AdsType[] adapterSupportedTypes = obtainNetworkAdapter().getSupportedTypes();
             ArrayList<AdsType> resultList = new ArrayList<>();
             for (AdsType adsType : adapterSupportedTypes) {
                 if (supportedAdsTypes == null || contains(supportedAdsTypes, adsType)) {
@@ -169,4 +183,16 @@ public abstract class NetworkConfig {
         return false;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        NetworkConfig that = (NetworkConfig) o;
+        return getKey().equals(that.getKey());
+    }
+
+    @Override
+    public int hashCode() {
+        return getKey().hashCode();
+    }
 }

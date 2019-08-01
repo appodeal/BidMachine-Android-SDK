@@ -144,8 +144,8 @@ final class BidMachineImpl {
                 .registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks());
         final DataRestrictions dataRestrictions = getUserRestrictionParams();
         final TargetingInfo targetingInfo = new TargetingInfoImpl(dataRestrictions, getTargetingParams());
-        AdsType.NetworkRegistry.initializeNetworks(
-                new ContextProvider.SimpleContextProvider(context),
+        NetworkRegistry.initializeNetworks(
+                new SimpleContextProvider(context),
                 new SimpleUnifiedAdRequestParams(dataRestrictions, targetingInfo));
         isInitialized = true;
     }

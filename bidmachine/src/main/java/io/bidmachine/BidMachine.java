@@ -54,7 +54,7 @@ public class BidMachine {
      */
     public static void setLoggingEnabled(boolean enabled) {
         Logger.setLoggingEnabled(enabled);
-        AdsType.NetworkRegistry.setLoggingEnabled(enabled);
+        NetworkRegistry.setLoggingEnabled(enabled);
     }
 
     /**
@@ -109,7 +109,16 @@ public class BidMachine {
      * @param networkConfigs - Custom configuration object per network
      */
     public static void registerNetworks(@NonNull NetworkConfig... networkConfigs) {
-        AdsType.NetworkRegistry.registerNetworks(networkConfigs);
+        NetworkRegistry.registerNetworks(networkConfigs);
+    }
+
+    /**
+     * Add 3rd party network configuration, which will be used for mediation, loading and displaying ads
+     *
+     * @param jsonData - Json array which contains info about required networks
+     */
+    public static void registerNetworks(@NonNull String jsonData) {
+        NetworkRegistry.registerNetworks(jsonData);
     }
 
 }

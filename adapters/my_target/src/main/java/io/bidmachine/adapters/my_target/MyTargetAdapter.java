@@ -5,6 +5,7 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import com.my.target.common.CustomParams;
 import com.my.target.common.MyTargetPrivacy;
+import com.my.target.common.MyTargetVersion;
 import io.bidmachine.*;
 import io.bidmachine.models.DataRestrictions;
 import io.bidmachine.models.TargetingInfo;
@@ -21,7 +22,7 @@ class MyTargetAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
 
     MyTargetAdapter() {
         super("my_target",
-                BuildConfig.VERSION_NAME,
+                MyTargetVersion.VERSION,
                 new AdsType[]{AdsType.Banner, AdsType.Interstitial, AdsType.Rewarded});
     }
 
