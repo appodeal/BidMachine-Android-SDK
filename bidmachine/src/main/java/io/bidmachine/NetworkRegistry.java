@@ -118,7 +118,7 @@ class NetworkRegistry {
     private static final class NetworkLoadTask implements Runnable {
 
         private static final String KEY_NETWORK = "network";
-        private static final String KEY_ADUNITS = "adunits";
+        private static final String KEY_AD_UNITS = "ad_units";
         private static final String KEY_FORMAT = "format";
         private static final String KEY_CLASSPATH = "classpath";
 
@@ -170,7 +170,7 @@ class NetworkRegistry {
                             Class.forName(networkAssetConfig.getString(KEY_CLASSPATH))
                                     .getConstructor(Map.class)
                                     .newInstance(toMap(jsonConfig));
-                    JSONArray params = jsonConfig.getJSONArray(KEY_ADUNITS);
+                    JSONArray params = jsonConfig.getJSONArray(KEY_AD_UNITS);
                     for (int i = 0; i < params.length(); i++) {
                         JSONObject mediationConfig = params.getJSONObject(i);
                         AdsFormat format = AdsFormat.byRemoteName(mediationConfig.getString(KEY_FORMAT));

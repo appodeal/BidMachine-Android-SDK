@@ -25,3 +25,4 @@ dependencies {
 }
 
 apply from: '../builder.gradle'
+apply from: "../publish.gradle"

@@ -12,62 +12,50 @@ apply plugin: 'maven-publish'
 def libGroupId = "io.bidmachine"
 def libArtifactId = "ads"
 
-configurations.maybeCreate("default")
-def publishArtifact = artifacts.add("default", file("build/outputs/aar/bidmachine-release.aar"))
-
-publishing {
-    publications {
-        aar(MavenPublication) {
-            groupId = libGroupId
-            artifactId = libArtifactId
-            version = android.defaultConfig.versionName
-            artifact publishArtifact
-
-            pom.withXml {
-                def dependenciesNode = asNode().appendNode('dependencies')
-                dependenciesNode
-                        .appendNode('dependency')
-                        .appendNode('groupId', 'io.bidmachine')
-                        .appendNode('artifactId', 'protobuf-models')
-                        .appendNode('version', protobufModelsVersion)
-            }
-        }
-    }
-}
-
 artifactory {
     contextUrl = 'https://artifactory.bidmachine.io/artifactory'
     publish {
         repository {
-            if (project.hasProperty("artifactory_repo")) {
-                repoKey = artifactory_repo
-                println "Artifactory repo: $artifactory_repo"
-            } else {
-                println "Artifactory repo not provided (-Partifactory_repo)"
+            if (project.hasProperty("repo")) {
+                repoKey = repo
             }
-            if (project.hasProperty("artifactory_username")) {
-                username = artifactory_username
-                println "Artifactory username: $artifactory_username"
-            } else {
-                println "Artifactory username not provided! (-Partifactory_username)"
+            if (project.hasProperty("uname")) {
+                username = uname
             }
-            if (project.hasProperty("artifactory_password")) {
-                password = artifactory_password
-                println "Artifactory password: $artifactory_password"
-            } else {
-                println "Artifactory password not provided! (-Partifactory_password)"
+            if (project.hasProperty("upassword")) {
+                password = upassword
             }
         }
         defaults {
-            publications('aar')
+            publications("_${project.name}_")
+            publishArtifacts = true
+            publishPom = true
+        }
+    }
+}
+
+publishing {
+    publications {
+        "_${project.name}_"(MavenPublication) {
+            groupId = libGroupId
+            artifactId = libArtifactId
+            version = android.defaultConfig.versionName
+            artifact "${project.buildDir}/outputs/aar/${project.name}-release.aar"
+            pom.withXml {
+                def dependenciesNode = asNode().appendNode('dependencies')
+                def dependencyNode = dependenciesNode.appendNode('dependency')
+                dependencyNode.appendNode('groupId', 'io.bidmachine')
+                dependencyNode.appendNode('artifactId', 'protobuf-models')
+                dependencyNode.appendNode('version', protobufModelsVersion)
+            }
         }
     }
 }
 
 assemble.mustRunAfter(':nexage:bundleRelease')
 
-task uploadAarToArtifactory(dependsOn: [':nexage:bundleRelease', assemble, artifactoryPublish], group: 'aar')
+task uploadAarToArtifactory(dependsOn: [':nexage:bundleRelease', assemble, artifactoryPublish])
 artifactoryPublish.mustRunAfter(assemble)
 
-task uploadLocalAar(dependsOn: [':nexage:bundleRelease', assemble, publishToMavenLocal], group: 'aar')
+task uploadLocalAar(dependsOn: [':nexage:bundleRelease', assemble, publishToMavenLocal])
 uploadLocalAar.mustRunAfter(assemble)

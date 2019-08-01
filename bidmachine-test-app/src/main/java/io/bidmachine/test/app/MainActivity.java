@@ -624,7 +624,7 @@ public class MainActivity extends AppCompatActivity {
                             "        \"network_config\": {\n" +
                             "            \"app_id\": \"app185a7e71e1714831a49ec7\"\n" +
                             "        },\n" +
-                            "        \"adunits\": [\n" +
+                            "        \"ad_units\": [\n" +
                             "            {\n" +
                             "                \"format\": \"interstitial_video\",\n" +
                             "                \"app_id\": \"app185a7e71e1714831a49ec7\", // optinonal\n" +
@@ -647,7 +647,7 @@ public class MainActivity extends AppCompatActivity {
                             .withMediationConfig(AdsFormat.RewardedVideo, "482205"),
                     "{\n" +
                             "        \"network\": \"my_target\",\n" +
-                            "        \"adunits\": [\n" +
+                            "        \"ad_units\": [\n" +
                             "            {\n" +
                             "                \"format\": \"banner\",\n" +
                             "                \"slot_id\": \"437933\"\n" +
@@ -673,7 +673,7 @@ public class MainActivity extends AppCompatActivity {
                     "{\n" +
                             "        \"network\": \"tapjoy\",\n" +
                             "        \"sdk_key\": \"tmyN5ZcXTMyjeJNJmUD5ggECAbnEGtJREmLDd0fvqKBXcIr7e1dvboNKZI4y\",\n" +
-                            "        \"adunits\": [\n" +
+                            "        \"ad_units\": [\n" +
                             "            {\n" +
                             "                \"format\": \"interstitial_video\",\n" +
                             "                \"sdk_key\": \"tmyN5ZcXTMyjeJNJmUD5ggECAbnEGtJREmLDd0fvqKBXcIr7e1dvboNKZI4y\", // optional\n" +
