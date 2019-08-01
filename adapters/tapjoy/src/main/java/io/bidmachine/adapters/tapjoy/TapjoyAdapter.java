@@ -35,11 +35,11 @@ class TapjoyAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
     @Override
     protected void onInitialize(@NonNull ContextProvider contextProvider,
                                 @NonNull UnifiedAdRequestParams adRequestParams,
-                                @Nullable Map<String, String> networkConfig) {
-        super.onInitialize(contextProvider, adRequestParams, networkConfig);
+                                @NonNull NetworkConfig networkConfig) {
         configure(adRequestParams);
-        if (networkConfig != null) {
-            final String sdkKey = networkConfig.get(TapjoyConfig.KEY_SDK);
+        Map<String, String> networkParams = networkConfig.getNetworkParams();
+        if (networkParams != null) {
+            final String sdkKey = networkParams.get(TapjoyConfig.KEY_SDK);
             if (!TextUtils.isEmpty(sdkKey)) {
                 assert sdkKey != null;
                 initializeTapjoy(contextProvider, sdkKey, null);
@@ -98,34 +98,56 @@ class TapjoyAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
         }
     }
 
-    private static synchronized void initializeTapjoy(@NonNull ContextProvider contextProvider,
-                                                      @NonNull String sdkKey,
+    private static synchronized void initializeTapjoy(@NonNull final ContextProvider contextProvider,
+                                                      @NonNull final String sdkKey,
                                                       @Nullable final TapjoyInitializeListener listener) {
+        if (finalizeInitialization(listener)) {
+            return;
+        }
+        new Thread() {
+            @Override
+            public void run() {
+                super.run();
+                synchronized (TapjoyAdapter.class) {
+                    if (finalizeInitialization(listener)) {
+                        return;
+                    }
+                    final CountDownLatch syncLock = new CountDownLatch(1);
+                    Tapjoy.limitedConnect(contextProvider.getContext(), sdkKey, new TJConnectListener() {
+                        @Override
+                        public void onConnectSuccess() {
+                            if (listener != null) {
+                                listener.onInitialized();
+                            }
+                            syncLock.countDown();
+                        }
+
+                        @Override
+                        public void onConnectFailure() {
+                            if (listener != null) {
+                                listener.onInitializationFail(BMError.IncorrectAdUnit);
+                            }
+                            syncLock.countDown();
+                        }
+                    });
+                    try {
+                        syncLock.await();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }.start();
+    }
+
+    private static boolean finalizeInitialization(@Nullable TapjoyInitializeListener listener) {
         if (Tapjoy.isLimitedConnected()) {
             if (listener != null) {
                 listener.onInitialized();
             }
-        } else {
-            final CountDownLatch syncLock = new CountDownLatch(1);
-            Tapjoy.limitedConnect(contextProvider.getContext(), sdkKey, new TJConnectListener() {
-                @Override
-                public void onConnectSuccess() {
-                    if (listener != null) {
-                        listener.onInitialized();
-                    }
-                    syncLock.countDown();
-                }
-
-                @Override
-                public void onConnectFailure() {
-                    if (listener != null) {
-                        listener.onInitializationFail(BMError.IncorrectAdUnit);
-                    }
-                    syncLock.countDown();
-                }
-            });
-            syncLock.countDown();
+            return true;
         }
+        return false;
     }
 
     private interface TapjoyInitializeListener {

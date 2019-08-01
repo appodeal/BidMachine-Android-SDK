@@ -1,7 +1,6 @@
 package io.bidmachine.adapters.my_target;
 
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import com.my.target.common.CustomParams;
 import com.my.target.common.MyTargetPrivacy;
@@ -44,7 +43,7 @@ class MyTargetAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
     @Override
     protected void onInitialize(@NonNull ContextProvider contextProvider,
                                 @NonNull UnifiedAdRequestParams adRequestParams,
-                                @Nullable Map<String, String> networkConfig) {
+                                @NonNull NetworkConfig networkConfig) {
         updateRestrictions(adRequestParams);
     }
 

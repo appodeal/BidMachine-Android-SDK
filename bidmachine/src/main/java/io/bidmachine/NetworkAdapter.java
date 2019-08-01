@@ -1,13 +1,10 @@
 package io.bidmachine;
 
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.unified.UnifiedBannerAd;
 import io.bidmachine.unified.UnifiedFullscreenAd;
 import io.bidmachine.unified.UnifiedNativeAd;
-
-import java.util.Map;
 
 /**
  * Class for implement Network initialization and specific Ads types creation
@@ -52,7 +49,7 @@ public abstract class NetworkAdapter {
      */
     public final void initialize(@NonNull ContextProvider contextProvider,
                                  @NonNull UnifiedAdRequestParams adRequestParams,
-                                 @Nullable Map<String, String> networkConfig) throws Throwable {
+                                 @NonNull NetworkConfig networkConfig) throws Throwable {
         if (!isInitialized) {
             onInitialize(contextProvider, adRequestParams, networkConfig);
             isInitialized = true;
@@ -61,7 +58,7 @@ public abstract class NetworkAdapter {
 
     protected void onInitialize(@NonNull ContextProvider contextProvider,
                                 @NonNull UnifiedAdRequestParams adRequestParams,
-                                @Nullable Map<String, String> networkConfig) {
+                                @NonNull NetworkConfig networkConfig) {
     }
 
     /**

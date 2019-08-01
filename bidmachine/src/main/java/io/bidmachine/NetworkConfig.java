@@ -19,7 +19,7 @@ public abstract class NetworkConfig {
     @Nullable
     private NetworkAdapter networkAdapter;
     @Nullable
-    private Map<String, String> networkConfig;
+    private Map<String, String> networkParams;
     @Nullable
     private Map<String, String> mediationConfig;
     @Nullable
@@ -29,8 +29,8 @@ public abstract class NetworkConfig {
     @Nullable
     private AdsType[] mergedAdsTypes;
 
-    protected NetworkConfig(@Nullable Map<String, String> networkConfig) {
-        withNetworkConfig(networkConfig);
+    protected NetworkConfig(@Nullable Map<String, String> networkParams) {
+        withNetworkParams(networkParams);
     }
 
     @NonNull
@@ -64,21 +64,21 @@ public abstract class NetworkConfig {
     }
 
     /**
-     * @return Network global configuration (will be used for {@link NetworkAdapter#initialize(ContextProvider, UnifiedAdRequestParams, Map)})
+     * @return Network global configuration (will be used for {@link NetworkAdapter#initialize(ContextProvider, UnifiedAdRequestParams, NetworkConfig)})
      */
     @Nullable
-    Map<String, String> getNetworkConfig() {
-        return networkConfig;
+    public Map<String, String> getNetworkParams() {
+        return networkParams;
     }
 
     /**
-     * Set Network global configuration (will be used for {@link NetworkAdapter#initialize(ContextProvider, UnifiedAdRequestParams, Map)})
+     * Set Network global configuration (will be used for {@link NetworkAdapter#initialize(ContextProvider, UnifiedAdRequestParams, NetworkConfig)})
      *
      * @param config map of parameters which will be used for Network initialization
      */
     @SuppressWarnings("unchecked")
-    public <T extends NetworkConfig> T withNetworkConfig(@Nullable Map<String, String> config) {
-        this.networkConfig = config;
+    public <T extends NetworkConfig> T withNetworkParams(@Nullable Map<String, String> config) {
+        this.networkParams = config;
         return (T) this;
     }
 
