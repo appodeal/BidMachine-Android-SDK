@@ -28,13 +28,12 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
     Message.Builder createPlacement(@NonNull ContextProvider contextProvider,
                                     @NonNull UnifiedAdRequestParamsType adRequestParams,
                                     @NonNull final AdsType adsType,
-                                    @NonNull final AdContentType contentType,
                                     @NonNull Collection<NetworkConfig> networkConfigs) {
         List<AdUnitPreloadTask> preloadTasks = new ArrayList<>();
         for (NetworkConfig networkConfig : networkConfigs) {
             NetworkAdapter adapter = networkConfig.obtainNetworkAdapter();
             if (adapter instanceof HeaderBiddingAdapter) {
-                Map<String, String> mediationConfig = networkConfig.peekMediationConfig(adsType, contentType);
+                Map<String, String> mediationConfig = networkConfig.peekMediationConfig(adsType, adRequestParams);
                 if (mediationConfig != null) {
                     preloadTasks.add(new AdUnitPreloadTask<>(
                             contextProvider,

@@ -149,8 +149,8 @@ public class NativePlacementBuilder extends PlacementBuilder<UnifiedNativeAdRequ
             builder.addAllMime(Arrays.asList(Constants.VIDEO_MIME_TYPES));
         }
         builder.setNativefmt(formatBuilder);
-        Message.Builder headerBiddingPlacement = createHeaderBiddingPlacement(
-                contextProvider, adRequestParams, adsType, AdContentType.Static, networkConfigs);
+        Message.Builder headerBiddingPlacement =
+                createHeaderBiddingPlacement(contextProvider, adRequestParams, adsType, networkConfigs);
         if (headerBiddingPlacement != null) {
             builder.addExt(Any.pack(headerBiddingPlacement.build()));
         }

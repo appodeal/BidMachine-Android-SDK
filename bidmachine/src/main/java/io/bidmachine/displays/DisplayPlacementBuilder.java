@@ -44,7 +44,7 @@ public class DisplayPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedA
         builder.setW(displaySize.x);
         builder.setH(displaySize.y);
         Message.Builder headerBiddingPlacement =
-                createHeaderBiddingPlacement(contextProvider, adRequestParams, adsType, getAdContentType(), networkConfigs);
+                createHeaderBiddingPlacement(contextProvider, adRequestParams, adsType, networkConfigs);
         if (headerBiddingPlacement != null) {
             builder.addExt(Any.pack(headerBiddingPlacement.build()));
         }
