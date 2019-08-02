@@ -143,10 +143,15 @@ public abstract class NetworkConfig {
                                                                                       @NonNull T adRequestParams) {
         Map<String, String> resultConfig = null;
         if (typedMediationConfigs != null) {
+            Map<String, String> typedConfig = null;
             for (Map.Entry<AdsFormat, Map<String, String>> entry : typedMediationConfigs.entrySet()) {
                 if (entry.getKey().isMatch(adsType, adRequestParams)) {
-                    resultConfig = new HashMap<>(entry.getValue());
+                    typedConfig = entry.getValue();
                 }
+            }
+            if (typedConfig != null) {
+                // Copy provided provided config since we shouldn't modify it
+                resultConfig = new HashMap<>(typedConfig);
             }
         }
         if (resultConfig == null && mediationConfig != null) {
