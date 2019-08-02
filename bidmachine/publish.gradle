@@ -1,9 +1,11 @@
 /**
  * Gradle task for submit aar build to publish repo.
  * Required params:
- * artifactory_repo - target publish repository
- * artifactory_username - user name for authorization
- * artifactory_password - user password for authorization
+ * repo - target publish repository
+ * uname - user name for authorization
+ * upassword - user password for authorization
+ *
+ * Example: 'YOUR_REQUIRED_TASK_NAME' -Partifactory_repo='YOUR_REPOSITORY_NAME' -Partifactory_username='YOUR_USER_NAME" -Partifactory_password='YOUR_ARTIFACTORY_USER_NAME'
  */
 
 apply plugin: 'com.jfrog.artifactory'
