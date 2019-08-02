@@ -1,0 +1,13 @@
+apply plugin: 'com.android.library'
+apply from: '../adapters.gradle'
+
+android {
+    defaultConfig {
+        versionCode 1
+        versionName "${versionCode}"
+    }
+}
+
+dependencies {
+    adapterDependency 'com.facebook.android:audience-network-sdk:5.4.1'
+}

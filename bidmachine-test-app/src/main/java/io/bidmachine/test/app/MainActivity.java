@@ -31,6 +31,7 @@ import android.widget.*;
 import io.bidmachine.BuildConfig;
 import io.bidmachine.*;
 import io.bidmachine.adapters.adcolony.AdColonyConfig;
+import io.bidmachine.adapters.facebook.FacebookConfig;
 import io.bidmachine.adapters.my_target.MyTargetConfig;
 import io.bidmachine.adapters.tapjoy.TapjoyConfig;
 import io.bidmachine.banner.BannerSize;
@@ -695,6 +696,37 @@ public class MainActivity extends AppCompatActivity {
                             "                \"placement_name\": \"rewarded_video_without_cap_pb\"\n" +
                             "            }\n" +
                             "        ]\n" +
-                            "    }")
+                            "    }"),
+            new OptionalNetwork(4, "Facebook",
+                    new FacebookConfig("1525692904128549")
+                            .withMediationParams(AdsFormat.Banner, "1525692904128549_2386746951356469")
+                            .withMediationParams(AdsFormat.Banner_300x250, "1525692904128549_2386746951356469")
+                            .withMediationParams(AdsFormat.InterstitialStatic, "1525692904128549_2386743441356820")
+                            .withMediationParams(AdsFormat.RewardedVideo, "1525692904128549_2386753464689151"),
+                    "{\n" +
+                            "    \"network\":\"facebook\",\n" +
+                            "    \"adunits\":[\n" +
+                            "        {\n" +
+                            "            \"format\":\"banner\",\n" +
+                            "            \"slot_id\":\"1525692904128549_2386746951356469\"\n" +
+                            "        },\n" +
+                            "        {\n" +
+                            "            \"format\":\"banner_320x50\",\n" +
+                            "            \"slot_id\":\"1525692904128549_2386746951356469\"\n" +
+                            "        },\n" +
+                            "        {\n" +
+                            "            \"format\":\"banner_300x250\",\n" +
+                            "            \"slot_id\":\"1525692904128549_2386746951356469\"\n" +
+                            "        },\n" +
+                            "        {\n" +
+                            "            \"format\":\"interstitial_static\",\n" +
+                            "            \"slot_id\":\"1525692904128549_2386743441356820\"\n" +
+                            "        },\n" +
+                            "        {\n" +
+                            "            \"format\":\"rewarded_video\",\n" +
+                            "            \"slot_id\":\"1525692904128549_2386753464689151\"\n" +
+                            "        }\n" +
+                            "    ]\n" +
+                            "}")
     };
 }
