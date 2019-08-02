@@ -28,11 +28,11 @@ class MyTargetBanner extends UnifiedBannerAd {
         BannerSize size = requestParams.getBannerSize();
         int adSize;
         switch (size) {
-            case Size_728_90: {
+            case Size_728x90: {
                 adSize = MyTargetView.AdSize.BANNER_728x90;
                 break;
             }
-            case Size_300_250: {
+            case Size_300x250: {
                 adSize = MyTargetView.AdSize.BANNER_300x250;
                 break;
             }

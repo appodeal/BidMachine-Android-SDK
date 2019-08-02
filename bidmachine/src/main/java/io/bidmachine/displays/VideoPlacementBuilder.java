@@ -51,8 +51,8 @@ public class VideoPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAdR
         builder.setMindur(Constants.VIDEO_MINDUR);
         builder.setMaxdur(Constants.VIDEO_MAXDUR);
         builder.setLinearValue(Constants.VIDEO_LINEARITY);
-        Message.Builder headerBiddingPlacement = createHeaderBiddingPlacement(
-                contextProvider, adRequestParams, adsType, getAdContentType(), networkConfigs);
+        Message.Builder headerBiddingPlacement =
+                createHeaderBiddingPlacement(contextProvider, adRequestParams, adsType, networkConfigs);
         if (headerBiddingPlacement != null) {
             builder.addExt(Any.pack(headerBiddingPlacement.build()));
         }

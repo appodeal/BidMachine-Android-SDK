@@ -46,10 +46,9 @@ public abstract class PlacementBuilder<UnifiedAdRequestParamsType extends Unifie
     Message.Builder createHeaderBiddingPlacement(@NonNull ContextProvider contextProvider,
                                                  @NonNull UnifiedAdRequestParamsType adRequestParams,
                                                  @NonNull AdsType adsType,
-                                                 @NonNull AdContentType adContentType,
                                                  @NonNull Collection<NetworkConfig> networkConfigs) {
         return headerBiddingPlacementBuilder != null
-                ? headerBiddingPlacementBuilder.createPlacement(contextProvider, adRequestParams, adsType, adContentType, networkConfigs)
+                ? headerBiddingPlacementBuilder.createPlacement(contextProvider, adRequestParams, adsType, networkConfigs)
                 : null;
     }
 

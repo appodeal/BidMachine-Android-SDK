@@ -134,20 +134,24 @@ public abstract class NetworkConfig {
      * Method which return parameters which should be used for mediation process.
      * If no specific parameters was provided will return default set by {@link NetworkConfig#withMediationConfig(Map)}
      *
-     * @param adsType     required {@link AdsType}
-     * @param contentType required {@link AdContentType}
+     * @param adsType         required {@link AdsType}
+     * @param adRequestParams provided typed {@link UnifiedAdRequestParams}
      * @return map of parameters for provided {@link AdsType} and {@link AdContentType} which will be used for mediation process
      */
     @Nullable
-    public Map<String, String> peekMediationConfig(@NonNull AdsType adsType,
-                                                   @NonNull AdContentType contentType) {
+    public <T extends UnifiedAdRequestParams> Map<String, String> peekMediationConfig(@NonNull AdsType adsType,
+                                                                                      @NonNull T adRequestParams) {
         Map<String, String> resultConfig = null;
         if (typedMediationConfigs != null) {
+            Map<String, String> typedConfig = null;
             for (Map.Entry<AdsFormat, Map<String, String>> entry : typedMediationConfigs.entrySet()) {
-                if (entry.getKey().isMatch(adsType, contentType)) {
-                    resultConfig = new HashMap<>(entry.getValue());
-                    break;
+                if (entry.getKey().isMatch(adsType, adRequestParams)) {
+                    typedConfig = entry.getValue();
                 }
+            }
+            if (typedConfig != null) {
+                // Copy provided config since we shouldn't modify it
+                resultConfig = new HashMap<>(typedConfig);
             }
         }
         if (resultConfig == null && mediationConfig != null) {

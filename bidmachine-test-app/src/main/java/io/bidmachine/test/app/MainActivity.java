@@ -642,30 +642,40 @@ public class MainActivity extends AppCompatActivity {
             new OptionalNetwork(2, "myTarget",
                     new MyTargetConfig()
                             .withMediationConfig(AdsFormat.Banner, "437933")
+                            .withMediationConfig(AdsFormat.Banner_320x50, "437933")
+                            .withMediationConfig(AdsFormat.Banner_300x250, "64526")
+                            .withMediationConfig(AdsFormat.Banner_728x90, "81620")
                             .withMediationConfig(AdsFormat.InterstitialStatic, "365991")
-                            .withMediationConfig(AdsFormat.InterstitialVideo, "365991")
                             .withMediationConfig(AdsFormat.RewardedVideo, "482205"),
                     "{\n" +
-                            "        \"network\": \"my_target\",\n" +
-                            "        \"ad_units\": [\n" +
-                            "            {\n" +
-                            "                \"format\": \"banner\",\n" +
-                            "                \"slot_id\": \"437933\"\n" +
-                            "            },\n" +
-                            "            {\n" +
-                            "                \"format\": \"interstitial_static\",\n" +
-                            "                \"slot_id\": \"365991\"\n" +
-                            "            },\n" +
-                            "            {\n" +
-                            "                \"format\": \"interstitial_video\",\n" +
-                            "                \"slot_id\": \"365991\"\n" +
-                            "            },\n" +
-                            "            {\n" +
-                            "                \"format\": \"rewarded_video\",\n" +
-                            "                \"slot_id\": \"482205\"\n" +
-                            "            }\n" +
-                            "        ]\n" +
-                            "    }"),
+                            "    \"network\":\"my_target\",\n" +
+                            "    \"ad_units\":[\n" +
+                            "        {\n" +
+                            "            \"format\":\"banner\",\n" +
+                            "            \"slot_id\":\"437933\"\n" +
+                            "        },\n" +
+                            "        {\n" +
+                            "            \"format\":\"banner_320x50\",\n" +
+                            "            \"slot_id\":\"437933\"\n" +
+                            "        },\n" +
+                            "        {\n" +
+                            "            \"format\":\"banner_300x250\",\n" +
+                            "            \"slot_id\":\"64526\"\n" +
+                            "        },\n" +
+                            "        {\n" +
+                            "            \"format\":\"banner_728x90\",\n" +
+                            "            \"slot_id\":\"81620\"\n" +
+                            "        },\n" +
+                            "        {\n" +
+                            "            \"format\":\"interstitial_static\",\n" +
+                            "            \"slot_id\":\"365991\"\n" +
+                            "        },\n" +
+                            "        {\n" +
+                            "            \"format\":\"rewarded_video\",\n" +
+                            "            \"slot_id\":\"482205\"\n" +
+                            "        }\n" +
+                            "    ]\n" +
+                            "}"),
             new OptionalNetwork(3, "Tapjoy",
                     new TapjoyConfig("tmyN5ZcXTMyjeJNJmUD5ggECAbnEGtJREmLDd0fvqKBXcIr7e1dvboNKZI4y")
                             .withMediationConfig(AdsFormat.InterstitialVideo, "video_without_cap_pb")
