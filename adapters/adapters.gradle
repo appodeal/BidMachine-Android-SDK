@@ -1,7 +1,12 @@
+/**
+ * Notes:
+ * - should be applied right after 'android' initialization block
+ */
 apply from: "$rootProject.projectDir/config.gradle"
 
 android {
     defaultConfig {
+        versionName "${project(':bidmachine').android.defaultConfig.versionName}.${versionCode}"
         consumerProguardFiles '../adapter-proguard-rules.txt', 'proguard-rules.pro'
     }
 

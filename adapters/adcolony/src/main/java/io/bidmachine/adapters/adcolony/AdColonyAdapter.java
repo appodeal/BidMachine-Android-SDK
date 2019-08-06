@@ -25,7 +25,10 @@ class AdColonyAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
     private static HashSet<String> zonesCache = new HashSet<>();
 
     AdColonyAdapter() {
-        super("adcolony", obtainAdColonyVersion(), new AdsType[]{AdsType.Interstitial, AdsType.Rewarded});
+        super("adcolony",
+                obtainAdColonyVersion(),
+                BuildConfig.VERSION_NAME,
+                new AdsType[]{AdsType.Interstitial, AdsType.Rewarded});
     }
 
     @Override

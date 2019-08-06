@@ -19,7 +19,10 @@ import java.util.concurrent.CountDownLatch;
 class TapjoyAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
 
     TapjoyAdapter() {
-        super("tapjoy", Tapjoy.getVersion(), new AdsType[]{AdsType.Interstitial, AdsType.Rewarded});
+        super("tapjoy",
+                Tapjoy.getVersion(),
+                BuildConfig.VERSION_NAME,
+                new AdsType[]{AdsType.Interstitial, AdsType.Rewarded});
     }
 
     @Override

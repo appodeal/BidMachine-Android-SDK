@@ -14,9 +14,6 @@ apply plugin: 'maven-publish'
 /** Define primary artifacts group */
 def libGroupId = "io.bidmachine"
 
-/** Define primary projects which should be used to get such things as name, version and dependencies */
-def sdkProject = project(':bidmachine')
-
 artifactory {
     contextUrl = 'https://artifactory.bidmachine.io/artifactory'
     publish {
@@ -44,14 +41,14 @@ publishing {
         "_${project.name}_"(MavenPublication) {
             groupId = libGroupId
             artifactId = "ads.${project.name}"
-            version = "${sdkProject.android.defaultConfig.versionName}.${project.android.defaultConfig.versionName}"
+            version = project.android.defaultConfig.versionName
             artifact "${project.buildDir}/outputs/aar/${project.name}-release.aar"
             pom.withXml {
                 def dependenciesNode = asNode().appendNode('dependencies')
                 def dependencyNode = dependenciesNode.appendNode('dependency')
                 dependencyNode.appendNode('groupId', libGroupId)
                 dependencyNode.appendNode('artifactId', "ads")
-                dependencyNode.appendNode('version', sdkProject.android.defaultConfig.versionName)
+                dependencyNode.appendNode('version', project(':bidmachine').android.defaultConfig.versionName)
                 project.configurations.adapterDependency.getDependencies().each { dep ->
                     if (dep instanceof ExternalModuleDependency) {
                         println("dep: " + dep.properties)

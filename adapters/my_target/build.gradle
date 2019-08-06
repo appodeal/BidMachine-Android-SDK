@@ -1,12 +1,12 @@
 apply plugin: 'com.android.library'
-apply from: '../adapters.gradle'
 
 android {
     defaultConfig {
         versionCode 1
-        versionName "${versionCode}"
     }
 }
+
+apply from: '../adapters.gradle'
 
 dependencies {
     adapterDependency 'com.my.target:mytarget-sdk:5.4.5'

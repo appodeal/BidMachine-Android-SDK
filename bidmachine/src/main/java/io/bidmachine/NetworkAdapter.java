@@ -13,13 +13,18 @@ public abstract class NetworkAdapter {
 
     private final String key;
     private final String version;
+    private final String adapterVersion;
     private final AdsType[] supportedTypes;
 
     private boolean isInitialized;
 
-    protected NetworkAdapter(@NonNull String key, @NonNull String version, @NonNull AdsType[] supportedTypes) {
+    protected NetworkAdapter(@NonNull String key,
+                             @NonNull String version,
+                             @NonNull String adapterVersion,
+                             @NonNull AdsType[] supportedTypes) {
         this.key = key;
         this.version = version;
+        this.adapterVersion = adapterVersion;
         this.supportedTypes = supportedTypes;
     }
 
@@ -35,6 +40,13 @@ public abstract class NetworkAdapter {
      */
     public String getVersion() {
         return version;
+    }
+
+    /**
+     * @return Network adapter version
+     */
+    public String getAdapterVersion() {
+        return adapterVersion;
     }
 
     /**

@@ -219,8 +219,8 @@ class NetworkRegistry {
                         type.addNetworkConfig(key, networkConfig);
                     }
                     Logger.log(
-                            String.format("Load network from config finish: %s, %s",
-                                    networkName, networkAdapter.getVersion()));
+                            String.format("Load network from config finish: %s, %s, %s",
+                                    networkName, networkAdapter.getVersion(), networkAdapter.getAdapterVersion()));
                     if (networkAdapter instanceof HeaderBiddingAdapter) {
                         BidMachineEvents.eventFinish(trackingObject, TrackEventType.HeaderBiddingNetworkInitialize, null, null);
                     } else {

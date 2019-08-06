@@ -22,6 +22,7 @@ class MyTargetAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
     MyTargetAdapter() {
         super("my_target",
                 MyTargetVersion.VERSION,
+                BuildConfig.VERSION_NAME,
                 new AdsType[]{AdsType.Banner, AdsType.Interstitial, AdsType.Rewarded});
     }
 

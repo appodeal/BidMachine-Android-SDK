@@ -25,6 +25,7 @@ class FacebookAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
     FacebookAdapter() {
         super("facebook",
                 com.facebook.ads.BuildConfig.VERSION_NAME,
+                BuildConfig.VERSION_NAME,
                 new AdsType[]{AdsType.Banner, AdsType.Interstitial, AdsType.Rewarded});
     }
 
