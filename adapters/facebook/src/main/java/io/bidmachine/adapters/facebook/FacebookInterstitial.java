@@ -65,6 +65,7 @@ class FacebookInterstitial extends UnifiedFullscreenAd {
         @Override
         public void onInterstitialDismissed(Ad ad) {
             getCallback().onAdClosed();
+            ad.destroy();
         }
 
         @Override

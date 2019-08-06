@@ -25,6 +25,7 @@ abstract class BaseFacebookListener<UnifiedAdCallbackType extends UnifiedAdCallb
     @Override
     public void onError(Ad ad, AdError adError) {
         callback.onAdLoadFailed(mapError(adError));
+        ad.destroy();
     }
 
     @Override
