@@ -103,34 +103,34 @@ class FacebookAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
                 assert bidderToken != null;
                 listener.onInitialized(bidderToken);
             }
-            return;
-        }
-        new Thread() {
-            @Override
-            public void run() {
-                super.run();
-                synchronized (FacebookAdapter.class) {
-                    if (!TextUtils.isEmpty(bidderToken)) {
-                        if (listener != null) {
-                            assert bidderToken != null;
-                            listener.onInitialized(bidderToken);
+        } else {
+            new Thread() {
+                @Override
+                public void run() {
+                    super.run();
+                    synchronized (FacebookAdapter.class) {
+                        if (!TextUtils.isEmpty(bidderToken)) {
+                            if (listener != null) {
+                                assert bidderToken != null;
+                                listener.onInitialized(bidderToken);
+                            }
+                            return;
                         }
-                        return;
-                    }
-                    if (TextUtils.isEmpty(bidderToken)) {
-                        bidderToken = BidderTokenProvider.getBidderToken(context);
-                    }
-                    if (listener != null) {
                         if (TextUtils.isEmpty(bidderToken)) {
-                            listener.onInitializationFailed();
-                        } else {
-                            assert bidderToken != null;
-                            listener.onInitialized(bidderToken);
+                            bidderToken = BidderTokenProvider.getBidderToken(context);
+                        }
+                        if (listener != null) {
+                            if (TextUtils.isEmpty(bidderToken)) {
+                                listener.onInitializationFailed();
+                            } else {
+                                assert bidderToken != null;
+                                listener.onInitialized(bidderToken);
+                            }
                         }
                     }
                 }
-            }
-        }.start();
+            }.start();
+        }
     }
 
     private interface FacebookInitializeListener {

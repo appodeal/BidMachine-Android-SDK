@@ -34,7 +34,7 @@ class FacebookInterstitial extends UnifiedFullscreenAd {
 
     @Override
     public void show(@NonNull Context context, @NonNull UnifiedFullscreenAdCallback callback) {
-        if (interstitialAd != null && interstitialAd.isAdLoaded()) {
+        if (interstitialAd != null && interstitialAd.isAdLoaded() && !interstitialAd.isAdInvalidated()) {
             interstitialAd.show();
         } else {
             callback.onAdShowFailed(BMError.NotLoaded);

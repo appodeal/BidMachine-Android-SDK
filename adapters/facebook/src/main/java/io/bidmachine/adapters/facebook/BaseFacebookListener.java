@@ -56,16 +56,10 @@ abstract class BaseFacebookListener<UnifiedAdCallbackType extends UnifiedAdCallb
                 return BMError.NoContent;
             case AdError.INTERSTITIAL_AD_TIMEOUT:
                 return BMError.TimeoutError;
+            case AdError.NATIVE_AD_IS_NOT_LOADED:
             case AdError.BROKEN_MEDIA_ERROR_CODE:
             case AdError.ICONVIEW_MISSING_ERROR_CODE:
             case AdError.AD_ASSETS_UNSUPPORTED_TYPE_ERROR_CODE:
-                return BMError.IncorrectAdUnit;
-            case AdError.SHOW_CALLED_BEFORE_LOAD_ERROR_CODE:
-            case AdError.LOAD_CALLED_WHILE_SHOWING_AD:
-            case AdError.MISSING_DEPENDENCIES_ERROR:
-            case AdError.API_NOT_SUPPORTED:
-                return BMError.Internal;
-            case AdError.NATIVE_AD_IS_NOT_LOADED:
                 return BMError.IncorrectAdUnit;
             default:
                 return BMError.Internal;
