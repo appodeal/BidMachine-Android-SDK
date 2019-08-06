@@ -56,20 +56,20 @@ public class AdColonyConfig extends NetworkConfig {
         return new AdColonyAdapter();
     }
 
-    public AdColonyConfig withMediationParams(@NonNull AdsFormat adsFormat,
+    public AdColonyConfig withMediationConfig(@NonNull AdsFormat adsFormat,
                                               @NonNull String zoneId) {
-        return withMediationParams(adsFormat, appId, zoneId);
+        return withMediationConfig(adsFormat, appId, zoneId);
     }
 
     @SuppressWarnings("WeakerAccess")
-    public AdColonyConfig withMediationParams(@NonNull AdsFormat adsFormat,
+    public AdColonyConfig withMediationConfig(@NonNull AdsFormat adsFormat,
                                               @Nullable String appId,
                                               @NonNull String zoneId) {
-        return withMediationParams(adsFormat, appId, zoneId, storeId);
+        return withMediationConfig(adsFormat, appId, zoneId, storeId);
     }
 
     @SuppressWarnings("WeakerAccess")
-    public AdColonyConfig withMediationParams(@NonNull AdsFormat adsFormat,
+    public AdColonyConfig withMediationConfig(@NonNull AdsFormat adsFormat,
                                               @Nullable final String appId,
                                               @NonNull final String zoneId,
                                               @Nullable final String storeId) {

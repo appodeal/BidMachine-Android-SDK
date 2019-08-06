@@ -618,8 +618,8 @@ public class MainActivity extends AppCompatActivity {
     private static final OptionalNetwork[] optionalNetworks = {
             new OptionalNetwork(1, "AdColony",
                     new AdColonyConfig("app185a7e71e1714831a49ec7")
-                            .withMediationParams(AdsFormat.InterstitialVideo, "vz06e8c32a037749699e7050")
-                            .withMediationParams(AdsFormat.RewardedVideo, "vz1fd5a8b2bf6841a0a4b826"),
+                            .withMediationConfig(AdsFormat.InterstitialVideo, "vz06e8c32a037749699e7050")
+                            .withMediationConfig(AdsFormat.RewardedVideo, "vz1fd5a8b2bf6841a0a4b826"),
                     "{\n" +
                             "        \"network\": \"adcolony\",\n" +
                             "        \"network_config\": {\n" +
