@@ -44,13 +44,13 @@ public class FacebookConfig extends NetworkConfig {
         return new FacebookAdapter();
     }
 
-    public FacebookConfig withMediationParams(@NonNull AdsFormat adsFormat,
+    public FacebookConfig withMediationConfig(@NonNull AdsFormat adsFormat,
                                               @NonNull String placementId) {
-        return withMediationParams(adsFormat, appId, placementId);
+        return withMediationConfig(adsFormat, appId, placementId);
     }
 
     @SuppressWarnings("WeakerAccess")
-    public FacebookConfig withMediationParams(@NonNull AdsFormat adsFormat,
+    public FacebookConfig withMediationConfig(@NonNull AdsFormat adsFormat,
                                               @Nullable final String appId,
                                               @NonNull final String placementId) {
         return withMediationConfig(adsFormat, new HashMap<String, String>() {{

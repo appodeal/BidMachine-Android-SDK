@@ -699,10 +699,10 @@ public class MainActivity extends AppCompatActivity {
                             "    }"),
             new OptionalNetwork(4, "Facebook",
                     new FacebookConfig("1525692904128549")
-                            .withMediationParams(AdsFormat.Banner, "1525692904128549_2386746951356469")
-                            .withMediationParams(AdsFormat.Banner_300x250, "1525692904128549_2386746951356469")
-                            .withMediationParams(AdsFormat.InterstitialStatic, "1525692904128549_2386743441356820")
-                            .withMediationParams(AdsFormat.RewardedVideo, "1525692904128549_2386753464689151"),
+                            .withMediationConfig(AdsFormat.Banner, "1525692904128549_2386746951356469")
+                            .withMediationConfig(AdsFormat.Banner_300x250, "1525692904128549_2386746951356469")
+                            .withMediationConfig(AdsFormat.InterstitialStatic, "1525692904128549_2386743441356820")
+                            .withMediationConfig(AdsFormat.RewardedVideo, "1525692904128549_2386753464689151"),
                     "{\n" +
                             "    \"network\":\"facebook\",\n" +
                             "    \"adunits\":[\n" +
