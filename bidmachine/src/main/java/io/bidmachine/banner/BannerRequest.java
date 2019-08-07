@@ -5,34 +5,40 @@ import android.content.res.TypedArray;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
-
 import io.bidmachine.AdRequest;
 import io.bidmachine.AdsType;
 import io.bidmachine.R;
+import io.bidmachine.TargetingParams;
+import io.bidmachine.models.DataRestrictions;
 import io.bidmachine.models.IBannerRequestBuilder;
+import io.bidmachine.unified.UnifiedBannerAdRequestParams;
 import io.bidmachine.utils.BMError;
 
-public final class BannerRequest extends AdRequest<BannerRequest> {
+public final class BannerRequest extends AdRequest<BannerRequest, UnifiedBannerAdRequestParams> {
 
     private BannerSize bannerSize;
 
     private BannerRequest() {
+        super(AdsType.Banner);
     }
 
     public BannerSize getSize() {
         return bannerSize;
     }
 
-    @NonNull
-    @Override
-    protected AdsType getType() {
-        return AdsType.Banner;
-    }
-
     @Override
     protected BMError verifyRequest() {
-        if (bannerSize == null) return BMError.paramError("BannerSize not provided");
+        if (bannerSize == null) {
+            return BMError.paramError("BannerSize not provided");
+        }
         return super.verifyRequest();
+    }
+
+    @NonNull
+    @Override
+    protected UnifiedBannerAdRequestParams createUnifiedAdRequestParams(@NonNull TargetingParams targetingParams,
+                                                                        @NonNull DataRestrictions dataRestrictions) {
+        return new BannerUnifiedRequestParams(targetingParams, dataRestrictions);
     }
 
     public static final class Builder extends AdRequestBuilderImpl<Builder, BannerRequest>
@@ -41,9 +47,7 @@ public final class BannerRequest extends AdRequest<BannerRequest> {
         public Builder() {
         }
 
-        Builder(@NonNull Context context,
-                @Nullable AttributeSet attrs,
-                int defStyleAttr) {
+        Builder(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
             TypedArray params = context.obtainStyledAttributes(attrs, R.styleable.BannerRequest, defStyleAttr, 0);
             setSize(BannerSize.values()[params.getInt(R.styleable.BannerRequest_bannerSize, 0)]);
             params.recycle();
@@ -63,6 +67,19 @@ public final class BannerRequest extends AdRequest<BannerRequest> {
     }
 
     public interface AdRequestListener extends AdRequest.AdRequestListener<BannerRequest> {
+    }
+
+    private class BannerUnifiedRequestParams extends BaseUnifiedRequestParams implements UnifiedBannerAdRequestParams {
+
+        BannerUnifiedRequestParams(@NonNull TargetingParams targetingParams,
+                                   @NonNull DataRestrictions dataRestrictions) {
+            super(targetingParams, dataRestrictions);
+        }
+
+        @Override
+        public BannerSize getBannerSize() {
+            return BannerRequest.this.getSize();
+        }
     }
 
 }

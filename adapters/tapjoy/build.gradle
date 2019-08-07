@@ -1,0 +1,20 @@
+apply plugin: 'com.android.library'
+
+android {
+    defaultConfig {
+        versionCode 1
+    }
+}
+
+apply from: '../adapters.gradle'
+
+repositories {
+    maven {
+        name "TapjoyVideo's maven repo"
+        url "https://tapjoy.bintray.com/maven"
+    }
+}
+
+dependencies {
+    adapterDependency 'com.tapjoy:tapjoy-android-sdk:12.3.1@aar'
+}

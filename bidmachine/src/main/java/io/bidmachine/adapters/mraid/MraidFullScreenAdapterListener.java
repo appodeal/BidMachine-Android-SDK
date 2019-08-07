@@ -7,23 +7,28 @@ import com.explorestack.iab.mraid.MRAIDInterstitial;
 import com.explorestack.iab.mraid.MRAIDInterstitialListener;
 import com.explorestack.iab.mraid.MRAIDNativeFeatureListener;
 import com.explorestack.iab.utils.Utils;
+import io.bidmachine.unified.UnifiedFullscreenAdCallback;
 import io.bidmachine.utils.BMError;
 
 class MraidFullScreenAdapterListener implements MRAIDInterstitialListener,
         MRAIDNativeFeatureListener {
 
     @NonNull
-    private final MraidFullScreenAdObject adObject;
+    private final MraidFullScreenAd adObject;
     @Nullable
     private Runnable afterStartShowRunnable;
+    @NonNull
+    private UnifiedFullscreenAdCallback callback;
 
-    MraidFullScreenAdapterListener(@NonNull MraidFullScreenAdObject adObject) {
+    MraidFullScreenAdapterListener(@NonNull MraidFullScreenAd adObject,
+                                   @NonNull UnifiedFullscreenAdCallback callback) {
         this.adObject = adObject;
+        this.callback = callback;
     }
 
     @Override
     public void mraidInterstitialLoaded(MRAIDInterstitial mraidInterstitial) {
-        adObject.processLoadSuccess();
+        callback.onAdLoaded();
     }
 
     @Override
@@ -31,13 +36,13 @@ class MraidFullScreenAdapterListener implements MRAIDInterstitialListener,
         if (afterStartShowRunnable != null) {
             afterStartShowRunnable.run();
         }
-        adObject.processShown();
+        callback.onAdShown();
     }
 
     @Override
     public void mraidInterstitialHide(MRAIDInterstitial mraidInterstitial) {
-        adObject.processFinished();
-        adObject.processClosed(true);
+        callback.onAdFinished();
+        callback.onAdClosed();
         final MraidActivity showingActivity = adObject.getShowingActivity();
         if (showingActivity != null) {
             showingActivity.finish();
@@ -48,7 +53,7 @@ class MraidFullScreenAdapterListener implements MRAIDInterstitialListener,
 
     @Override
     public void mraidInterstitialNoFill(MRAIDInterstitial mraidInterstitial) {
-        adObject.processLoadFail(BMError.noFillError(null));
+        callback.onAdLoadFailed(BMError.noFillError(null));
     }
 
     @Override
@@ -68,20 +73,20 @@ class MraidFullScreenAdapterListener implements MRAIDInterstitialListener,
 
     @Override
     public void mraidNativeFeatureOpenBrowser(String url, WebView view) {
-        adObject.processClicked();
+        callback.onAdClicked();
         if (url != null && adObject.getShowingActivity() != null) {
             if (adObject.getShowingActivity() != null) {
                 adObject.getShowingActivity().showProgressBar();
-            }
-            Utils.openBrowser(adObject.getShowingActivity().getApplicationContext(), url,
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            if (adObject.getShowingActivity() != null) {
-                                adObject.getShowingActivity().hideProgressBar();
+                Utils.openBrowser(adObject.getShowingActivity().getApplicationContext(), url,
+                        new Runnable() {
+                            @Override
+                            public void run() {
+                                if (adObject.getShowingActivity() != null) {
+                                    adObject.getShowingActivity().hideProgressBar();
+                                }
                             }
-                        }
-                    });
+                        });
+            }
         }
     }
 

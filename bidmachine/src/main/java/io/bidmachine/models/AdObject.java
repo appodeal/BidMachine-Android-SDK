@@ -1,21 +1,37 @@
 package io.bidmachine.models;
 
+import android.support.annotation.NonNull;
 import io.bidmachine.AdProcessCallback;
-import io.bidmachine.IAd;
+import io.bidmachine.ContextProvider;
+import io.bidmachine.unified.UnifiedAdCallback;
+import io.bidmachine.unified.UnifiedAdRequestParams;
 
 public interface AdObject<
-        AdType extends IAd,
-        AdObjectParamsType extends AdObjectParams>
-        extends AdProcessCallback {
-
-    void attachAd(AdType ad);
-
-    AdType getAd();
+        AdObjectParamsType extends AdObjectParams,
+        UnifiedAdRequestParamsType extends UnifiedAdRequestParams,
+        UnifiedAdCallbackType extends UnifiedAdCallback> {
 
     AdObjectParamsType getParams();
 
-    void load();
+    void load(@NonNull ContextProvider contextProvider,
+              @NonNull UnifiedAdRequestParamsType adRequestParams) throws Throwable;
 
-    void destroy();
+    @NonNull
+    UnifiedAdCallbackType createUnifiedCallback(@NonNull AdProcessCallback processCallback);
 
+    void onShown();
+
+    void onShowFailed();
+
+    void onImpression();
+
+    void onClicked();
+
+    void onFinished();
+
+    void onClosed(boolean finished);
+
+    void onExpired();
+
+    void onDestroy();
 }

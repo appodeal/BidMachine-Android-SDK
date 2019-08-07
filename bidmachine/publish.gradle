@@ -1,9 +1,11 @@
 /**
  * Gradle task for submit aar build to publish repo.
  * Required params:
- * artifactory_repo - target publish repository
- * artifactory_username - user name for authorization
- * artifactory_password - user password for authorization
+ * repo - target publish repository
+ * uname - user name for authorization
+ * upassword - user password for authorization
+ *
+ * Example: 'YOUR_REQUIRED_TASK_NAME' -Partifactory_repo='YOUR_REPOSITORY_NAME' -Partifactory_username='YOUR_USER_NAME" -Partifactory_password='YOUR_ARTIFACTORY_USER_NAME'
  */
 
 apply plugin: 'com.jfrog.artifactory'
@@ -12,53 +14,48 @@ apply plugin: 'maven-publish'
 def libGroupId = "io.bidmachine"
 def libArtifactId = "ads"
 
-configurations.maybeCreate("default")
-def publishArtifact = artifacts.add("default", file("build/outputs/aar/bidmachine-release.aar"))
-
-publishing {
-    publications {
-        aar(MavenPublication) {
-            groupId = libGroupId
-            artifactId = libArtifactId
-            version = android.defaultConfig.versionName
-            artifact publishArtifact
-
-            pom.withXml {
-                def dependenciesNode = asNode().appendNode('dependencies')
-                def dependencyNode = dependenciesNode.appendNode('dependency')
-                dependencyNode.appendNode('groupId', 'com.explorestack')
-                dependencyNode.appendNode('artifactId', 'iab')
-                dependencyNode.appendNode('version', stackIabVersion)
-            }
-        }
-    }
-}
-
 artifactory {
     contextUrl = 'https://artifactory.bidmachine.io/artifactory'
     publish {
         repository {
-            if (project.hasProperty("artifactory_repo")) {
-                repoKey = artifactory_repo
-                println "Artifactory repo: $artifactory_repo"
-            } else {
-                println "Artifactory repo not provided (-Partifactory_repo)"
+            if (project.hasProperty("repo")) {
+                repoKey = repo
             }
-            if (project.hasProperty("artifactory_username")) {
-                username = artifactory_username
-                println "Artifactory username: $artifactory_username"
-            } else {
-                println "Artifactory username not provided! (-Partifactory_username)"
+            if (project.hasProperty("uname")) {
+                username = uname
             }
-            if (project.hasProperty("artifactory_password")) {
-                password = artifactory_password
-                println "Artifactory password: $artifactory_password"
-            } else {
-                println "Artifactory password not provided! (-Partifactory_password)"
+            if (project.hasProperty("upassword")) {
+                password = upassword
             }
         }
         defaults {
-            publications('aar')
+            publications("_${project.name}_")
+            publishArtifacts = true
+            publishPom = true
+        }
+    }
+}
+
+publishing {
+    publications {
+        "_${project.name}_"(MavenPublication) {
+            groupId = libGroupId
+            artifactId = libArtifactId
+            version = android.defaultConfig.versionName
+            artifact "${project.buildDir}/outputs/aar/${project.name}-release.aar"
+            pom.withXml {
+                def dependenciesNode = asNode().appendNode('dependencies')
+                // Protobuf models
+                def dependencyNode = dependenciesNode.appendNode('dependency')
+                dependencyNode.appendNode('groupId', 'io.bidmachine')
+                dependencyNode.appendNode('artifactId', 'protobuf-models')
+                dependencyNode.appendNode('version', protobufModelsVersion)
+                // Stack IAB
+                dependencyNode = dependenciesNode.appendNode('dependency')
+                dependencyNode.appendNode('groupId', 'com.explorestack')
+                dependencyNode.appendNode('artifactId', 'iab')
+                dependencyNode.appendNode('version', stackIabVersion)
+            }
         }
     }
 }

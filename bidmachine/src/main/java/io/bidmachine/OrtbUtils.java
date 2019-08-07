@@ -8,35 +8,19 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.telephony.TelephonyManager;
+import com.explorestack.protobuf.adcom.*;
+import com.google.protobuf.*;
+import io.bidmachine.core.Logger;
+import io.bidmachine.core.Utils;
+import io.bidmachine.models.DataRestrictions;
+import io.bidmachine.protobuf.InitRequest;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
-import io.bidmachine.core.Logger;
-import io.bidmachine.core.Utils;
-import io.bidmachine.models.RequestParamsRestrictions;
-import io.bidmachine.protobuf.Any;
-import io.bidmachine.protobuf.ByteString;
-import io.bidmachine.protobuf.Descriptors;
-import io.bidmachine.protobuf.InitRequest;
-import io.bidmachine.protobuf.Message;
-import io.bidmachine.protobuf.MessageOrBuilder;
-import io.bidmachine.protobuf.TextFormat;
-import io.bidmachine.protobuf.UnknownFieldSet;
-import io.bidmachine.protobuf.WireFormat;
-import io.bidmachine.protobuf.adcom.Ad;
-import io.bidmachine.protobuf.adcom.ConnectionType;
-import io.bidmachine.protobuf.adcom.Context;
-import io.bidmachine.protobuf.adcom.LocationType;
-import io.bidmachine.protobuf.adcom.OS;
-
+import static com.google.protobuf.TextFormat.escapeBytes;
 import static io.bidmachine.core.Utils.oneOf;
-import static io.bidmachine.protobuf.TextFormat.escapeBytes;
 
 class OrtbUtils {
 
@@ -120,7 +104,7 @@ class OrtbUtils {
     static InitRequest obtainInitRequest(@NonNull android.content.Context context,
                                          @NonNull String sellerId,
                                          @Nullable TargetingParams targetingParams,
-                                         @NonNull RequestParamsRestrictions paramsRestrictions) {
+                                         @NonNull DataRestrictions paramsRestrictions) {
         final InitRequest.Builder initRequest = InitRequest.newBuilder();
         final String packageName = context.getPackageName();
         if (packageName != null) {
@@ -129,7 +113,7 @@ class OrtbUtils {
         if (paramsRestrictions.canSendGeoPosition()) {
             final Context.Geo.Builder geoBuilder = Context.Geo.newBuilder();
             if (targetingParams != null) {
-                targetingParams.build(context, geoBuilder, targetingParams, paramsRestrictions);
+                targetingParams.build(geoBuilder);
             }
             OrtbUtils.locationToGeo(geoBuilder,
                     obtainBestLocation(context, targetingParams != null
@@ -310,7 +294,7 @@ class OrtbUtils {
 
                     //TODO: optimize for different packages support
                     try {
-                        OrtbUtils.print(any.unpack((Class<Message>) Class.forName("io." + type)), tmp);
+                        OrtbUtils.print(any.unpack((Class<Message>) Class.forName(type)), tmp);
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();
                     }

@@ -7,7 +7,6 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:3.1.3'
         classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.4.12"
-        classpath "com.google.protobuf:protobuf-gradle-plugin:0.8.5"
         classpath "com.mobbeel.plugin:fat-aar:2.0.1"
     }
 }
@@ -16,8 +15,52 @@ allprojects {
     repositories {
         google()
         jcenter()
+        mavenLocal()
+        maven {
+            url 'https://artifactory.bidmachine.io/bidmachine-private/'
+            credentials {
+                username = System.getenv("APD_USERNAME")
+                password = System.getenv("APD_USERPASSWORD")
+            }
+        }
         maven {
             url 'https://artifactory.appodeal.com/artifactory/explorestack'
         }
     }
+}
+
+ArrayList<Project> collectAdapters() {
+    def includingAdNetworks = gradle.ext.has("includingAdNetworks")
+            ? gradle.ext.get("includingAdNetworks") : null
+    def excludingAdNetworks = gradle.ext.has("excludingAdNetworks")
+            ? gradle.ext.get("excludingAdNetworks") : null
+    ArrayList<Project> resultProjects = new ArrayList<>()
+    project(":adapters").childProjects.values().forEach { project ->
+        if (includingAdNetworks == null
+                || includingAdNetworks.contains(project.name)) {
+            if (excludingAdNetworks == null
+                    || !excludingAdNetworks.contains(project.name)) {
+                resultProjects.add(project)
+            }
+        }
+    }
+    return resultProjects
+}
+
+task uploadEverythingToArtifactory() {
+    doLast {
+        if (!project.hasProperty("repo")) {
+            throw new GradleException("repo not provided")
+        }
+        if (!project.hasProperty("uname")) {
+            throw new GradleException("uname not provided")
+        }
+        if (!project.hasProperty("upassword")) {
+            throw new GradleException("upassword not provided")
+        }
+    }
+    collectAdapters().forEach { Project project ->
+        finalizedBy ":adapters:${project.name}:publishAdapterToArtifactory"
+    }
+    finalizedBy ':bidmachine:uploadAarToArtifactory'
 }

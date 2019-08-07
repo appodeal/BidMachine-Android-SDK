@@ -4,7 +4,14 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
-
+import com.explorestack.protobuf.openrtb.Openrtb;
+import com.explorestack.protobuf.openrtb.Request;
+import com.explorestack.protobuf.openrtb.Response;
+import io.bidmachine.core.Logger;
+import io.bidmachine.core.NetworkRequest;
+import io.bidmachine.protobuf.InitRequest;
+import io.bidmachine.protobuf.InitResponse;
+import io.bidmachine.utils.BMError;
 import org.apache.http.conn.ConnectTimeoutException;
 
 import java.io.InputStream;
@@ -13,17 +20,7 @@ import java.net.SocketTimeoutException;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
 
-import io.bidmachine.core.Logger;
-import io.bidmachine.core.NetworkRequest;
-import io.bidmachine.protobuf.InitRequest;
-import io.bidmachine.protobuf.InitResponse;
-import io.bidmachine.protobuf.openrtb.Openrtb;
-import io.bidmachine.protobuf.openrtb.Request;
-import io.bidmachine.protobuf.openrtb.Response;
-import io.bidmachine.utils.BMError;
-
-public class ApiRequest<RequestDataType, ResponseType>
-        extends NetworkRequest<RequestDataType, ResponseType, BMError> {
+class ApiRequest<RequestDataType, ResponseType> extends NetworkRequest<RequestDataType, ResponseType, BMError> {
 
     @VisibleForTesting
     static int REQUEST_TIMEOUT = 10 * 1000;
@@ -37,8 +34,7 @@ public class ApiRequest<RequestDataType, ResponseType>
     }
 
     @Override
-    protected BMError obtainError(URLConnection connection, @Nullable ResponseType adResponse,
-                                  int responseCode) {
+    protected BMError obtainError(URLConnection connection, @Nullable ResponseType adResponse, int responseCode) {
         if (responseCode == HttpURLConnection.HTTP_OK) {
             return null;
         }
@@ -46,8 +42,7 @@ public class ApiRequest<RequestDataType, ResponseType>
     }
 
     @Override
-    protected BMError obtainError(URLConnection connection, @Nullable InputStream errorStream,
-                                  int responseCode) {
+    protected BMError obtainError(URLConnection connection, @Nullable InputStream errorStream, int responseCode) {
         Logger.log("Request error (" + responseCode + "), headers:", connection.getHeaderFields());
         final String errorReason = connection.getHeaderField("ad-exchange-error-reason");
         final String errorMessage = connection.getHeaderField("ad-exchange-error-message");
@@ -158,7 +153,8 @@ public class ApiRequest<RequestDataType, ResponseType>
     public static class ApiInitDataBinder extends ApiDataBinder<InitRequest, InitResponse> {
 
         @Override
-        protected void prepareHeaders(NetworkRequest<InitRequest, InitResponse, BMError> networkRequest, URLConnection urlConnection) {
+        protected void prepareHeaders(NetworkRequest<InitRequest, InitResponse, BMError> networkRequest,
+                                      URLConnection urlConnection) {
             if (BuildConfig.DEBUG) {
                 urlConnection.setRequestProperty("Content-Type", "application/x-protobuf; messageType=\"bidmachine.protobuf.InitRequest\"");
             } else {
@@ -168,13 +164,17 @@ public class ApiRequest<RequestDataType, ResponseType>
 
         @Nullable
         @Override
-        protected byte[] obtainData(NetworkRequest<InitRequest, InitResponse, BMError> networkRequest, URLConnection urlConnection, @Nullable InitRequest initRequest) throws Exception {
+        protected byte[] obtainData(NetworkRequest<InitRequest, InitResponse, BMError> networkRequest,
+                                    URLConnection urlConnection,
+                                    @Nullable InitRequest initRequest) throws Exception {
             OrtbUtils.dump("Init request", initRequest);
             return initRequest != null ? initRequest.toByteArray() : null;
         }
 
         @Override
-        protected InitResponse createSuccessResult(NetworkRequest<InitRequest, InitResponse, BMError> networkRequest, URLConnection urlConnection, byte[] bytes) throws Exception {
+        protected InitResponse createSuccessResult(NetworkRequest<InitRequest, InitResponse, BMError> networkRequest,
+                                                   URLConnection urlConnection,
+                                                   byte[] bytes) throws Exception {
             return InitResponse.parseFrom(bytes);
         }
     }
@@ -194,7 +194,8 @@ public class ApiRequest<RequestDataType, ResponseType>
 
         @Override
         protected Response createSuccessResult(NetworkRequest<Request, Response, BMError> request,
-                                               URLConnection connection, byte[] resultData) throws Exception {
+                                               URLConnection connection,
+                                               byte[] resultData) throws Exception {
             final Openrtb openrtb = Openrtb.parseFrom(resultData);
             if (openrtb != null) {
                 //Debug response dump
@@ -207,7 +208,8 @@ public class ApiRequest<RequestDataType, ResponseType>
         @Nullable
         @Override
         protected byte[] obtainData(NetworkRequest<Request, Response, BMError> request,
-                                    URLConnection connection, @Nullable Request requestData) throws Exception {
+                                    URLConnection connection,
+                                    @Nullable Request requestData) throws Exception {
             final Openrtb.Builder openrtb = Openrtb.newBuilder();
             openrtb.setRequest(requestData);
             openrtb.setVer("3.0");

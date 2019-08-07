@@ -1,8 +1,8 @@
 package io.bidmachine;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-
 import io.bidmachine.core.Logger;
 
 public class BidMachine {
@@ -11,14 +11,40 @@ public class BidMachine {
     public static final String VERSION = BuildConfig.VERSION_NAME;
     public static final int VERSION_CODE = BuildConfig.VERSION_CODE;
 
+    static {
+        Logger.setTag(NAME);
+    }
+
     /**
      * Initialize BidMachine SDK
      *
      * @param context  - your application context
      * @param sellerId - your Seller Id
      */
-    public static void initialize(Context context, String sellerId) {
-        BidMachineImpl.get().initialize(context, sellerId);
+    public static void initialize(@NonNull Context context, @NonNull String sellerId) {
+        initialize(context, sellerId, null);
+    }
+
+    /**
+     * Initialize BidMachine SDK
+     *
+     * @param context  - your application context
+     * @param sellerId - your Seller Id
+     * @param callback - you {@link InitializationCallback}
+     */
+    public static void initialize(@NonNull Context context,
+                                  @NonNull String sellerId,
+                                  @Nullable InitializationCallback callback) {
+        BidMachineImpl.get().initialize(context, sellerId, callback);
+    }
+
+    /**
+     * Set BidMachine SDK endpoint
+     *
+     * @param url - BidMachine endpoint URL
+     */
+    public static void setEndpoint(@NonNull String url) {
+        BidMachineImpl.get().setEndpoint(url);
     }
 
     /**
@@ -28,6 +54,7 @@ public class BidMachine {
      */
     public static void setLoggingEnabled(boolean enabled) {
         Logger.setLoggingEnabled(enabled);
+        NetworkRegistry.setLoggingEnabled(enabled);
     }
 
     /**
@@ -54,7 +81,7 @@ public class BidMachine {
      *                      <a href="https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/Consent%20string%20and%20vendor%20list%20formats%20v1.1%20Final.md">Consent String Format</a>
      *                      in the <a href="https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework">Transparency and Consent Framework</a> technical specifications
      */
-    public static void setConsentConfig(boolean hasConsent, String consentString) {
+    public static void setConsentConfig(boolean hasConsent, @Nullable String consentString) {
         BidMachineImpl.get().getUserRestrictionParams().setConsentConfig(hasConsent, consentString);
     }
 
@@ -63,7 +90,7 @@ public class BidMachine {
      *
      * @param subject - Flag indicating if GDPR regulations apply. <a href="https://wikipedia.org/wiki/General_Data_Protection_Regulation">The  General Data Protection Regulation (GDPR)</a> is a regulation of the European Union
      */
-    public static void setSubjectToGDPR(Boolean subject) {
+    public static void setSubjectToGDPR(@Nullable Boolean subject) {
         BidMachineImpl.get().getUserRestrictionParams().setSubjectToGDPR(subject);
     }
 
@@ -72,8 +99,26 @@ public class BidMachine {
      *
      * @param coppa - Flag indicating if COPPA regulations apply. <a href="https://wikipedia.org/wiki/Children%27s_Online_Privacy_Protection_Act">The Children's Online Privacy Protection Act (COPPA)</a> was established by the U.S. Federal Trade Commission
      */
-    public static void setCoppa(Boolean coppa) {
+    public static void setCoppa(@Nullable Boolean coppa) {
         BidMachineImpl.get().getUserRestrictionParams().setCoppa(coppa);
+    }
+
+    /**
+     * Add 3rd party network configuration, which will be used for mediation, loading and displaying ads
+     *
+     * @param networkConfigs - Custom configuration object per network
+     */
+    public static void registerNetworks(@NonNull NetworkConfig... networkConfigs) {
+        NetworkRegistry.registerNetworks(networkConfigs);
+    }
+
+    /**
+     * Add 3rd party network configuration, which will be used for mediation, loading and displaying ads
+     *
+     * @param jsonData - Json array which contains info about required networks
+     */
+    public static void registerNetworks(@NonNull String jsonData) {
+        NetworkRegistry.registerNetworks(jsonData);
     }
 
 }

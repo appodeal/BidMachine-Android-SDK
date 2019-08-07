@@ -28,13 +28,13 @@ public class SessionTrackerTest {
 
     @Test
     public void allTypeCountTracking() {
-        OrtbAd[] testRequests = new OrtbAd[]{
+        BidMachineAd[] testRequests = new BidMachineAd[]{
                 new BannerAd(RuntimeEnvironment.application),
                 new NativeAd(RuntimeEnvironment.application),
                 new InterstitialAd(RuntimeEnvironment.application),
                 new RewardedAd(RuntimeEnvironment.application)};
 
-        for (OrtbAd request : testRequests) {
+        for (BidMachineAd request : testRequests) {
             for (TrackEventType type : TrackEventType.values()) {
                 tracker.trackEventFinish(request, type, request.getType(), null);
             }

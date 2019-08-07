@@ -6,19 +6,21 @@ import android.support.annotation.Nullable;
 import com.explorestack.iab.utils.Utils;
 import com.explorestack.iab.vast.*;
 import com.explorestack.iab.vast.activity.VastActivity;
+import io.bidmachine.unified.UnifiedFullscreenAdCallback;
 import io.bidmachine.utils.BMError;
 
 class VastFullScreenAdapterListener implements VastRequestListener, VastActivityListener {
 
-    private VastFullScreenAdObject adObject;
+    @NonNull
+    private UnifiedFullscreenAdCallback callback;
 
-    VastFullScreenAdapterListener(@NonNull VastFullScreenAdObject adObject) {
-        this.adObject = adObject;
+    VastFullScreenAdapterListener(@NonNull UnifiedFullscreenAdCallback callback) {
+        this.callback = callback;
     }
 
     @Override
     public void onVastLoaded(@NonNull VastRequest vastRequest) {
-        adObject.processLoadSuccess();
+        callback.onAdLoaded();
     }
 
     @Override
@@ -26,11 +28,11 @@ class VastFullScreenAdapterListener implements VastRequestListener, VastActivity
         //TODO: implement vast error mapping
         switch (error) {
             case VastError.ERROR_CODE_NO_NETWORK: {
-                adObject.processLoadFail(BMError.noFillError(BMError.Connection));
+                callback.onAdLoadFailed(BMError.noFillError(BMError.Connection));
                 break;
             }
             default: {
-                adObject.processLoadFail(BMError.noFillError(null));
+                callback.onAdLoadFailed(BMError.noFillError(null));
                 break;
             }
         }
@@ -38,7 +40,7 @@ class VastFullScreenAdapterListener implements VastRequestListener, VastActivity
 
     @Override
     public void onVastShown(@NonNull VastActivity vastActivity, @NonNull VastRequest vastRequest) {
-        adObject.processShown();
+        callback.onAdShown();
     }
 
     @Override
@@ -46,7 +48,7 @@ class VastFullScreenAdapterListener implements VastRequestListener, VastActivity
                             @NonNull VastRequest vastRequest,
                             @NonNull final VastClickCallback vastClickCallback,
                             @Nullable String url) {
-        adObject.processClicked();
+        callback.onAdClicked();
         if (url != null) {
             Utils.openBrowser(vastActivity, url, new Runnable() {
                 @Override
@@ -61,12 +63,12 @@ class VastFullScreenAdapterListener implements VastRequestListener, VastActivity
 
     @Override
     public void onVastComplete(@NonNull VastActivity vastActivity, @NonNull VastRequest vastRequest) {
-        adObject.processFinished();
+        callback.onAdFinished();
     }
 
     @Override
     public void onVastDismiss(@NonNull VastActivity vastActivity, @Nullable VastRequest vastRequest, boolean finished) {
-        adObject.processClosed(finished);
+        callback.onAdClosed();
     }
 
 }

@@ -5,11 +5,13 @@ import android.support.annotation.Nullable;
 
 import java.util.List;
 
-public interface TrackingObject {
+public abstract class TrackingObject {
 
-    Object getTrackingKey();
+    public abstract Object getTrackingKey();
 
     @Nullable
-    List<String> getTrackingUrls(@NonNull TrackEventType eventType);
+    List<String> getTrackingUrls(@NonNull TrackEventType eventType) {
+        return null;
+    }
 
 }

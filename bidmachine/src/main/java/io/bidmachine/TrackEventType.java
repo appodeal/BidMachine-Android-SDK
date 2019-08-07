@@ -1,10 +1,9 @@
 package io.bidmachine;
 
 import android.support.annotation.Nullable;
-
+import com.explorestack.protobuf.adcom.EventType;
 import io.bidmachine.protobuf.ActionType;
 import io.bidmachine.protobuf.EventTypeExtended;
-import io.bidmachine.protobuf.adcom.EventType;
 
 public enum TrackEventType {
 
@@ -42,7 +41,16 @@ public enum TrackEventType {
             ActionType.ACTION_TYPE_DESTROYING_VALUE),
     TrackingError(-1,
             EventTypeExtended.EVENT_TYPE_EXTENDED_TRACKING_ERROR_VALUE,
-            EventTypeExtended.EVENT_TYPE_EXTENDED_TRACKING_ERROR_VALUE);
+            EventTypeExtended.EVENT_TYPE_EXTENDED_TRACKING_ERROR_VALUE),
+    HeaderBiddingNetworksPrepare(-1,
+            EventTypeExtended.EVENT_TYPE_EXTENDED_ALL_HB_NETWORKS_PREPARED_VALUE,
+            EventTypeExtended.EVENT_TYPE_EXTENDED_ALL_HB_NETWORKS_PREPARED_VALUE),
+    HeaderBiddingNetworkInitialize(-1,
+            EventTypeExtended.EVENT_TYPE_EXTENDED_HB_NETWORK_INITIALIZED_VALUE,
+            ActionType.ACTION_TYPE_HB_INITIALIZING_VALUE),
+    HeaderBiddingNetworkPrepare(-1,
+            EventTypeExtended.EVENT_TYPE_EXTENDED_HB_NETWORK_PREPARED_VALUE,
+            ActionType.ACTION_TYPE_HB_PREPARING_VALUE);
 
     private int ortbValue;
     private int ortbExtValue;

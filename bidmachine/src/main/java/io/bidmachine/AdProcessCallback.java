@@ -6,11 +6,11 @@ public interface AdProcessCallback {
 
     void processLoadSuccess();
 
-    void processLoadFail(final BMError error);
+    void processLoadFail(BMError error);
 
     void processShown();
 
-    void processShowFail(final BMError error);
+    void processShowFail(BMError error);
 
     void processClicked();
 
@@ -18,10 +18,12 @@ public interface AdProcessCallback {
 
     void processFinished();
 
-    void processClosed(final boolean finished);
+    void processClosed();
 
     void processExpired();
 
     void processDestroy();
+
+    void log(String message);
 
 }

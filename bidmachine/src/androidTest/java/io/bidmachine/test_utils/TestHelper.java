@@ -6,13 +6,12 @@ import android.graphics.Rect;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import com.explorestack.protobuf.adcom.Ad;
+import com.explorestack.protobuf.openrtb.Response;
+import com.google.protobuf.Any;
 
 import java.lang.reflect.Field;
 import java.util.Map;
-
-import io.bidmachine.protobuf.Any;
-import io.bidmachine.protobuf.adcom.Ad;
-import io.bidmachine.protobuf.openrtb.Response;
 
 public class TestHelper {
 

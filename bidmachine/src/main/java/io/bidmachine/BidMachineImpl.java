@@ -10,6 +10,16 @@ import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
 import android.util.Base64;
+import io.bidmachine.core.AdvertisingIdClientInfo;
+import io.bidmachine.core.Logger;
+import io.bidmachine.core.NetworkRequest;
+import io.bidmachine.core.Utils;
+import io.bidmachine.models.DataRestrictions;
+import io.bidmachine.models.TargetingInfo;
+import io.bidmachine.protobuf.InitRequest;
+import io.bidmachine.protobuf.InitResponse;
+import io.bidmachine.utils.ActivityHelper;
+import io.bidmachine.utils.BMError;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -17,16 +27,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import io.bidmachine.core.AdvertisingIdClientInfo;
-import io.bidmachine.core.Logger;
-import io.bidmachine.core.NetworkRequest;
-import io.bidmachine.core.Utils;
-import io.bidmachine.protobuf.InitRequest;
-import io.bidmachine.protobuf.InitResponse;
-import io.bidmachine.utils.ActivityHelper;
-import io.bidmachine.utils.BMError;
-
-final class BidMachineImpl implements TrackingObject {
+final class BidMachineImpl {
 
     @SuppressLint("StaticFieldLeak")
     private static volatile BidMachineImpl instance;
@@ -57,13 +58,13 @@ final class BidMachineImpl implements TrackingObject {
 
     @VisibleForTesting
     static String DEF_INIT_URL = BuildConfig.BM_API_URL + "/init";
-    private static final String PREF_INIT_DATA = "initData";
     private static final String DEF_AUCTION_URL = BuildConfig.BM_API_URL + "/openrtb3/auction";
+    private static final String PREF_INIT_DATA = "initData";
 
     @Nullable
     private Context appContext;
     @Nullable
-    private SessionTrackerImpl sessionTracker;
+    private SessionTracker sessionTracker;
     @Nullable
     private String sellerId;
     @NonNull
@@ -85,6 +86,8 @@ final class BidMachineImpl implements TrackingObject {
     ApiRequest<InitRequest, InitResponse> currentInitRequest;
 
     @VisibleForTesting
+    String currentInitUrl = DEF_INIT_URL;
+    @VisibleForTesting
     String currentAuctionUrl = DEF_AUCTION_URL;
     @VisibleForTesting
     private Map<TrackEventType, List<String>> trackingEventTypes =
@@ -99,12 +102,31 @@ final class BidMachineImpl implements TrackingObject {
     private final Runnable rescheduleInitRunnable = new Runnable() {
         @Override
         public void run() {
-            requestInitData(appContext, sellerId);
+            requestInitData(appContext, sellerId, null);
         }
     };
 
-    synchronized void initialize(Context context, String sellerId) {
-        if (isInitialized) return;
+    private final TrackingObject trackingObject = new TrackingObject() {
+        @Override
+        public Object getTrackingKey() {
+            return BidMachineImpl.class.getSimpleName();
+        }
+    };
+
+    synchronized void initialize(@NonNull Context context,
+                                 @NonNull String sellerId,
+                                 @Nullable InitializationCallback callback) {
+        if (isInitialized) {
+            return;
+        }
+        if (context == null) {
+            Logger.log("Initialization fail: Context not provided");
+            return;
+        }
+        if (TextUtils.isEmpty(sellerId)) {
+            Logger.log("Initialization fail: Seller id not provided");
+            return;
+        }
         this.sellerId = sellerId;
         appContext = context.getApplicationContext();
         sessionTracker = new SessionTrackerImpl();
@@ -116,21 +138,27 @@ final class BidMachineImpl implements TrackingObject {
             }
         });
         loadStoredInitResponse(context);
-        requestInitData(context, sellerId);
+        requestInitData(context, sellerId, callback);
         topActivity = ActivityHelper.getTopActivity();
         ((Application) context.getApplicationContext())
                 .registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks());
+        final DataRestrictions dataRestrictions = getUserRestrictionParams();
+        final TargetingInfo targetingInfo = new TargetingInfoImpl(dataRestrictions, getTargetingParams());
+        NetworkRegistry.initializeNetworks(
+                new SimpleContextProvider(context),
+                new SimpleUnifiedAdRequestParams(dataRestrictions, targetingInfo));
         isInitialized = true;
     }
 
-    private void requestInitData(final Context context, String sellerId) {
+    private void requestInitData(@NonNull final Context context,
+                                 @NonNull final String sellerId,
+                                 @Nullable final InitializationCallback callback) {
         if (currentInitRequest != null) return;
-        SessionTracker.eventStart(this, TrackEventType.InitLoading, null);
+        BidMachineEvents.eventStart(trackingObject, TrackEventType.InitLoading, null);
         currentInitRequest = new ApiRequest.Builder<InitRequest, InitResponse>()
-                .url(DEF_INIT_URL)
+                .url(currentInitUrl)
                 .setDataBinder(new ApiRequest.ApiInitDataBinder())
-                .setRequestData(OrtbUtils.obtainInitRequest(context, sellerId, targetingParams,
-                        UserRestrictionParams.createRestrictions(userRestrictionParams)))
+                .setRequestData(OrtbUtils.obtainInitRequest(context, sellerId, targetingParams, userRestrictionParams))
                 .setCallback(new NetworkRequest.Callback<InitResponse, BMError>() {
                     @Override
                     public void onSuccess(@Nullable InitResponse result) {
@@ -141,7 +169,10 @@ final class BidMachineImpl implements TrackingObject {
                         }
                         initRequestDelayMs = 0;
                         Utils.cancelBackgroundThreadTask(rescheduleInitRunnable);
-                        SessionTracker.eventFinish(BidMachineImpl.this,
+                        if (callback != null) {
+                            callback.onInitialized();
+                        }
+                        BidMachineEvents.eventFinish(trackingObject,
                                 TrackEventType.InitLoading,
                                 null,
                                 null);
@@ -160,8 +191,12 @@ final class BidMachineImpl implements TrackingObject {
                         }
                         Logger.log("reschedule init request (" + initRequestDelayMs + ")");
                         Utils.onBackgroundThread(rescheduleInitRunnable, initRequestDelayMs);
-                        SessionTracker.eventFinish(
-                                BidMachineImpl.this,
+                        // According requirements we should notify that SDK is initialized event if init request fail
+                        if (callback != null) {
+                            callback.onInitialized();
+                        }
+                        BidMachineEvents.eventFinish(
+                                trackingObject,
                                 TrackEventType.InitLoading,
                                 null,
                                 result);
@@ -178,12 +213,12 @@ final class BidMachineImpl implements TrackingObject {
         OrtbUtils.prepareEvents(trackingEventTypes, response.getEventList());
     }
 
-    private void storeInitResponse(Context context, InitResponse response) {
+    private void storeInitResponse(@NonNull Context context, @NonNull InitResponse response) {
         SharedPreferences preferences = context.getSharedPreferences("BidMachinePref", Context.MODE_PRIVATE);
         preferences.edit().putString(PREF_INIT_DATA, Base64.encodeToString(response.toByteArray(), Base64.DEFAULT)).apply();
     }
 
-    private void loadStoredInitResponse(Context context) {
+    private void loadStoredInitResponse(@NonNull Context context) {
         SharedPreferences preferences = context.getSharedPreferences("BidMachinePref", Context.MODE_PRIVATE);
         if (preferences.contains(PREF_INIT_DATA)) {
             try {
@@ -196,14 +231,8 @@ final class BidMachineImpl implements TrackingObject {
         }
     }
 
-    @Override
-    public Object getTrackingKey() {
-        return getClass().getSimpleName();
-    }
-
     @Nullable
-    @Override
-    public List<String> getTrackingUrls(@NonNull TrackEventType eventType) {
+    List<String> getTrackingUrls(@NonNull TrackEventType eventType) {
         return trackingEventTypes.get(eventType);
     }
 
@@ -220,12 +249,7 @@ final class BidMachineImpl implements TrackingObject {
     }
 
     @Nullable
-    Context getAppContext() {
-        return appContext;
-    }
-
-    @Nullable
-    SessionTrackerImpl getSessionTracker() {
+    SessionTracker getSessionTracker() {
         return sessionTracker;
     }
 
@@ -265,6 +289,19 @@ final class BidMachineImpl implements TrackingObject {
     @NonNull
     DeviceParams getDeviceParams() {
         return deviceParams;
+    }
+
+    void setEndpoint(@NonNull String url) {
+        if (isInitialized) {
+            Logger.log("Can't change endpoint url after initialization was triggered");
+            return;
+        }
+        if (TextUtils.isEmpty(url)) {
+            Logger.log("Endpoint empty or null, skip setting...");
+            return;
+        }
+        currentInitUrl = url + "/init";
+        currentAuctionUrl = url + "/openrtb3/auction";
     }
 
     String getAuctionUrl() {

@@ -10,6 +10,7 @@ android {
         targetSdkVersion androidTargetSdkVersion
         versionCode 100100022
         versionName "1.0.1"
+        multiDexEnabled true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
@@ -58,6 +59,11 @@ dependencies {
         exclude module: 'support-v7'
     }
 
+    collectAdapters().forEach { project ->
+        println("register dependency: ${project.name}")
+        implementation(project)
+    }
+
     //for play service < 15
     //    implementation("com.google.android.gms:play-services-basement:15.0.0") {
     //        exclude module: 'support-v4'
@@ -70,6 +76,7 @@ dependencies {
     //        exclude module: 'support-v7'
     //    }
 
+    implementation 'com.android.support:multidex:1.0.3'
     implementation 'org.jsoup:jsoup:1.11.3'
     implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation 'com.android.support:design:28.0.0'

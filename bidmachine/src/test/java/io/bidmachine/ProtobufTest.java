@@ -1,8 +1,7 @@
 package io.bidmachine;
 
-import io.bidmachine.protobuf.Any;
-import io.bidmachine.protobuf.adcom.Context;
-
+import com.explorestack.protobuf.adcom.Context;
+import com.google.protobuf.Any;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

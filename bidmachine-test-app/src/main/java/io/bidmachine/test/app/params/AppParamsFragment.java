@@ -14,7 +14,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
-
+import io.bidmachine.test.app.ParamsHelper;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
@@ -22,10 +22,6 @@ import org.jsoup.nodes.Document;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.util.LinkedHashSet;
-import java.util.Set;
-
-import io.bidmachine.test.app.ParamsHelper;
 
 public class AppParamsFragment extends BaseParamsFragment {
 
@@ -76,6 +72,14 @@ public class AppParamsFragment extends BaseParamsFragment {
     @Override
     protected void prepareView(Context context, ViewGroup parent, final ParamsHelper paramsHelper) {
         bindParamWidget(context, parent, null,
+                new TextInputParamWidget("Init url", paramsHelper.getInitUrl(),
+                        new ParamWidget.ChangeTracker<String>() {
+                            @Override
+                            public void onChanged(ParamWidget widget, String param) {
+                                paramsHelper.setInitUrl(param);
+                            }
+                        }));
+        bindParamWidget(context, parent, null,
                 new TextInputParamWidget("Seller Id", paramsHelper.getSellerId(),
                         new ParamWidget.ChangeTracker<String>() {
                             @Override
@@ -115,7 +119,6 @@ public class AppParamsFragment extends BaseParamsFragment {
                                 paramsHelper.setStoreUrl(param);
                             }
                         }));
-
     }
 
     private void fetchInfo(View view, final boolean force) {

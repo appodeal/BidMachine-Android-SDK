@@ -1,12 +1,11 @@
 package io.bidmachine.displays;
 
-import android.content.Context;
 import android.graphics.Point;
+import io.bidmachine.unified.UnifiedAdRequestParams;
+import io.bidmachine.ContextProvider;
 
-import io.bidmachine.AdRequest;
+interface ISizableDisplayPlacement<UnifiedAdRequestParamsType extends UnifiedAdRequestParams> {
 
-public interface ISizableDisplayPlacement<AdRequestType extends AdRequest> {
-
-    Point getSize(Context context, AdRequestType adRequestType);
+    Point getSize(ContextProvider contextProvider, UnifiedAdRequestParamsType adRequestParams);
 
 }

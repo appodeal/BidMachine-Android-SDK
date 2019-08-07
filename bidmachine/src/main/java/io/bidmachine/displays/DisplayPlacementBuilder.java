@@ -1,38 +1,37 @@
 package io.bidmachine.displays;
 
-import android.content.Context;
 import android.graphics.Point;
 import android.support.annotation.NonNull;
-
-import java.util.Arrays;
-
-import io.bidmachine.AdContentType;
-import io.bidmachine.AdRequest;
-import io.bidmachine.Constants;
-import io.bidmachine.adapters.OrtbAdapter;
+import android.text.TextUtils;
+import com.explorestack.protobuf.adcom.*;
+import com.explorestack.protobuf.openrtb.Response;
+import com.google.protobuf.Any;
+import com.google.protobuf.Message;
+import io.bidmachine.*;
 import io.bidmachine.core.Utils;
 import io.bidmachine.models.AdObjectParams;
-import io.bidmachine.protobuf.Message;
-import io.bidmachine.protobuf.adcom.Ad;
-import io.bidmachine.protobuf.adcom.ApiFramework;
-import io.bidmachine.protobuf.adcom.Placement;
-import io.bidmachine.protobuf.adcom.PlacementPosition;
-import io.bidmachine.protobuf.adcom.SizeUnit;
-import io.bidmachine.protobuf.openrtb.Response;
+import io.bidmachine.unified.UnifiedAdRequestParams;
 
-public class DisplayPlacementBuilder<AdRequestType extends AdRequest>
-        extends PlacementBuilder<AdRequestType>
-        implements ISizableDisplayPlacement<AdRequestType> {
+import java.util.Arrays;
+import java.util.Collection;
+
+public class DisplayPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAdRequestParams>
+        extends PlacementBuilder<UnifiedAdRequestParamsType>
+        implements ISizableDisplayPlacement<UnifiedAdRequestParamsType> {
 
     private boolean isFullscreen;
 
-    public DisplayPlacementBuilder(boolean fullscreen) {
-        super(AdContentType.Static);
+    public DisplayPlacementBuilder(boolean fullscreen, boolean supportHeaderBidding) {
+        super(AdContentType.Static, supportHeaderBidding);
         this.isFullscreen = fullscreen;
     }
 
     @Override
-    public Message.Builder buildPlacement(android.content.Context context, AdRequestType adRequest, OrtbAdapter adapter) {
+    public void createPlacement(@NonNull ContextProvider contextProvider,
+                                @NonNull UnifiedAdRequestParamsType adRequestParams,
+                                @NonNull AdsType adsType,
+                                @NonNull Collection<NetworkConfig> networkConfigs,
+                                @NonNull PlacementCreateCallback callback) {
         Placement.DisplayPlacement.Builder builder = Placement.DisplayPlacement.newBuilder();
         builder.addApi(ApiFramework.API_FRAMEWORK_MRAID_2_0);
         builder.setUnit(SizeUnit.SIZE_UNIT_DIPS);
@@ -41,34 +40,43 @@ public class DisplayPlacementBuilder<AdRequestType extends AdRequest>
             builder.setInstl(true);
             builder.setPos(PlacementPosition.PLACEMENT_POSITION_FULLSCREEN);
         }
-
-        Point displaySize = getSize(context, adRequest);
+        Point displaySize = getSize(contextProvider, adRequestParams);
         builder.setW(displaySize.x);
         builder.setH(displaySize.y);
-        return builder;
+        Message.Builder headerBiddingPlacement =
+                createHeaderBiddingPlacement(contextProvider, adRequestParams, adsType, networkConfigs);
+        if (headerBiddingPlacement != null) {
+            builder.addExt(Any.pack(headerBiddingPlacement.build()));
+        }
+        callback.onCreated(builder);
     }
 
     @Override
-    public Point getSize(Context context, AdRequestType adRequestType) {
-        return Utils.getScreenSize(context);
+    public Point getSize(ContextProvider contextProvider, UnifiedAdRequestParamsType adRequestParams) {
+        return Utils.getScreenSize(contextProvider.getContext());
     }
 
     @Override
-    public boolean isMatch(Ad ad) {
-        return ad.hasDisplay();
-    }
-
-    @Override
-    public AdObjectParams createAdObjectParams(@NonNull Context context,
-                                               @NonNull AdRequestType adRequest,
+    public AdObjectParams createAdObjectParams(@NonNull ContextProvider contextProvider,
+                                               @NonNull UnifiedAdRequestParamsType adRequest,
                                                @NonNull Response.Seatbid seatbid,
                                                @NonNull Response.Seatbid.Bid bid,
                                                @NonNull Ad ad) {
-        Ad.Display display = ad.getDisplay();
-        DisplayAdObjectParams params = new DisplayAdObjectParams(seatbid, bid, ad);
-        params.setCreativeAdm(display.getAdm());
-        params.setWidth(display.getW());
-        params.setHeight(display.getH());
+        if (!ad.hasDisplay()) {
+            return null;
+        }
+        AdObjectParams params = createHeaderBiddingAdObjectParams(contextProvider, adRequest, seatbid, bid, ad);
+        if (params == null) {
+            Ad.Display display = ad.getDisplay();
+            if (TextUtils.isEmpty(display.getAdm())) {
+                return null;
+            }
+            DisplayAdObjectParams displayParams = new DisplayAdObjectParams(seatbid, bid, ad);
+            displayParams.setCreativeAdm(display.getAdm());
+            displayParams.setWidth(display.getW());
+            displayParams.setHeight(display.getH());
+            params = displayParams;
+        }
         return params;
     }
 

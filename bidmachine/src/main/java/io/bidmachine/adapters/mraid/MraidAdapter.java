@@ -2,16 +2,19 @@ package io.bidmachine.adapters.mraid;
 
 import com.explorestack.iab.mraid.internal.MRAIDLog;
 import com.explorestack.iab.vast.VideoType;
-import io.bidmachine.FullScreenAdObject;
-import io.bidmachine.ViewAdObject;
-import io.bidmachine.adapters.OrtbAdapter;
-import io.bidmachine.displays.DisplayAdObjectParams;
-import io.bidmachine.displays.FullScreenAdObjectParams;
+import io.bidmachine.AdsType;
+import io.bidmachine.BuildConfig;
+import io.bidmachine.NetworkAdapter;
+import io.bidmachine.unified.UnifiedBannerAd;
+import io.bidmachine.unified.UnifiedFullscreenAd;
 
-public class MraidAdapter extends OrtbAdapter {
+public class MraidAdapter extends NetworkAdapter {
 
     public MraidAdapter() {
-        super("mraid", "2.0");
+        super("mraid",
+                "2.0",
+                BuildConfig.VERSION_NAME + ".1",
+                new AdsType[]{AdsType.Banner, AdsType.Interstitial, AdsType.Rewarded});
     }
 
     @Override
@@ -20,18 +23,18 @@ public class MraidAdapter extends OrtbAdapter {
     }
 
     @Override
-    public ViewAdObject createBannerAdObject(DisplayAdObjectParams adObjectParams) {
-        return new MraidViewAdObject(adObjectParams);
+    public UnifiedBannerAd createBanner() {
+        return new MraidBannerAd();
     }
 
     @Override
-    public FullScreenAdObject createInterstitialAdObject(FullScreenAdObjectParams adObjectParams) {
-        return new MraidFullScreenAdObject<>(VideoType.NonRewarded, adObjectParams);
+    public UnifiedFullscreenAd createInterstitial() {
+        return new MraidFullScreenAd(VideoType.NonRewarded);
     }
 
     @Override
-    public FullScreenAdObject createRewardedAdObject(FullScreenAdObjectParams adObjectParams) {
-        return new MraidFullScreenAdObject<>(VideoType.Rewarded, adObjectParams);
+    public UnifiedFullscreenAd createRewarded() {
+        return new MraidFullScreenAd(VideoType.Rewarded);
     }
 
 }

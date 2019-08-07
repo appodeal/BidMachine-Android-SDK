@@ -2,25 +2,30 @@ package io.bidmachine.interstitial;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import io.bidmachine.*;
+import io.bidmachine.models.AdObjectParams;
+import io.bidmachine.unified.UnifiedFullscreenAd;
+import io.bidmachine.ContextProvider;
 
-import io.bidmachine.AdsType;
-import io.bidmachine.FullScreenAd;
-import io.bidmachine.FullScreenAdObject;
+public final class InterstitialAd
+        extends FullScreenAd<InterstitialAd, InterstitialRequest, FullScreenAdObject<InterstitialRequest>, InterstitialListener> {
 
-public final class InterstitialAd extends FullScreenAd<
-        InterstitialAd,
-        InterstitialRequest,
-        FullScreenAdObject<InterstitialAd>,
-        InterstitialListener> {
-
-    public InterstitialAd(Context context) {
-        super(context);
+    public InterstitialAd(@NonNull Context context) {
+        super(context, AdsType.Interstitial);
     }
 
-    @NonNull
     @Override
-    protected AdsType getType() {
-        return AdsType.Interstitial;
+    protected FullScreenAdObject<InterstitialRequest> createAdObject(
+            @NonNull ContextProvider contextProvider,
+            @NonNull InterstitialRequest adRequest,
+            @NonNull NetworkAdapter adapter,
+            @NonNull AdObjectParams adObjectParams,
+            @NonNull AdProcessCallback processCallback
+    ) {
+        UnifiedFullscreenAd unifiedAd = adapter.createInterstitial();
+        if (unifiedAd == null) {
+            return null;
+        }
+        return new FullScreenAdObject<>(contextProvider, processCallback, adRequest, adObjectParams, unifiedAd);
     }
-
 }

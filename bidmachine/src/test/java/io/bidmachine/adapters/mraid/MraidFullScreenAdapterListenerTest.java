@@ -1,9 +1,7 @@
 package io.bidmachine.adapters.mraid;
 
 import android.content.Context;
-import com.explorestack.iab.vast.VideoType;
 import io.bidmachine.BidMachine;
-import io.bidmachine.displays.FullScreenAdObjectParams;
 import io.bidmachine.rewarded.RewardedAd;
 import io.bidmachine.rewarded.RewardedListener;
 import io.bidmachine.test_utils.RobolectricHandlerFixer;
@@ -23,7 +21,7 @@ public class MraidFullScreenAdapterListenerTest {
 
     private RewardedAd rewardedVideoAd;
     private RewardedListener rewardedVideoListener;
-    private MraidFullScreenAdObject<RewardedAd> mraidFullScreenAdObject;
+    private MraidFullScreenAd mraidFullScreenAd;
     private MraidFullScreenAdapterListener mraidFullScreenAdapterListener;
 
     @Before
@@ -33,9 +31,9 @@ public class MraidFullScreenAdapterListenerTest {
         rewardedVideoListener = mock(RewardedListener.class);
         rewardedVideoAd = new RewardedAd(context);
         rewardedVideoAd.setListener(rewardedVideoListener);
-        mraidFullScreenAdObject = spy(new MraidFullScreenAdObject<RewardedAd>(VideoType.Rewarded, mock(FullScreenAdObjectParams.class)));
-        mraidFullScreenAdObject.attachAd(rewardedVideoAd);
-        mraidFullScreenAdapterListener = new MraidFullScreenAdapterListener(mraidFullScreenAdObject);
+        mraidFullScreenAd = spy(new MraidFullScreenAd<RewardedAd>(Video.Type.REWARDED, mock(FullScreenAdObjectParams.class)));
+        mraidFullScreenAd.attachAd(rewardedVideoAd);
+        mraidFullScreenAdapterListener = new MraidFullScreenAdapterListener(mraidFullScreenAd);
 
         RobolectricHandlerFixer robolectricHandlerFixer = new RobolectricHandlerFixer();
         robolectricHandlerFixer.start();
@@ -45,7 +43,7 @@ public class MraidFullScreenAdapterListenerTest {
     public void mraidInterstitialLoaded() {
         mraidFullScreenAdapterListener.mraidInterstitialLoaded(null);
 
-        verify(mraidFullScreenAdObject).processLoadSuccess();
+        verify(mraidFullScreenAd).processLoadSuccess();
         verify(rewardedVideoListener).onAdLoaded(rewardedVideoAd);
     }
 
@@ -53,7 +51,7 @@ public class MraidFullScreenAdapterListenerTest {
     public void mraidInterstitialShow() {
         mraidFullScreenAdapterListener.mraidInterstitialShow(null);
 
-        verify(mraidFullScreenAdObject).processShown();
+        verify(mraidFullScreenAd).processShown();
         verify(rewardedVideoListener).onAdShown(rewardedVideoAd);
     }
 
@@ -61,7 +59,7 @@ public class MraidFullScreenAdapterListenerTest {
     public void mraidInterstitialHide() {
         mraidFullScreenAdapterListener.mraidInterstitialHide(null);
 
-        verify(mraidFullScreenAdObject).processClosed(true);
+        verify(mraidFullScreenAd).processClosed(true);
         verify(rewardedVideoListener).onAdClosed(rewardedVideoAd, true);
     }
 
@@ -70,7 +68,7 @@ public class MraidFullScreenAdapterListenerTest {
         mraidFullScreenAdapterListener.mraidInterstitialNoFill(null);
 
         BMError error = BMError.noFillError(null);
-        verify(mraidFullScreenAdObject).processLoadFail(error);
+        verify(mraidFullScreenAd).processLoadFail(error);
         verify(rewardedVideoListener).onAdLoadFailed(rewardedVideoAd, error);
     }
 
@@ -78,7 +76,7 @@ public class MraidFullScreenAdapterListenerTest {
     public void mraidNativeFeatureOpenBrowser() {
         mraidFullScreenAdapterListener.mraidNativeFeatureOpenBrowser(null, null);
 
-        verify(mraidFullScreenAdObject).processClicked();
+        verify(mraidFullScreenAd).processClicked();
         verify(rewardedVideoListener).onAdClicked(rewardedVideoAd);
     }
 

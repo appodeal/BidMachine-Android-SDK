@@ -1,48 +1,36 @@
 package io.bidmachine;
 
 import android.support.annotation.NonNull;
-
+import com.explorestack.protobuf.adcom.Context;
+import io.bidmachine.models.DataRestrictions;
 import io.bidmachine.models.IUserRestrictionsParams;
 import io.bidmachine.models.RequestParams;
-import io.bidmachine.models.RequestParamsRestrictions;
-import io.bidmachine.protobuf.adcom.Context;
-import io.bidmachine.protobuf.adcom.Context.Regs;
 
 import static io.bidmachine.core.Utils.oneOf;
 
-final class UserRestrictionParams extends RequestParams
-        implements IUserRestrictionsParams<UserRestrictionParams> {
+final class UserRestrictionParams
+        extends RequestParams<UserRestrictionParams>
+        implements IUserRestrictionsParams<UserRestrictionParams>, DataRestrictions {
 
     private String gdprConsentString;
     private Boolean subjectToGDPR;
-    private Boolean hasCoppa;
     private Boolean hasConsent;
+    private Boolean hasCoppa;
 
-    private Boolean hasCoppa() {
-        return hasCoppa;
+    @Override
+    public void merge(@NonNull UserRestrictionParams instance) {
+        gdprConsentString = oneOf(gdprConsentString, instance.gdprConsentString);
+        subjectToGDPR = oneOf(subjectToGDPR, instance.subjectToGDPR);
+        hasConsent = oneOf(hasConsent, instance.hasConsent);
+        hasCoppa = oneOf(hasCoppa, instance.hasCoppa);
     }
 
-    private Boolean hasConsent() {
-        return hasConsent;
+    void build(@NonNull Context.Regs.Builder builder) {
+        builder.setGdpr(subjectToGDPR != null && subjectToGDPR);
+        builder.setCoppa(hasCoppa != null && hasCoppa);
     }
 
-    private Boolean subjectToGDPR() {
-        return subjectToGDPR;
-    }
-
-    void build(@NonNull android.content.Context context,
-               @NonNull Regs.Builder builder,
-               @NonNull UserRestrictionParams defaults,
-               @NonNull RequestParamsRestrictions restrictions) {
-        builder.setGdpr(oneOf(subjectToGDPR, defaults.subjectToGDPR, false));
-        builder.setCoppa(oneOf(hasCoppa, defaults.hasCoppa, false));
-    }
-
-    void build(@NonNull android.content.Context context,
-               @NonNull Context.User.Builder builder,
-               @NonNull UserRestrictionParams defaults,
-               @NonNull RequestParamsRestrictions restrictions) {
-        final String gdprConsentString = oneOf(this.gdprConsentString, defaults.gdprConsentString);
+    void build(@NonNull Context.User.Builder builder) {
         if (gdprConsentString != null) {
             builder.setConsent(gdprConsentString);
         }
@@ -67,39 +55,56 @@ final class UserRestrictionParams extends RequestParams
         return this;
     }
 
-    static RequestParamsRestrictions createRestrictions(final UserRestrictionParams userRestrictionParams) {
-        final boolean hasCoppa = oneOf(userRestrictionParams.hasCoppa(),
-                BidMachineImpl.get().getUserRestrictionParams().hasCoppa(), false);
+    private boolean subjectToGDPR() {
+        return subjectToGDPR != null && subjectToGDPR;
+    }
 
-        final boolean subjectToGDPR = oneOf(userRestrictionParams.subjectToGDPR(),
-                BidMachineImpl.get().getUserRestrictionParams().subjectToGDPR(), false);
+    private boolean hasConsent() {
+        return hasConsent != null && hasConsent;
+    }
 
-        final boolean hasConsent = oneOf(userRestrictionParams.hasConsent(),
-                BidMachineImpl.get().getUserRestrictionParams().hasConsent(), false);
+    private boolean hasCoppa() {
+        return hasCoppa != null && hasCoppa;
+    }
 
-        final boolean underGdprRestrictions = subjectToGDPR && !hasConsent;
+    @Override
+    public boolean canSendGeoPosition() {
+        return !hasCoppa() && !isUserGdprProtected();
+    }
 
-        return new RequestParamsRestrictions() {
-            @Override
-            public boolean canSendGeoPosition() {
-                return !hasCoppa && !underGdprRestrictions;
-            }
+    @Override
+    public boolean canSendUserInfo() {
+        return !hasCoppa() && !isUserGdprProtected();
+    }
 
-            @Override
-            public boolean canSendUserInfo() {
-                return !hasCoppa && !underGdprRestrictions;
-            }
+    @Override
+    public boolean canSendDeviceInfo() {
+        return !hasCoppa();
+    }
 
-            @Override
-            public boolean canSendDeviceInfo() {
-                return !hasCoppa;
-            }
+    @Override
+    public boolean canSendIfa() {
+        return !isUserGdprProtected();
+    }
 
-            @Override
-            public boolean canSendIfa() {
-                return !underGdprRestrictions;
-            }
-        };
+    @Override
+    public boolean isUserInGdprScope() {
+        return subjectToGDPR();
+    }
+
+    @Override
+    public boolean isUserHasConsent() {
+        return hasConsent();
+    }
+
+    @Override
+    public boolean isUserGdprProtected() {
+        return subjectToGDPR() && !hasConsent();
+    }
+
+    @Override
+    public boolean isUserAgeRestricted() {
+        return hasCoppa();
     }
 
 }
