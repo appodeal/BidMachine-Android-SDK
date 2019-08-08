@@ -7,13 +7,13 @@ apply from: "$rootProject.projectDir/config.gradle"
 android {
     defaultConfig {
         versionName "${project(':bidmachine').android.defaultConfig.versionName}.${versionCode}"
-        consumerProguardFiles '../adapter-proguard-rules.txt', 'proguard-rules.pro'
+        consumerProguardFiles 'proguard-rules.pro', '../adapter-proguard-rules.pro'
     }
 
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro', '../adapter-proguard-rules.pro'
         }
     }
 }
