@@ -40,7 +40,7 @@ publishing {
     publications {
         "_${project.name}_"(MavenPublication) {
             groupId = libGroupId
-            artifactId = "ads.${project.name}"
+            artifactId = "ads-networks-${project.name}"
             version = project.android.defaultConfig.versionName
             artifact "${project.buildDir}/outputs/aar/${project.name}-release.aar"
             pom.withXml {
