@@ -11,9 +11,9 @@ import android.support.annotation.Nullable;
 import android.util.TypedValue;
 import android.view.*;
 import android.widget.FrameLayout;
-import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import com.explorestack.iab.utils.Assets;
+import com.explorestack.iab.utils.CircularProgressBar;
 import com.explorestack.iab.utils.Utils;
 import com.explorestack.iab.vast.VideoType;
 import com.explorestack.iab.vast.view.CircleCountdownView;
@@ -25,7 +25,7 @@ public class MraidActivity extends Activity {
 
     private static MraidFullScreenAd mraidInterstitial;
 
-    private ProgressBar progressBar;
+    private CircularProgressBar progressBar;
     private CircleCountdownView circleCountdownView;
 
     private Handler handler;
@@ -115,13 +115,19 @@ public class MraidActivity extends Activity {
     }
 
     public void showProgressBar() {
-        progressBar = new ProgressBar(this);
-        FrameLayout.LayoutParams spinnerParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
-        spinnerParams.gravity = Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL;
-        progressBar.setLayoutParams(spinnerParams);
-        progressBar.setBackgroundColor(Color.TRANSPARENT);
-        addContentView(progressBar, spinnerParams);
+        if (progressBar == null) {
+            progressBar = new CircularProgressBar(this);
+            progressBar.setColorSchemeColors(Assets.mainAssetsColor);
+            progressBar.setProgressBackgroundColor(Assets.backgroundColor);
+            FrameLayout.LayoutParams spinnerParams = new FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
+            spinnerParams.gravity = Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL;
+            progressBar.setLayoutParams(spinnerParams);
+            addContentView(progressBar, spinnerParams);
+        } else {
+            progressBar.setVisibility(View.VISIBLE);
+        }
     }
 
     public void showProgressBarWithCloseTime(long closeTimeSec) {
