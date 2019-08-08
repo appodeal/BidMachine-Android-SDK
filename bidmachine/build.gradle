@@ -22,7 +22,7 @@ android {
         debug {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            buildConfigField "String", "BM_API_URL", "\"https://staging1.appodealx.com\""
+            buildConfigField "String", "BM_API_URL", "\"https://staging.appodealx.com\""
         }
         release {
             minifyEnabled false
@@ -37,6 +37,7 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs_ext')
 
     implementation "io.bidmachine:protobuf-models:$protobufModelsVersion"
+    implementation "com.explorestack:iab:$stackIabVersion"
 
     compileOnly "com.android.support:support-annotations:$supportVersion"
     androidTestImplementation 'com.android.support:multidex:1.0.3'
@@ -51,7 +52,6 @@ dependencies {
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation "org.robolectric:robolectric:$robolectricVersion"
     testImplementation "com.squareup.okhttp3:mockwebserver:$mockwebserver"
-    api project(':nexage')
 }
 
 task createJarAdsCore(type: Copy) {

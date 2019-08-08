@@ -1,11 +1,12 @@
 package io.bidmachine.adapters.vast;
 
+import com.explorestack.iab.utils.Logger;
+import com.explorestack.iab.vast.VastLog;
+import com.explorestack.iab.vast.VideoType;
 import io.bidmachine.AdsType;
 import io.bidmachine.BuildConfig;
 import io.bidmachine.NetworkAdapter;
 import io.bidmachine.unified.UnifiedFullscreenAd;
-import org.nexage.sourcekit.util.VASTLog;
-import org.nexage.sourcekit.util.Video;
 
 public class VastAdapter extends NetworkAdapter {
 
@@ -18,17 +19,17 @@ public class VastAdapter extends NetworkAdapter {
 
     @Override
     public void setLogging(boolean enabled) {
-        VASTLog.setLoggingLevel(enabled ? VASTLog.LOG_LEVEL.verbose : VASTLog.LOG_LEVEL.none);
+        VastLog.setLoggingLevel(enabled ? Logger.LogLevel.debug : Logger.LogLevel.none);
     }
 
     @Override
     public UnifiedFullscreenAd createInterstitial() {
-        return new VastFullScreenAd(Video.Type.NON_REWARDED);
+        return new VastFullScreenAd(VideoType.NonRewarded);
     }
 
     @Override
     public UnifiedFullscreenAd createRewarded() {
-        return new VastFullScreenAd(Video.Type.REWARDED);
+        return new VastFullScreenAd(VideoType.Rewarded);
     }
 
 }

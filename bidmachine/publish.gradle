@@ -45,19 +45,23 @@ publishing {
             artifact "${project.buildDir}/outputs/aar/${project.name}-release.aar"
             pom.withXml {
                 def dependenciesNode = asNode().appendNode('dependencies')
+                // Protobuf models
                 def dependencyNode = dependenciesNode.appendNode('dependency')
                 dependencyNode.appendNode('groupId', 'io.bidmachine')
                 dependencyNode.appendNode('artifactId', 'protobuf-models')
                 dependencyNode.appendNode('version', protobufModelsVersion)
+                // Stack IAB
+                dependencyNode = dependenciesNode.appendNode('dependency')
+                dependencyNode.appendNode('groupId', 'com.explorestack')
+                dependencyNode.appendNode('artifactId', 'iab')
+                dependencyNode.appendNode('version', stackIabVersion)
             }
         }
     }
 }
 
-assemble.mustRunAfter(':nexage:bundleRelease')
-
-task uploadAarToArtifactory(dependsOn: [':nexage:bundleRelease', assemble, artifactoryPublish])
+task uploadAarToArtifactory(dependsOn: [assemble, artifactoryPublish], group: 'aar')
 artifactoryPublish.mustRunAfter(assemble)
 
-task uploadLocalAar(dependsOn: [':nexage:bundleRelease', assemble, publishToMavenLocal])
+task uploadLocalAar(dependsOn: [assemble, publishToMavenLocal], group: 'aar')
 uploadLocalAar.mustRunAfter(assemble)

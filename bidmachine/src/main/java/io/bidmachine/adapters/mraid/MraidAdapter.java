@@ -1,12 +1,12 @@
 package io.bidmachine.adapters.mraid;
 
+import com.explorestack.iab.mraid.internal.MRAIDLog;
+import com.explorestack.iab.vast.VideoType;
 import io.bidmachine.AdsType;
 import io.bidmachine.BuildConfig;
 import io.bidmachine.NetworkAdapter;
 import io.bidmachine.unified.UnifiedBannerAd;
 import io.bidmachine.unified.UnifiedFullscreenAd;
-import org.nexage.sourcekit.mraid.internal.MRAIDLog;
-import org.nexage.sourcekit.util.Video;
 
 public class MraidAdapter extends NetworkAdapter {
 
@@ -29,12 +29,12 @@ public class MraidAdapter extends NetworkAdapter {
 
     @Override
     public UnifiedFullscreenAd createInterstitial() {
-        return new MraidFullScreenAd(Video.Type.NON_REWARDED);
+        return new MraidFullScreenAd(VideoType.NonRewarded);
     }
 
     @Override
     public UnifiedFullscreenAd createRewarded() {
-        return new MraidFullScreenAd(Video.Type.REWARDED);
+        return new MraidFullScreenAd(VideoType.Rewarded);
     }
 
 }

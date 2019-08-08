@@ -4,20 +4,20 @@ import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import com.explorestack.iab.mraid.MRAIDInterstitial;
+import com.explorestack.iab.vast.VideoType;
 import io.bidmachine.ContextProvider;
 import io.bidmachine.unified.UnifiedFullscreenAd;
 import io.bidmachine.unified.UnifiedFullscreenAdCallback;
 import io.bidmachine.unified.UnifiedFullscreenAdRequestParams;
 import io.bidmachine.unified.UnifiedMediationParams;
 import io.bidmachine.utils.BMError;
-import org.nexage.sourcekit.mraid.MRAIDInterstitial;
-import org.nexage.sourcekit.util.Video;
 
 import static io.bidmachine.core.Utils.onUiThread;
 
 class MraidFullScreenAd extends UnifiedFullscreenAd {
 
-    private Video.Type videoType;
+    private VideoType videoType;
     private MRAIDInterstitial mraidInterstitial;
     private MraidActivity showingActivity;
     private MraidFullScreenAdapterListener adapterListener;
@@ -27,7 +27,7 @@ class MraidFullScreenAd extends UnifiedFullscreenAd {
     private MraidParams mraidParams;
     private int skipAfterTimeSec;
 
-    MraidFullScreenAd(Video.Type videoType) {
+    MraidFullScreenAd(VideoType videoType) {
         this.videoType = videoType;
     }
 
@@ -51,9 +51,9 @@ class MraidFullScreenAd extends UnifiedFullscreenAd {
         onUiThread(new Runnable() {
             @Override
             public void run() {
-                mraidInterstitial = new MRAIDInterstitial.builder(
-                        activity, mraidParams.creativeAdm, mraidParams.width, mraidParams.height
-                ).setPreload(mraidParams.canPreload)
+                mraidInterstitial = MRAIDInterstitial
+                        .newBuilder(activity, mraidParams.creativeAdm, mraidParams.width, mraidParams.height)
+                        .setPreload(mraidParams.canPreload)
                         .setListener(adapterListener)
                         .setNativeFeatureListener(adapterListener)
                         .build();
@@ -64,7 +64,7 @@ class MraidFullScreenAd extends UnifiedFullscreenAd {
     @Override
     public void show(@NonNull Context context,
                      @NonNull UnifiedFullscreenAdCallback callback) {
-        if (mraidInterstitial != null && mraidInterstitial.isReady) {
+        if (mraidInterstitial != null && mraidInterstitial.isReady()) {
             MraidActivity.show(context, this, videoType);
         } else {
             callback.onAdShowFailed(BMError.NotLoaded);

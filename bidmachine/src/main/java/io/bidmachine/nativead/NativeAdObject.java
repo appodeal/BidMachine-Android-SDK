@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import com.explorestack.iab.vast.VastRequest;
 import io.bidmachine.*;
 import io.bidmachine.core.Logger;
 import io.bidmachine.core.Utils;
@@ -30,7 +31,6 @@ import io.bidmachine.unified.UnifiedNativeAd;
 import io.bidmachine.unified.UnifiedNativeAdCallback;
 import io.bidmachine.unified.UnifiedNativeAdRequestParams;
 import io.bidmachine.utils.BMError;
-import org.nexage.sourcekit.vast.model.VASTModel;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -66,7 +66,7 @@ public final class NativeAdObject
     @Nullable
     private Uri videoUri;
     @Nullable
-    private VASTModel videoVastModel;
+    private VastRequest vastRequest;
     @Nullable
     private NativeData nativeData;
 
@@ -203,14 +203,14 @@ public final class NativeAdObject
     }
 
     @Override
-    public void setVideoVastModel(@Nullable VASTModel videoVastModel) {
-        this.videoVastModel = videoVastModel;
+    public void setVastRequest(@Nullable VastRequest vastRequest) {
+        this.vastRequest = vastRequest;
     }
 
     @Override
     @Nullable
-    public VASTModel getVideoVastModel() {
-        return videoVastModel;
+    public VastRequest getVastRequest() {
+        return vastRequest;
     }
 
     @Override

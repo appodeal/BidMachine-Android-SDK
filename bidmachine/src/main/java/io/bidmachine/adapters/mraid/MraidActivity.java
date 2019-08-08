@@ -11,12 +11,13 @@ import android.support.annotation.Nullable;
 import android.util.TypedValue;
 import android.view.*;
 import android.widget.FrameLayout;
-import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import com.explorestack.iab.utils.Assets;
+import com.explorestack.iab.utils.CircularProgressBar;
+import com.explorestack.iab.utils.Utils;
+import com.explorestack.iab.vast.VideoType;
+import com.explorestack.iab.vast.view.CircleCountdownView;
 import io.bidmachine.utils.BMError;
-import org.nexage.sourcekit.util.Utils;
-import org.nexage.sourcekit.util.Video;
-import org.nexage.sourcekit.vast.view.CircleCountdownView;
 
 public class MraidActivity extends Activity {
 
@@ -24,7 +25,7 @@ public class MraidActivity extends Activity {
 
     private static MraidFullScreenAd mraidInterstitial;
 
-    private ProgressBar progressBar;
+    private CircularProgressBar progressBar;
     private CircleCountdownView circleCountdownView;
 
     private Handler handler;
@@ -33,7 +34,7 @@ public class MraidActivity extends Activity {
 
     public static void show(Context context,
                             MraidFullScreenAd mraidInterstitial,
-                            Video.Type adType) {
+                            VideoType adType) {
         MraidActivity.mraidInterstitial = mraidInterstitial;
         try {
             Intent adActivityIntent = new Intent(context, MraidActivity.class);
@@ -58,10 +59,10 @@ public class MraidActivity extends Activity {
                 finishActivity();
                 return;
             }
-            Video.Type type = (Video.Type) getIntent().getSerializableExtra("type");
+            VideoType type = (VideoType) getIntent().getSerializableExtra("type");
             //noinspection ResourceType
             setRequestedOrientation(Utils.getScreenOrientation(this));
-            if (type == Video.Type.NON_REWARDED) {
+            if (type == VideoType.NonRewarded) {
                 canSkip = true;
             }
             hideTitleStatusBars();
@@ -109,18 +110,24 @@ public class MraidActivity extends Activity {
 
     private void showMraidInterstitial() {
         if (mraidInterstitial != null && mraidInterstitial.getMraidInterstitial() != null) {
-            mraidInterstitial.getMraidInterstitial().show(this);
+            mraidInterstitial.getMraidInterstitial().show(this, true);
         }
     }
 
     public void showProgressBar() {
-        progressBar = new ProgressBar(this);
-        FrameLayout.LayoutParams spinnerParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
-        spinnerParams.gravity = Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL;
-        progressBar.setLayoutParams(spinnerParams);
-        progressBar.setBackgroundColor(Color.TRANSPARENT);
-        addContentView(progressBar, spinnerParams);
+        if (progressBar == null) {
+            progressBar = new CircularProgressBar(this);
+            progressBar.setColorSchemeColors(Assets.mainAssetsColor);
+            progressBar.setProgressBackgroundColor(Assets.backgroundColor);
+            FrameLayout.LayoutParams spinnerParams = new FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
+            spinnerParams.gravity = Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL;
+            progressBar.setLayoutParams(spinnerParams);
+            addContentView(progressBar, spinnerParams);
+        } else {
+            progressBar.setVisibility(View.VISIBLE);
+        }
     }
 
     public void showProgressBarWithCloseTime(long closeTimeSec) {
@@ -130,7 +137,7 @@ public class MraidActivity extends Activity {
         circleCountdownView = new CircleCountdownView(this);
         circleCountdownView.setBackgroundColor(Color.TRANSPARENT);
         circleCountdownView.setVisibility(View.GONE);
-        circleCountdownView.setImage(org.nexage.sourcekit.util.Assets.getBitmapFromBase64(org.nexage.sourcekit.util.Assets.close));
+        circleCountdownView.setImage(Assets.getBitmapFromBase64(Assets.close));
         circleCountdownView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -200,7 +207,7 @@ public class MraidActivity extends Activity {
         if (mraidInterstitial != null
                 && mraidInterstitial.getMraidInterstitial() != null
                 && !mraidInterstitial.getMraidInterstitial().isClosed()) {
-            mraidInterstitial.getMraidInterstitial().mraidViewClose(null);
+            mraidInterstitial.getMraidInterstitial().dispatchClose();
         }
     }
 }

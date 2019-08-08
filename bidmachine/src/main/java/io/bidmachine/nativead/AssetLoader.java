@@ -5,12 +5,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
-
-import org.nexage.sourcekit.vast.model.VASTModel;
-
-import java.io.File;
-import java.util.ArrayList;
-
+import com.explorestack.iab.vast.VastRequest;
 import io.bidmachine.AdProcessCallback;
 import io.bidmachine.MediaAssetType;
 import io.bidmachine.core.Logger;
@@ -22,6 +17,9 @@ import io.bidmachine.nativead.utils.NativeMediaPrivateData;
 import io.bidmachine.nativead.utils.NativeNetworkExecutor;
 import io.bidmachine.nativead.utils.NativeData;
 import io.bidmachine.utils.BMError;
+
+import java.io.File;
+import java.util.ArrayList;
 
 class AssetLoader {
 
@@ -157,9 +155,9 @@ class AssetLoader {
         pendingTasks.add(new DownloadVastVideoTask(context,
                 new DownloadVastVideoTask.OnLoadedListener() {
                     @Override
-                    public void onVideoLoaded(DownloadVastVideoTask task, Uri videoFileUri, VASTModel vastModel) {
+                    public void onVideoLoaded(DownloadVastVideoTask task, Uri videoFileUri, VastRequest vastRequest) {
                         nativeMediaData.setVideoUri(videoFileUri);
-                        nativeMediaData.setVideoVastModel(vastModel);
+                        nativeMediaData.setVastRequest(vastRequest);
 
                         if (TextUtils.isEmpty(nativeData.getImageUrl())
                                 && videoFileUri != null

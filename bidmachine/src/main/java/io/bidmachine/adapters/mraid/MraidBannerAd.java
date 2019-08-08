@@ -3,13 +3,13 @@ package io.bidmachine.adapters.mraid;
 import android.app.Activity;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import com.explorestack.iab.mraid.MRAIDView;
 import io.bidmachine.ContextProvider;
 import io.bidmachine.unified.UnifiedBannerAd;
 import io.bidmachine.unified.UnifiedBannerAdCallback;
 import io.bidmachine.unified.UnifiedBannerAdRequestParams;
 import io.bidmachine.unified.UnifiedMediationParams;
 import io.bidmachine.utils.BMError;
-import org.nexage.sourcekit.mraid.MRAIDView;
 
 import static io.bidmachine.core.Utils.onUiThread;
 

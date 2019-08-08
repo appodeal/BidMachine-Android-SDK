@@ -9,12 +9,14 @@ import android.os.Looper;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.util.Pair;
+import com.explorestack.iab.vast.VastRequest;
+import com.explorestack.iab.vast.processor.VastAd;
+import io.bidmachine.core.Logger;
+import io.bidmachine.core.Utils;
+import io.bidmachine.nativead.utils.NoSSLv3SocketFactory;
 
-import org.nexage.sourcekit.util.DefaultMediaPicker;
-import org.nexage.sourcekit.vast.model.VASTModel;
-import org.nexage.sourcekit.vast.processor.VASTMediaPicker;
-import org.nexage.sourcekit.vast.processor.VASTProcessor;
-
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSocketFactory;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -22,13 +24,6 @@ import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.URL;
 import java.net.URLConnection;
-
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLSocketFactory;
-
-import io.bidmachine.core.Logger;
-import io.bidmachine.core.Utils;
-import io.bidmachine.nativead.utils.NoSSLv3SocketFactory;
 
 public class DownloadVastVideoTask implements Runnable {
 
@@ -48,7 +43,7 @@ public class DownloadVastVideoTask implements Runnable {
     private boolean initialized;
 
     public interface OnLoadedListener {
-        void onVideoLoaded(DownloadVastVideoTask task, Uri videoFileUri, VASTModel vastModel);
+        void onVideoLoaded(DownloadVastVideoTask task, Uri videoFileUri, VastRequest vastRequest);
 
         void onVideoLoadingError(DownloadVastVideoTask task);
     }
@@ -62,7 +57,7 @@ public class DownloadVastVideoTask implements Runnable {
                     switch (msg.what) {
                         case RESULT_SUCCESS:
                             @SuppressWarnings("unchecked")
-                            Pair<Uri, VASTModel> pair = (Pair<Uri, VASTModel>) msg.obj;
+                            Pair<Uri, VastRequest> pair = (Pair<Uri, VastRequest>) msg.obj;
                             mListener.onVideoLoaded(DownloadVastVideoTask.this, pair.first, pair.second);
                             break;
                         case RESULT_FAIL:
@@ -102,13 +97,12 @@ public class DownloadVastVideoTask implements Runnable {
         }
         InputStream inputStream = null;
         try {
-            VASTMediaPicker mediaPicker = new DefaultMediaPicker(context);
-            VASTProcessor processor = new VASTProcessor(mediaPicker);
-            int error = processor.process(mVideoTag);
-            if (error == 0) {
-                VASTModel vastModel = processor.getModel();
-                if (vastModel.getPickedMediaFileType().matches(SUPPORTED_VIDEO_TYPE_REGEX)) {
-                    String videoUrl = vastModel.getPickedMediaFileURL();
+            VastRequest vastRequest = VastRequest.newBuilder().setPreCache(false).build();
+            vastRequest.loadVideoWithDataSync(context, mVideoTag, null);
+            VastAd vastAd = vastRequest.getVastAd();
+            if (vastAd != null) {
+                if (vastAd.getPickedMediaFileTag().getType().matches(SUPPORTED_VIDEO_TYPE_REGEX)) {
+                    String videoUrl = vastAd.getPickedMediaFileTag().getText();
                     inputStream = setupConnection(videoUrl);
                     String fileName = generateFileName(videoUrl);
                     File file = new File(cacheDir, fileName);
@@ -120,11 +114,9 @@ public class DownloadVastVideoTask implements Runnable {
                     }
                     fileOutput.close();
 
-                    Bitmap thumb = ThumbnailUtils.createVideoThumbnail(
-                            file.getPath(),
-                            MediaStore.Images.Thumbnails.MINI_KIND);
+                    Bitmap thumb = ThumbnailUtils.createVideoThumbnail(file.getPath(), MediaStore.Images.Thumbnails.MINI_KIND);
                     if (thumb != null) {
-                        Message message = handler.obtainMessage(RESULT_SUCCESS, new Pair<>(Uri.fromFile(file), vastModel));
+                        Message message = handler.obtainMessage(RESULT_SUCCESS, new Pair<>(Uri.fromFile(file), vastRequest));
                         handler.sendMessage(message);
                         return;
                     }
