@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
@@ -138,6 +139,7 @@ final class BidMachineImpl {
             }
         });
         loadStoredInitResponse(context);
+        registerIABConsent(context);
         requestInitData(context, sellerId, callback);
         topActivity = ActivityHelper.getTopActivity();
         ((Application) context.getApplicationContext())
@@ -148,6 +150,23 @@ final class BidMachineImpl {
                 new SimpleContextProvider(context),
                 new SimpleUnifiedAdRequestParams(dataRestrictions, targetingInfo));
         isInitialized = true;
+    }
+
+    private void registerIABConsent(@NonNull Context context) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        sharedPreferences.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
+            @Override
+            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+                if (UserRestrictionParams.IAB_CONSENT_STRING.equals(key)) {
+                    getUserRestrictionParams().fillIABGDPRConsentString(sharedPreferences);
+                }
+                if (UserRestrictionParams.IAB_SUBJECT_TO_GDPR.equals(key)) {
+                    getUserRestrictionParams().fillIABSubjectToGDPR(sharedPreferences);
+                }
+            }
+        });
+        getUserRestrictionParams().fillIABGDPRConsentString(sharedPreferences);
+        getUserRestrictionParams().fillIABSubjectToGDPR(sharedPreferences);
     }
 
     private void requestInitData(@NonNull final Context context,
