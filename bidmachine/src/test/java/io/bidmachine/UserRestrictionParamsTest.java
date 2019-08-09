@@ -18,11 +18,12 @@ import static org.junit.Assert.*;
 @Config(manifest = Config.NONE)
 public class UserRestrictionParamsTest {
 
-    private static SharedPreferences defaultSharedPreferences;
+    private android.content.Context context;
+    private SharedPreferences defaultSharedPreferences;
 
     @Before
     public void setUp() throws Exception {
-        android.content.Context context = RuntimeEnvironment.application;
+        context = RuntimeEnvironment.application;
         defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         defaultSharedPreferences.edit().clear().apply();
     }
@@ -33,9 +34,7 @@ public class UserRestrictionParamsTest {
                 .putString("IABConsent_ConsentString", "iab_consent_string")
                 .apply();
         BidMachine.setConsentConfig(true, "bid_machine_consent_string");
-        BidMachineImpl.get()
-                .getUserRestrictionParams()
-                .fillIABGDPRConsentString(defaultSharedPreferences);
+        BidMachineImpl.get().initializeIab(context);
 
         Context.User.Builder builder = Context.User.newBuilder();
         assertEquals("", builder.getConsent());
@@ -48,9 +47,7 @@ public class UserRestrictionParamsTest {
     @Test
     public void buildUser_bidMachineProvidedAndSharedPrefNotProvidedConsentString_returnBidMachineConsentString() {
         BidMachine.setConsentConfig(true, "bid_machine_consent_string");
-        BidMachineImpl.get()
-                .getUserRestrictionParams()
-                .fillIABGDPRConsentString(defaultSharedPreferences);
+        BidMachineImpl.get().initializeIab(context);
 
         Context.User.Builder builder = Context.User.newBuilder();
         assertEquals("", builder.getConsent());
@@ -66,9 +63,7 @@ public class UserRestrictionParamsTest {
                 .putString("IABConsent_ConsentString", "iab_consent_string")
                 .apply();
         BidMachine.setConsentConfig(true, null);
-        BidMachineImpl.get()
-                .getUserRestrictionParams()
-                .fillIABGDPRConsentString(defaultSharedPreferences);
+        BidMachineImpl.get().initializeIab(context);
 
         Context.User.Builder builder = Context.User.newBuilder();
         assertEquals("", builder.getConsent());
@@ -81,9 +76,7 @@ public class UserRestrictionParamsTest {
     @Test
     public void buildUser_bidMachineAndSharedPrefNotProvidedConsentString_returnDefaultConsentString() {
         BidMachine.setConsentConfig(true, null);
-        BidMachineImpl.get()
-                .getUserRestrictionParams()
-                .fillIABGDPRConsentString(defaultSharedPreferences);
+        BidMachineImpl.get().initializeIab(context);
 
         Context.User.Builder builder = Context.User.newBuilder();
         assertEquals("", builder.getConsent());
@@ -99,9 +92,7 @@ public class UserRestrictionParamsTest {
                 .putString("IABConsent_SubjectToGDPR", "0")
                 .apply();
         BidMachine.setSubjectToGDPR(true);
-        BidMachineImpl.get()
-                .getUserRestrictionParams()
-                .fillIABSubjectToGDPR(defaultSharedPreferences);
+        BidMachineImpl.get().initializeIab(context);
 
         Context.Regs.Builder builder = Context.Regs.newBuilder();
         assertFalse(builder.getGdpr());
@@ -114,9 +105,7 @@ public class UserRestrictionParamsTest {
     @Test
     public void buildRegs_bidMachineProvidedAndSharedPrefNotProvidedSubjectToGDPR_returnBidMachineSubjectToGDPR() {
         BidMachine.setSubjectToGDPR(true);
-        BidMachineImpl.get()
-                .getUserRestrictionParams()
-                .fillIABSubjectToGDPR(defaultSharedPreferences);
+        BidMachineImpl.get().initializeIab(context);
 
         Context.Regs.Builder builder = Context.Regs.newBuilder();
         assertFalse(builder.getGdpr());
@@ -132,9 +121,7 @@ public class UserRestrictionParamsTest {
                 .putString("IABConsent_SubjectToGDPR", "1")
                 .apply();
         BidMachine.setSubjectToGDPR(null);
-        BidMachineImpl.get()
-                .getUserRestrictionParams()
-                .fillIABSubjectToGDPR(defaultSharedPreferences);
+        BidMachineImpl.get().initializeIab(context);
 
         Context.Regs.Builder builder = Context.Regs.newBuilder();
         assertFalse(builder.getGdpr());
@@ -147,9 +134,7 @@ public class UserRestrictionParamsTest {
     @Test
     public void buildRegs_bidMachineAndSharedPrefNotProvidedSubjectToGDPR_returnDefaultSubjectToGDPR() {
         BidMachine.setSubjectToGDPR(null);
-        BidMachineImpl.get()
-                .getUserRestrictionParams()
-                .fillIABSubjectToGDPR(defaultSharedPreferences);
+        BidMachineImpl.get().initializeIab(context);
 
         Context.Regs.Builder builder = Context.Regs.newBuilder();
         assertFalse(builder.getGdpr());

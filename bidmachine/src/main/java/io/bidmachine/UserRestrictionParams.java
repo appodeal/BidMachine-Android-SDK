@@ -1,8 +1,9 @@
 package io.bidmachine;
 
-import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
+
 import com.explorestack.protobuf.adcom.Context;
+
 import io.bidmachine.models.DataRestrictions;
 import io.bidmachine.models.IUserRestrictionsParams;
 import io.bidmachine.models.RequestParams;
@@ -13,16 +14,10 @@ final class UserRestrictionParams
         extends RequestParams<UserRestrictionParams>
         implements IUserRestrictionsParams<UserRestrictionParams>, DataRestrictions {
 
-    static final String IAB_CONSENT_STRING = "IABConsent_ConsentString";
-    static final String IAB_SUBJECT_TO_GDPR = "IABConsent_SubjectToGDPR";
-
     private String gdprConsentString;
     private Boolean subjectToGDPR;
     private Boolean hasConsent;
     private Boolean hasCoppa;
-
-    private String iabGDPRConsentString;
-    private Boolean iabSubjectToGDPR;
 
     @Override
     public void merge(@NonNull UserRestrictionParams instance) {
@@ -38,9 +33,11 @@ final class UserRestrictionParams
     }
 
     void build(@NonNull Context.User.Builder builder) {
-        String gdprConsentString = gdprConsentString();
-        if (gdprConsentString != null) {
-            builder.setConsent(gdprConsentString);
+        String consentString = oneOf(
+                gdprConsentString,
+                BidMachineImpl.get().getIabGDPRConsentString());
+        if (consentString != null) {
+            builder.setConsent(consentString);
         }
     }
 
@@ -63,28 +60,9 @@ final class UserRestrictionParams
         return this;
     }
 
-    void fillIABGDPRConsentString(SharedPreferences sharedPreferences) {
-        iabGDPRConsentString = sharedPreferences.getString(
-                IAB_CONSENT_STRING,
-                null);
-    }
-
-    void fillIABSubjectToGDPR(SharedPreferences sharedPreferences) {
-        String iabConsentSubjectToGDPR = sharedPreferences.getString(
-                IAB_SUBJECT_TO_GDPR,
-                null);
-        iabSubjectToGDPR = iabConsentSubjectToGDPR != null
-                ? iabConsentSubjectToGDPR.equals("1")
-                : null;
-    }
-
-    private String gdprConsentString() {
-        return oneOf(gdprConsentString, iabGDPRConsentString);
-    }
-
     private boolean subjectToGDPR() {
-        Boolean oneOfSubjectToGDPR = oneOf(subjectToGDPR, iabSubjectToGDPR);
-        return oneOfSubjectToGDPR != null && oneOfSubjectToGDPR;
+        Boolean subject = oneOf(subjectToGDPR, BidMachineImpl.get().getIabSubjectToGDPR());
+        return subject != null && subject;
     }
 
     private boolean hasConsent() {
