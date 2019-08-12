@@ -2,7 +2,9 @@ package io.bidmachine;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
+
 import com.explorestack.protobuf.adcom.Ad;
 import com.explorestack.protobuf.adcom.Context;
 import com.explorestack.protobuf.adcom.Placement;
@@ -11,13 +13,6 @@ import com.explorestack.protobuf.openrtb.Response;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
-import io.bidmachine.core.Logger;
-import io.bidmachine.core.NetworkRequest;
-import io.bidmachine.displays.PlacementBuilder;
-import io.bidmachine.models.*;
-import io.bidmachine.protobuf.RequestExtension;
-import io.bidmachine.unified.UnifiedAdRequestParams;
-import io.bidmachine.utils.BMError;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -25,6 +20,18 @@ import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import io.bidmachine.core.Logger;
+import io.bidmachine.core.NetworkRequest;
+import io.bidmachine.displays.PlacementBuilder;
+import io.bidmachine.models.AuctionResult;
+import io.bidmachine.models.DataRestrictions;
+import io.bidmachine.models.RequestBuilder;
+import io.bidmachine.models.RequestParams;
+import io.bidmachine.models.TargetingInfo;
+import io.bidmachine.protobuf.RequestExtension;
+import io.bidmachine.unified.UnifiedAdRequestParams;
+import io.bidmachine.utils.BMError;
 
 import static io.bidmachine.Utils.getOrDefault;
 import static io.bidmachine.core.Utils.oneOf;
@@ -43,7 +50,8 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
     PriceFloorParams priceFloorParams;
     TargetingParams targetingParams;
 
-    private UserRestrictionParams userRestrictionParams;
+    @VisibleForTesting
+    UserRestrictionParams userRestrictionParams;
     private ExtraParams extraParams;
 
     @Nullable
@@ -85,7 +93,8 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
         this.adsType = adsType;
     }
 
-    private Object build(final android.content.Context context, AdsType adsType) {
+    @VisibleForTesting
+    Object build(final android.content.Context context, AdsType adsType) {
         final String sellerId = BidMachineImpl.get().getSellerId();
         if (TextUtils.isEmpty(sellerId)) {
             return BMError.paramError("Seller Id not provided");
