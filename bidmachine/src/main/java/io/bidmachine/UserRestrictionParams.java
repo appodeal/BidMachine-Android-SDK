@@ -1,7 +1,9 @@
 package io.bidmachine;
 
 import android.support.annotation.NonNull;
+
 import com.explorestack.protobuf.adcom.Context;
+
 import io.bidmachine.models.DataRestrictions;
 import io.bidmachine.models.IUserRestrictionsParams;
 import io.bidmachine.models.RequestParams;
@@ -26,13 +28,16 @@ final class UserRestrictionParams
     }
 
     void build(@NonNull Context.Regs.Builder builder) {
-        builder.setGdpr(subjectToGDPR != null && subjectToGDPR);
+        builder.setGdpr(subjectToGDPR());
         builder.setCoppa(hasCoppa != null && hasCoppa);
     }
 
     void build(@NonNull Context.User.Builder builder) {
-        if (gdprConsentString != null) {
-            builder.setConsent(gdprConsentString);
+        String consentString = oneOf(
+                gdprConsentString,
+                BidMachineImpl.get().getIabGDPRConsentString());
+        if (consentString != null) {
+            builder.setConsent(consentString);
         }
     }
 
@@ -56,7 +61,8 @@ final class UserRestrictionParams
     }
 
     private boolean subjectToGDPR() {
-        return subjectToGDPR != null && subjectToGDPR;
+        Boolean subject = oneOf(subjectToGDPR, BidMachineImpl.get().getIabSubjectToGDPR());
+        return subject != null && subject;
     }
 
     private boolean hasConsent() {

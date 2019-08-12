@@ -5,11 +5,19 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
 import android.util.Base64;
+
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
 import io.bidmachine.core.AdvertisingIdClientInfo;
 import io.bidmachine.core.Logger;
 import io.bidmachine.core.NetworkRequest;
@@ -20,12 +28,6 @@ import io.bidmachine.protobuf.InitRequest;
 import io.bidmachine.protobuf.InitResponse;
 import io.bidmachine.utils.ActivityHelper;
 import io.bidmachine.utils.BMError;
-
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 final class BidMachineImpl {
 
@@ -61,6 +63,9 @@ final class BidMachineImpl {
     private static final String DEF_AUCTION_URL = BuildConfig.BM_API_URL + "/openrtb3/auction";
     private static final String PREF_INIT_DATA = "initData";
 
+    private static final String IAB_CONSENT_STRING = "IABConsent_ConsentString";
+    private static final String IAB_SUBJECT_TO_GDPR = "IABConsent_SubjectToGDPR";
+
     @Nullable
     private Context appContext;
     @Nullable
@@ -79,6 +84,9 @@ final class BidMachineImpl {
                     .addPriceFloor(UUID.randomUUID().toString(), 0.01);
     @NonNull
     private DeviceParams deviceParams = new DeviceParams();
+
+    private String iabGDPRConsentString;
+    private Boolean iabSubjectToGDPR;
 
     private boolean isTestMode;
     private boolean isInitialized;
@@ -138,6 +146,7 @@ final class BidMachineImpl {
             }
         });
         loadStoredInitResponse(context);
+        initializeIab(context);
         requestInitData(context, sellerId, callback);
         topActivity = ActivityHelper.getTopActivity();
         ((Application) context.getApplicationContext())
@@ -148,6 +157,49 @@ final class BidMachineImpl {
                 new SimpleContextProvider(context),
                 new SimpleUnifiedAdRequestParams(dataRestrictions, targetingInfo));
         isInitialized = true;
+    }
+
+    @VisibleForTesting
+    void initializeIab(@NonNull Context context) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        sharedPreferences.registerOnSharedPreferenceChangeListener(
+                new SharedPreferences.OnSharedPreferenceChangeListener() {
+                    @Override
+                    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
+                                                          String key) {
+                        if (IAB_CONSENT_STRING.equals(key)) {
+                            updateIabConsentString(sharedPreferences);
+                        }
+                        if (IAB_SUBJECT_TO_GDPR.equals(key)) {
+                            updateIabGDPRSubject(sharedPreferences);
+                        }
+                    }
+                });
+        updateIabConsentString(sharedPreferences);
+        updateIabGDPRSubject(sharedPreferences);
+    }
+
+    String getIabGDPRConsentString() {
+        return iabGDPRConsentString;
+    }
+
+    private void updateIabConsentString(SharedPreferences sharedPreferences) {
+        iabGDPRConsentString = sharedPreferences.getString(
+                IAB_CONSENT_STRING,
+                null);
+    }
+
+    Boolean getIabSubjectToGDPR() {
+        return iabSubjectToGDPR;
+    }
+
+    private void updateIabGDPRSubject(SharedPreferences sharedPreferences) {
+        String iabConsentSubjectToGDPR = sharedPreferences.getString(
+                IAB_SUBJECT_TO_GDPR,
+                null);
+        iabSubjectToGDPR = iabConsentSubjectToGDPR != null
+                ? iabConsentSubjectToGDPR.equals("1")
+                : null;
     }
 
     private void requestInitData(@NonNull final Context context,
