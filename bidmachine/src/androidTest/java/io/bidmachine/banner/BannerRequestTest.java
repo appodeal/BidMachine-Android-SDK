@@ -11,7 +11,7 @@ import io.bidmachine.BaseViewAdRequestTest;
 @LargeTest
 public class BannerRequestTest extends BaseViewAdRequestTest<BannerAd, BannerRequest> {
 
-    protected BannerSize size = BannerSize.Size_320_50;
+    protected BannerSize size = BannerSize.Size_320x50;
 
     @Override
     protected BannerAd createAd() {

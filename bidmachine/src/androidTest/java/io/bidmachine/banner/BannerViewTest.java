@@ -44,7 +44,7 @@ public class BannerViewTest {
     //TODO: add to base view test
     @Test
     public void success_load_show() throws InterruptedException {
-        performBannerTest(new BannerRequest.Builder().build(),
+        performBannerTest(new BannerRequest.Builder().setSize(BannerSize.Size_320x50).build(),
                 true, true, 2);
     }
 
@@ -56,13 +56,13 @@ public class BannerViewTest {
                 bannerView.setTranslationY(10000);
             }
         });
-        performBannerTest(new BannerRequest.Builder().build(),
+        performBannerTest(new BannerRequest.Builder().setSize(BannerSize.Size_320x50).build(),
                 true, false, 2);
     }
 
     @Test
     public void fail_no_publisherId() throws InterruptedException {
-        performBannerTest(new BannerRequest.Builder().build(),
+        performBannerTest(new BannerRequest.Builder().setSize(BannerSize.Size_320x50).build(),
                 false, false, 1);
     }
 

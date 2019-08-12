@@ -31,7 +31,7 @@ public class ProtobufTest {
         Context context2 = Context.parseFrom(outstr.toByteArray());
         if (context2.getApp().getPub().getExt(0).is(Context.App.Content.class)) {
             Context.App.Content newExtContent = context2.getApp().getPub().getExt(0).unpack(Context.App.Content.class);
-            Assert.assertFalse(extContent == newExtContent);
+            Assert.assertNotSame(extContent, newExtContent);
         } else {
             fail("Wrong class instance");
         }

@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.Assert.*;
 
 public abstract class BaseRequestTestImpl<AdType extends BidMachineAd, AdRequestType extends AdRequest>
-        implements AdRequestTests, AdListener<AdType>, AdFullScreenListener<AdType> {
+        implements AdRequestTests, AdListener<AdType>, AdFullScreenListener<AdType>, AdRewardedListener<AdType> {
 
     protected MockWebServer mockWebServer;
 
@@ -70,11 +70,14 @@ public abstract class BaseRequestTestImpl<AdType extends BidMachineAd, AdRequest
 
     private void setCurrentAuctionUrl(String url) {
         InitResponse initResponse = InitResponse.newBuilder()
-                .setEndpoint(url)
-                .build();
+                                                .setEndpoint(url)
+                                                .build();
 
-        SharedPreferences preferences = activityTestRule.getActivity().getSharedPreferences("BidMachinePref", Context.MODE_PRIVATE);
-        preferences.edit().putString("initData", Base64.encodeToString(initResponse.toByteArray(), Base64.DEFAULT)).apply();
+        SharedPreferences preferences = activityTestRule.getActivity()
+                                                        .getSharedPreferences("BidMachinePref", Context.MODE_PRIVATE);
+        preferences.edit()
+                   .putString("initData", Base64.encodeToString(initResponse.toByteArray(), Base64.DEFAULT))
+                   .apply();
 
         BidMachine.setTestMode(true);
         BidMachine.setLoggingEnabled(true);
@@ -289,8 +292,8 @@ public abstract class BaseRequestTestImpl<AdType extends BidMachineAd, AdRequest
             void onCreateAd(Ad.Builder adBuilder) {
                 super.onCreateAd(adBuilder);
                 AdExtension adExtension = AdExtension.newBuilder()
-                        .setViewabilityTimeThreshold(1)
-                        .build();
+                                                     .setViewabilityTimeThreshold(1)
+                                                     .build();
                 adBuilder.addExt(Any.pack(adExtension));
             }
         }), null, true);
@@ -311,8 +314,8 @@ public abstract class BaseRequestTestImpl<AdType extends BidMachineAd, AdRequest
             void onCreateAd(Ad.Builder adBuilder) {
                 super.onCreateAd(adBuilder);
                 AdExtension adExtension = AdExtension.newBuilder()
-                        .setViewabilityTimeThreshold(1)
-                        .build();
+                                                     .setViewabilityTimeThreshold(1)
+                                                     .build();
                 adBuilder.addExt(Any.pack(adExtension));
             }
         }), null, true);
@@ -331,8 +334,8 @@ public abstract class BaseRequestTestImpl<AdType extends BidMachineAd, AdRequest
             void onCreateAd(Ad.Builder adBuilder) {
                 super.onCreateAd(adBuilder);
                 AdExtension adExtension = AdExtension.newBuilder()
-                        .setViewabilityTimeThreshold(3)
-                        .build();
+                                                     .setViewabilityTimeThreshold(3)
+                                                     .build();
                 adBuilder.addExt(Any.pack(adExtension));
             }
         }), null);
@@ -351,8 +354,8 @@ public abstract class BaseRequestTestImpl<AdType extends BidMachineAd, AdRequest
             void onCreateAd(Ad.Builder adBuilder) {
                 super.onCreateAd(adBuilder);
                 AdExtension adExtension = AdExtension.newBuilder()
-                        .setViewabilityTimeThreshold(1)
-                        .build();
+                                                     .setViewabilityTimeThreshold(1)
+                                                     .build();
                 adBuilder.addExt(Any.pack(adExtension));
             }
         }), null);
@@ -370,7 +373,7 @@ public abstract class BaseRequestTestImpl<AdType extends BidMachineAd, AdRequest
             }.start(10000);
             assertTrue(impressionState.getState());
             assertEquals(impressionState.getSettingTime(), System.currentTimeMillis(),
-                    50);
+                         50);
         } else {
             try {
                 Thread.sleep(delay);
@@ -734,7 +737,7 @@ public abstract class BaseRequestTestImpl<AdType extends BidMachineAd, AdRequest
         @Override
         public Ad.Builder createAd() {
             return Ad.newBuilder()
-                    .setId("test_id_1");
+                     .setId("test_id_1");
         }
     }
 
@@ -761,8 +764,8 @@ public abstract class BaseRequestTestImpl<AdType extends BidMachineAd, AdRequest
         @Override
         public Response.Seatbid.Bid.Builder createBid() {
             return Response.Seatbid.Bid.newBuilder()
-                    .setId("test_bid_id_1")
-                    .setPrice(2.34D);
+                                       .setId("test_bid_id_1")
+                                       .setPrice(2.34D);
         }
 
     }
