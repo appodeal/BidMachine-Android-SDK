@@ -27,8 +27,13 @@ public class TapjoyFullscreenAd extends UnifiedFullscreenAd {
                      @NonNull UnifiedFullscreenAdCallback callback,
                      @NonNull UnifiedFullscreenAdRequestParams requestParams,
                      @NonNull UnifiedMediationParams mediationParams) throws Throwable {
-        //TODO: fix this behavior
-        Tapjoy.setActivity((Activity) context);
+        Activity activity = context.getActivity();
+        if (activity == null) {
+            callback.log("Activity not provided");
+            callback.onAdLoadFailed(BMError.Internal);
+            return;
+        }
+        Tapjoy.setActivity(activity);
         TapjoyFullscreenAdListener listener = new TapjoyFullscreenAdListener(callback);
         tjPlacement = Tapjoy.getLimitedPlacement(mediationParams.getString(TapjoyConfig.KEY_PLACEMENT_NAME), listener);
         tjPlacement.setVideoListener(listener);
