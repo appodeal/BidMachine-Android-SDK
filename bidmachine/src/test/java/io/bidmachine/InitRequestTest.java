@@ -74,7 +74,7 @@ public class InitRequestTest {
         mockWebServer.enqueue(new MockResponse().setResponseCode(200)
                 .setBody(buffer));
 
-        BidMachineImpl.get().initialize(RuntimeEnvironment.application, "1");
+        BidMachineImpl.get().initialize(RuntimeEnvironment.application, "1", null);
 
         RecordedRequest recordedRequest =
                 mockWebServer.takeRequest(3, TimeUnit.SECONDS);
@@ -115,7 +115,7 @@ public class InitRequestTest {
         mockWebServer.enqueue(new MockResponse().setResponseCode(400)
                 .setBody(buffer));
 
-        BidMachineImpl.get().initialize(RuntimeEnvironment.application, "1");
+        BidMachineImpl.get().initialize(RuntimeEnvironment.application, "1", null);
 
         RecordedRequest recordedRequest =
                 mockWebServer.takeRequest(3, TimeUnit.SECONDS);

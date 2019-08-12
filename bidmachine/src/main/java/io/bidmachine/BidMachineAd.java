@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.VisibleForTesting;
 import com.explorestack.protobuf.adcom.Ad;
 import com.explorestack.protobuf.openrtb.Response;
 import io.bidmachine.core.Logger;
@@ -11,8 +12,6 @@ import io.bidmachine.core.Utils;
 import io.bidmachine.models.AdObject;
 import io.bidmachine.models.AdObjectParams;
 import io.bidmachine.models.AuctionResult;
-import io.bidmachine.rewarded.RewardedAd;
-import io.bidmachine.rewarded.RewardedListener;
 import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.utils.BMError;
 
@@ -49,7 +48,8 @@ public abstract class BidMachineAd<
     private final ContextProvider contextProvider;
 
     @NonNull
-    private final TrackingObject trackingObject = new TrackingObject() {
+    @VisibleForTesting
+    final TrackingObject trackingObject = new TrackingObject() {
         @Override
         public Object getTrackingKey() {
             AuctionResult auctionResult = getAuctionResult();
@@ -463,9 +463,9 @@ public abstract class BidMachineAd<
             Utils.onUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    if (listener instanceof RewardedListener) {
+                    if (listener instanceof AdRewardedListener) {
                         log("notify AdRewarded");
-                        ((RewardedListener) listener).onAdRewarded((RewardedAd) BidMachineAd.this);
+                        ((AdRewardedListener) listener).onAdRewarded(BidMachineAd.this);
                     }
                 }
             });
@@ -532,10 +532,15 @@ public abstract class BidMachineAd<
                 adRequest.cancel();
                 detachRequest(adRequest);
             }
-            if (loadedObject != null) {
-                loadedObject.onDestroy();
-            }
-            onDestroy();
+            Utils.onUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (loadedObject != null) {
+                        loadedObject.onDestroy();
+                    }
+                    onDestroy();
+                }
+            });
         }
 
         @Override

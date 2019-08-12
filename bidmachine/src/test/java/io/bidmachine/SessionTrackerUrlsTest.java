@@ -1,5 +1,6 @@
 package io.bidmachine;
 
+import io.bidmachine.protobuf.EventTypeExtended;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -92,19 +93,19 @@ public class SessionTrackerUrlsTest {
         assertTrue(trackedUrlList.contains(createUrlWithoutMacros(
                 "/Load",
                 "test_id_1",
-                507,
+                EventTypeExtended.EVENT_TYPE_EXTENDED_LOADED_VALUE,
                 -1,
                 trackEventInfo)));
         assertTrue(trackedUrlList.contains(createUrlWithoutMacros(
                 "/Load",
                 "test_id_2",
-                507,
+                EventTypeExtended.EVENT_TYPE_EXTENDED_LOADED_VALUE,
                 -1,
                 trackEventInfo)));
         assertTrue(trackedUrlList.contains(createUrlWithoutMacros(
                 "/Load",
                 "test_id_3",
-                507,
+                EventTypeExtended.EVENT_TYPE_EXTENDED_LOADED_VALUE,
                 -1,
                 trackEventInfo)));
     }
@@ -120,19 +121,19 @@ public class SessionTrackerUrlsTest {
         assertTrue(trackedUrlList.contains(createUrlWithoutMacros(
                 "/Load",
                 "test_id_1",
-                507,
+                EventTypeExtended.EVENT_TYPE_EXTENDED_LOADED_VALUE,
                 -1,
                 trackEventInfo)));
         assertTrue(trackedUrlList.contains(createUrlWithoutMacros(
                 "/Load",
                 "test_id_2",
-                507,
+                EventTypeExtended.EVENT_TYPE_EXTENDED_LOADED_VALUE,
                 -1,
                 trackEventInfo)));
         assertTrue(trackedUrlList.contains(createUrlWithoutMacros(
                 "/Load",
                 "test_id_3",
-                507,
+                EventTypeExtended.EVENT_TYPE_EXTENDED_LOADED_VALUE,
                 -1,
                 trackEventInfo)));
         assertEquals(3, countOf(
@@ -140,7 +141,7 @@ public class SessionTrackerUrlsTest {
                 createUrlWithoutMacros(
                         "/TrackingError",
                         "test_id_6",
-                        507,
+                        EventTypeExtended.EVENT_TYPE_EXTENDED_LOADED_VALUE,
                         110,
                         trackEventInfo)));
     }
@@ -156,13 +157,13 @@ public class SessionTrackerUrlsTest {
         assertTrue(trackedUrlList.contains(createUrlWithoutMacros(
                 "/Error",
                 "test_id_4",
-                507,
+                EventTypeExtended.EVENT_TYPE_EXTENDED_LOADED_VALUE,
                 102,
                 trackEventInfo)));
         assertTrue(trackedUrlList.contains(createUrlWithoutMacros(
                 "/Error",
                 "test_id_5",
-                507,
+                EventTypeExtended.EVENT_TYPE_EXTENDED_LOADED_VALUE,
                 102,
                 trackEventInfo)));
     }
@@ -178,13 +179,13 @@ public class SessionTrackerUrlsTest {
         assertTrue(trackedUrlList.contains(createUrlWithoutMacros(
                 "/Error",
                 "test_id_4",
-                507,
+                EventTypeExtended.EVENT_TYPE_EXTENDED_LOADED_VALUE,
                 102,
                 trackEventInfo)));
         assertTrue(trackedUrlList.contains(createUrlWithoutMacros(
                 "/Error",
                 "test_id_5",
-                507,
+                EventTypeExtended.EVENT_TYPE_EXTENDED_LOADED_VALUE,
                 102,
                 trackEventInfo)));
         assertEquals(2, countOf(
