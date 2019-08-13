@@ -33,11 +33,6 @@ abstract class BaseFacebookListener<UnifiedAdCallbackType extends UnifiedAdCallb
         callback.onAdClicked();
     }
 
-    @Override
-    public void onLoggingImpression(Ad ad) {
-        //ignore
-    }
-
     /**
      * @param error Facebook loading error code {@link com.facebook.ads.AdError}
      * @return Appodeal loading error {@link BMError} or null

@@ -65,6 +65,10 @@ class FacebookBanner extends UnifiedBannerAd {
             getCallback().onAdLoaded((View) ad);
         }
 
+        @Override
+        public void onLoggingImpression(Ad ad) {
+            //ignore
+        }
     }
 
 }

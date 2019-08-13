@@ -58,7 +58,17 @@ class FacebookInterstitial extends UnifiedFullscreenAd {
         }
 
         @Override
+        public void onAdLoaded(Ad ad) {
+            getCallback().onAdLoaded();
+        }
+
+        @Override
         public void onInterstitialDisplayed(Ad ad) {
+            //ignore
+        }
+
+        @Override
+        public void onLoggingImpression(Ad ad) {
             getCallback().onAdShown();
         }
 
@@ -66,11 +76,6 @@ class FacebookInterstitial extends UnifiedFullscreenAd {
         public void onInterstitialDismissed(Ad ad) {
             getCallback().onAdClosed();
             ad.destroy();
-        }
-
-        @Override
-        public void onAdLoaded(Ad ad) {
-            getCallback().onAdLoaded();
         }
     }
 }

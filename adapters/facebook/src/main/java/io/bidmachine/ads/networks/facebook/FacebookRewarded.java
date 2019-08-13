@@ -58,6 +58,16 @@ class FacebookRewarded extends UnifiedFullscreenAd {
         }
 
         @Override
+        public void onAdLoaded(Ad ad) {
+            getCallback().onAdLoaded();
+        }
+
+        @Override
+        public void onLoggingImpression(Ad ad) {
+            getCallback().onAdShown();
+        }
+
+        @Override
         public void onRewardedVideoCompleted() {
             getCallback().onAdFinished();
         }
@@ -65,11 +75,6 @@ class FacebookRewarded extends UnifiedFullscreenAd {
         @Override
         public void onRewardedVideoClosed() {
             getCallback().onAdClosed();
-        }
-
-        @Override
-        public void onAdLoaded(Ad ad) {
-            getCallback().onAdLoaded();
         }
     }
 }

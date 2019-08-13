@@ -11,13 +11,6 @@ import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
 import android.util.Base64;
-
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
 import io.bidmachine.core.AdvertisingIdClientInfo;
 import io.bidmachine.core.Logger;
 import io.bidmachine.core.NetworkRequest;
@@ -28,6 +21,12 @@ import io.bidmachine.protobuf.InitRequest;
 import io.bidmachine.protobuf.InitResponse;
 import io.bidmachine.utils.ActivityHelper;
 import io.bidmachine.utils.BMError;
+
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 final class BidMachineImpl {
 
@@ -221,9 +220,7 @@ final class BidMachineImpl {
                         }
                         initRequestDelayMs = 0;
                         Utils.cancelBackgroundThreadTask(rescheduleInitRunnable);
-                        if (callback != null) {
-                            callback.onInitialized();
-                        }
+                        notifyInitializationFinished(callback);
                         BidMachineEvents.eventFinish(trackingObject,
                                 TrackEventType.InitLoading,
                                 null,
@@ -244,9 +241,7 @@ final class BidMachineImpl {
                         Logger.log("reschedule init request (" + initRequestDelayMs + ")");
                         Utils.onBackgroundThread(rescheduleInitRunnable, initRequestDelayMs);
                         // According requirements we should notify that SDK is initialized event if init request fail
-                        if (callback != null) {
-                            callback.onInitialized();
-                        }
+                        notifyInitializationFinished(callback);
                         BidMachineEvents.eventFinish(
                                 trackingObject,
                                 TrackEventType.InitLoading,
@@ -255,6 +250,17 @@ final class BidMachineImpl {
                     }
                 })
                 .request();
+    }
+
+    private void notifyInitializationFinished(@Nullable final InitializationCallback callback) {
+        if (callback != null) {
+            Utils.onUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    callback.onInitialized();
+                }
+            });
+        }
     }
 
     private void handleInitResponse(@NonNull Context context, @NonNull InitResponse response) {
