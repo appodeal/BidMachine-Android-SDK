@@ -61,16 +61,16 @@ public abstract class NetworkAdapter {
      */
     public final void initialize(@NonNull ContextProvider contextProvider,
                                  @NonNull UnifiedAdRequestParams adRequestParams,
-                                 @NonNull NetworkConfig networkConfig) throws Throwable {
+                                 @NonNull NetworkConfigParams networkConfigParams) throws Throwable {
         if (!isInitialized) {
-            onInitialize(contextProvider, adRequestParams, networkConfig);
+            onInitialize(contextProvider, adRequestParams, networkConfigParams);
             isInitialized = true;
         }
     }
 
     protected void onInitialize(@NonNull ContextProvider contextProvider,
                                 @NonNull UnifiedAdRequestParams adRequestParams,
-                                @NonNull NetworkConfig networkConfig) {
+                                @NonNull NetworkConfigParams networkConfigParams) {
     }
 
     /**

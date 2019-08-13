@@ -21,13 +21,45 @@ public abstract class NetworkConfig {
     @Nullable
     private Map<String, String> networkParams;
     @Nullable
-    private Map<String, String> mediationConfig;
+    private Map<String, String> baseMediationConfig;
     @Nullable
     private EnumMap<AdsFormat, Map<String, String>> typedMediationConfigs;
     @Nullable
     private AdsType[] supportedAdsTypes;
     @Nullable
     private AdsType[] mergedAdsTypes;
+    @NonNull
+    private NetworkConfigParams networkConfigParams = new NetworkConfigParams() {
+        @Nullable
+        @Override
+        public Map<String, String> obtainNetworkParams() {
+            return networkParams != null ? new HashMap<>(networkParams) : null;
+        }
+
+        @Nullable
+        @Override
+        public EnumMap<AdsFormat, Map<String, String>> obtainNetworkMediationConfigs(AdsFormat... adsFormats) {
+            EnumMap<AdsFormat, Map<String, String>> resultMap = null;
+            if (adsFormats != null && adsFormats.length > 0) {
+                for (AdsFormat format : adsFormats) {
+                    Map<String, String> resultConfig = null;
+                    if (typedMediationConfigs != null) {
+                        Map<String, String> typedConfig = typedMediationConfigs.get(format);
+                        if (typedConfig != null) {
+                            resultConfig = prepareTypedMediationConfig(typedConfig);
+                        }
+                    }
+                    if (resultConfig != null) {
+                        if (resultMap == null) {
+                            resultMap = new EnumMap<>(AdsFormat.class);
+                        }
+                        resultMap.put(format, resultConfig);
+                    }
+                }
+            }
+            return resultMap;
+        }
+    };
 
     protected NetworkConfig(@Nullable Map<String, String> networkParams) {
         withNetworkParams(networkParams);
@@ -64,33 +96,55 @@ public abstract class NetworkConfig {
     }
 
     /**
-     * @return Network global configuration (will be used for {@link NetworkAdapter#initialize(ContextProvider, UnifiedAdRequestParams, NetworkConfig)})
-     */
-    @Nullable
-    public Map<String, String> getNetworkParams() {
-        return networkParams;
-    }
-
-    /**
-     * Set Network global configuration (will be used for {@link NetworkAdapter#initialize(ContextProvider, UnifiedAdRequestParams, NetworkConfig)})
+     * Set Network global configuration (will be used for {@link NetworkAdapter#initialize(ContextProvider, UnifiedAdRequestParams, NetworkConfigParams)})
      *
      * @param config map of parameters which will be used for Network initialization
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "WeakerAccess"})
     public <T extends NetworkConfig> T withNetworkParams(@Nullable Map<String, String> config) {
         this.networkParams = config;
         return (T) this;
     }
 
     /**
-     * Set Network mediation configuration (will be used for {@link HeaderBiddingAdapter#collectHeaderBiddingParams(ContextProvider, UnifiedAdRequestParams, HeaderBiddingCollectParamsCallback, Map)}).
-     * Will be used as default for all {@link AdsFormat}
+     * Set specific Network global parameter (see {@link #withNetworkParams(Map)})
+     *
+     * @param key   parameter key
+     * @param value parameter value
+     */
+    @SuppressWarnings({"unchecked", "unused"})
+    public <T extends NetworkConfig> T setNetworkParameter(@NonNull String key, @NonNull String value) {
+        if (networkParams == null) {
+            networkParams = new HashMap<>();
+        }
+        networkParams.put(key, value);
+        return (T) this;
+    }
+
+    /**
+     * Set `base` Network mediation configuration (will be used for {@link HeaderBiddingAdapter#collectHeaderBiddingParams(ContextProvider, UnifiedAdRequestParams, HeaderBiddingCollectParamsCallback, Map)}).
+     * Will be merged with config provided for specific {@link AdsFormat}
      *
      * @param config map of parameters which will be used for Network mediation process
      */
-    @SuppressWarnings({"unchecked", "WeakerAccess"})
-    public <T extends NetworkConfig> T withMediationConfig(@Nullable Map<String, String> config) {
-        this.mediationConfig = config;
+    @SuppressWarnings({"unchecked", "WeakerAccess", "unused"})
+    public <T extends NetworkConfig> T withBaseMediationConfig(@Nullable Map<String, String> config) {
+        this.baseMediationConfig = config;
+        return (T) this;
+    }
+
+    /**
+     * Set specific `base` Network mediation configuration parameter (see {@link #withBaseMediationConfig(Map)})
+     *
+     * @param key   parameter key
+     * @param value parameter value
+     */
+    @SuppressWarnings({"unchecked", "WeakerAccess", "unused"})
+    public <T extends NetworkConfig> T setBaseMediationParam(@NonNull String key, @NonNull String value) {
+        if (baseMediationConfig == null) {
+            baseMediationConfig = new HashMap<>();
+        }
+        baseMediationConfig.put(key, value);
         return (T) this;
     }
 
@@ -102,7 +156,8 @@ public abstract class NetworkConfig {
      * @param config    map of parameters which will be used for Network mediation process
      */
     @SuppressWarnings({"unchecked", "WeakerAccess"})
-    public <T extends NetworkConfig> T withMediationConfig(@NonNull AdsFormat adsFormat, @Nullable Map<String, String> config) {
+    public <T extends NetworkConfig> T withMediationConfig(@NonNull AdsFormat adsFormat,
+                                                           @Nullable Map<String, String> config) {
         if (config == null) {
             if (typedMediationConfigs != null) {
                 typedMediationConfigs.remove(adsFormat);
@@ -111,13 +166,9 @@ public abstract class NetworkConfig {
             if (typedMediationConfigs == null) {
                 typedMediationConfigs = new EnumMap<>(AdsFormat.class);
             }
-            onMediationConfigAdded(adsFormat, config);
             typedMediationConfigs.put(adsFormat, config);
         }
         return (T) this;
-    }
-
-    protected void onMediationConfigAdded(@NonNull AdsFormat adsFormat, @NonNull Map<String, String> config) {
     }
 
     /**
@@ -132,7 +183,7 @@ public abstract class NetworkConfig {
 
     /**
      * Method which return parameters which should be used for mediation process.
-     * If no specific parameters was provided will return default set by {@link NetworkConfig#withMediationConfig(Map)}
+     * If no specific parameters was provided will return default set by {@link NetworkConfig#withBaseMediationConfig(Map)}
      *
      * @param adsType         required {@link AdsType}
      * @param adRequestParams provided typed {@link UnifiedAdRequestParams}
@@ -140,22 +191,20 @@ public abstract class NetworkConfig {
      */
     @Nullable
     public <T extends UnifiedAdRequestParams> Map<String, String> peekMediationConfig(@NonNull AdsType adsType,
-                                                                                      @NonNull T adRequestParams) {
+                                                                                      @NonNull T adRequestParams,
+                                                                                      @NonNull AdContentType adContentType) {
         Map<String, String> resultConfig = null;
         if (typedMediationConfigs != null) {
             Map<String, String> typedConfig = null;
             for (Map.Entry<AdsFormat, Map<String, String>> entry : typedMediationConfigs.entrySet()) {
-                if (entry.getKey().isMatch(adsType, adRequestParams)) {
+                if (entry.getKey().isMatch(adsType, adRequestParams, adContentType)) {
                     typedConfig = entry.getValue();
                 }
             }
             if (typedConfig != null) {
                 // Copy provided config since we shouldn't modify it
-                resultConfig = new HashMap<>(typedConfig);
+                resultConfig = prepareTypedMediationConfig(typedConfig);
             }
-        }
-        if (resultConfig == null && mediationConfig != null) {
-            resultConfig = new HashMap<>(mediationConfig);
         }
         return resultConfig;
     }
@@ -178,6 +227,28 @@ public abstract class NetworkConfig {
             mergedAdsTypes = resultList.toArray(new AdsType[0]);
         }
         return mergedAdsTypes;
+    }
+
+    @NonNull
+    NetworkConfigParams getNetworkConfigParams() {
+        return networkConfigParams;
+    }
+
+    private Map<String, String> prepareTypedMediationConfig(@NonNull Map<String, String> config) {
+        Map<String, String> resultConfig = new HashMap<>();
+        if (networkParams != null && useNetworkParamsAsMediationBase()) {
+            resultConfig.putAll(networkParams);
+        }
+        if (baseMediationConfig != null) {
+            resultConfig.putAll(baseMediationConfig);
+        }
+        resultConfig.putAll(config);
+        return resultConfig;
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    protected boolean useNetworkParamsAsMediationBase() {
+        return true;
     }
 
     private boolean contains(Object[] array, Object v) {

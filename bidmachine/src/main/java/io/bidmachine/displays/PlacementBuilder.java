@@ -48,7 +48,11 @@ public abstract class PlacementBuilder<UnifiedAdRequestParamsType extends Unifie
                                                  @NonNull AdsType adsType,
                                                  @NonNull Collection<NetworkConfig> networkConfigs) {
         return headerBiddingPlacementBuilder != null
-                ? headerBiddingPlacementBuilder.createPlacement(contextProvider, adRequestParams, adsType, networkConfigs)
+                ? headerBiddingPlacementBuilder.createPlacement(contextProvider,
+                                                                adRequestParams,
+                                                                adsType,
+                                                                getAdContentType(),
+                                                                networkConfigs)
                 : null;
     }
 

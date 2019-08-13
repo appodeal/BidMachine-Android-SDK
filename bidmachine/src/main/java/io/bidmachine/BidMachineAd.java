@@ -193,9 +193,9 @@ public abstract class BidMachineAd<
                 processRequestFail(BMError.Expired);
             } else {
                 processRequestSuccess(request,
-                        request.seatBidResult,
-                        request.bidResult,
-                        request.adResult);
+                                      request.seatBidResult,
+                                      request.bidResult,
+                                      request.adResult);
             }
             return;
         }
@@ -286,9 +286,9 @@ public abstract class BidMachineAd<
                                              @NonNull AuctionResult auctionResult) {
                     if (request == adRequest) {
                         processRequestSuccess(request,
-                                request.seatBidResult,
-                                request.bidResult,
-                                request.adResult);
+                                              request.seatBidResult,
+                                              request.bidResult,
+                                              request.adResult);
                     }
                 }
 
@@ -545,7 +545,14 @@ public abstract class BidMachineAd<
 
         @Override
         public void log(String message) {
-            Logger.log(String.format("%s: %s", toStringShort(), message));
+            if (Logger.isLoggingEnabled()) {
+                String selfMessage = toStringShort();
+                AuctionResult auctionResult = getAuctionResult();
+                if (auctionResult != null) {
+                    selfMessage += "(demand: " + auctionResult.getDemandSource() + ")";
+                }
+                Logger.log(String.format("%s: %s", selfMessage, message));
+            }
         }
     };
 

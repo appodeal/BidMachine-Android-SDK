@@ -47,7 +47,7 @@ class FacebookAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
     @Override
     protected void onInitialize(@NonNull ContextProvider contextProvider,
                                 @NonNull UnifiedAdRequestParams adRequestParams,
-                                @NonNull NetworkConfig networkConfig) {
+                                @NonNull NetworkConfigParams networkConfig) {
         super.onInitialize(contextProvider, adRequestParams, networkConfig);
         configure(adRequestParams);
         AudienceNetworkAds.initialize(contextProvider.getContext());
