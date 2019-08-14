@@ -11,5 +11,5 @@ public interface NetworkConfigParams {
     Map<String, String> obtainNetworkParams();
 
     @Nullable
-    EnumMap<AdsFormat, Map<String, String>> obtainNetworkMediationConfigs(AdsFormat... adsFormats);
+    EnumMap<AdsFormat, Map<String, String>> obtainNetworkMediationConfigs(@Nullable AdsFormat... adsFormats);
 }

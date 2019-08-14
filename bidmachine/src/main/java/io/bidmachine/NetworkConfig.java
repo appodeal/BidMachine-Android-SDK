@@ -113,7 +113,7 @@ public abstract class NetworkConfig {
      * @param value parameter value
      */
     @SuppressWarnings({"unchecked", "unused"})
-    public <T extends NetworkConfig> T setNetworkParameter(@NonNull String key, @NonNull String value) {
+    public <T extends NetworkConfig> T setNetworkParam(@NonNull String key, @NonNull String value) {
         if (networkParams == null) {
             networkParams = new HashMap<>();
         }

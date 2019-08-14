@@ -37,18 +37,18 @@ public class FacebookConfig extends NetworkConfig {
 
     public FacebookConfig withMediationConfig(@NonNull AdsFormat adsFormat,
                                               @NonNull String placementId) {
-        return withMediationConfig(adsFormat, null, placementId);
+        return withMediationConfig(adsFormat, placementId, null);
     }
 
     @SuppressWarnings("WeakerAccess")
     public FacebookConfig withMediationConfig(@NonNull AdsFormat adsFormat,
-                                              @Nullable final String appId,
-                                              @NonNull final String placementId) {
+                                              @NonNull final String placementId,
+                                              @Nullable final String appId) {
         return withMediationConfig(adsFormat, new HashMap<String, String>() {{
+            put(KEY_PLACEMENT_ID, placementId);
             if (!TextUtils.isEmpty(appId)) {
                 put(KEY_APP_ID, appId);
             }
-            put(KEY_PLACEMENT_ID, placementId);
         }});
     }
 }

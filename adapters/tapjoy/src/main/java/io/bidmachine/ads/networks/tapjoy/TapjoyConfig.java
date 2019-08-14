@@ -35,18 +35,18 @@ public class TapjoyConfig extends NetworkConfig {
 
     public TapjoyConfig withMediationConfig(@NonNull AdsFormat format,
                                             @NonNull String placementName) {
-        return withMediationConfig(format, null, placementName);
+        return withMediationConfig(format, placementName, null);
     }
 
     @SuppressWarnings("WeakerAccess")
     public TapjoyConfig withMediationConfig(@NonNull AdsFormat format,
-                                            @Nullable final String sdkKey,
-                                            @NonNull final String placementName) {
+                                            @NonNull final String placementName,
+                                            @Nullable final String sdkKey) {
         return withMediationConfig(format, new HashMap<String, String>() {{
+            put(KEY_PLACEMENT_NAME, placementName);
             if (!TextUtils.isEmpty(sdkKey)) {
                 put(KEY_SDK, sdkKey);
             }
-            put(KEY_PLACEMENT_NAME, placementName);
         }});
     }
 

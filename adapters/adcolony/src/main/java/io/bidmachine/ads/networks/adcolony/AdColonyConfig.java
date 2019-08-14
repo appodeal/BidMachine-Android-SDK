@@ -43,29 +43,29 @@ public class AdColonyConfig extends NetworkConfig {
 
     public AdColonyConfig withMediationConfig(@NonNull AdsFormat adsFormat,
                                               @NonNull String zoneId) {
-        return withMediationConfig(adsFormat, null, zoneId);
+        return withMediationConfig(adsFormat, zoneId, null);
     }
 
     @SuppressWarnings("WeakerAccess")
     public AdColonyConfig withMediationConfig(@NonNull AdsFormat adsFormat,
-                                              @Nullable String appId,
-                                              @NonNull String zoneId) {
-        return withMediationConfig(adsFormat, appId, null, zoneId);
+                                              @NonNull String zoneId,
+                                              @Nullable String appId) {
+        return withMediationConfig(adsFormat, zoneId, appId, null);
     }
 
     @SuppressWarnings("WeakerAccess")
     public AdColonyConfig withMediationConfig(@NonNull AdsFormat adsFormat,
+                                              @NonNull final String zoneId,
                                               @Nullable final String appId,
-                                              @Nullable final String storeId,
-                                              @NonNull final String zoneId) {
+                                              @Nullable final String storeId) {
         return withMediationConfig(adsFormat, new HashMap<String, String>() {{
+            put(KEY_ZONE_ID, zoneId);
             if (!TextUtils.isEmpty(appId)) {
                 put(KEY_APP_ID, appId);
             }
             if (!TextUtils.isEmpty(storeId)) {
                 put(KEY_STORE_ID, storeId);
             }
-            put(KEY_ZONE_ID, zoneId);
         }});
     }
 }
