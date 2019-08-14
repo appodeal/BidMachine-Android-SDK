@@ -1,4 +1,4 @@
-## Version 1.3.0 (August 13, 2019)
+## Version 1.3.0 (August 14, 2019)
 **Features**:
 * Support of 3d party Ad networks adapters for Header-Bidding that work with BidMachine via SDK
 * Possibility to change endpoint
