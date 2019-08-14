@@ -95,6 +95,6 @@ dependencies {
     releaseImplementation project(':bidmachine')
     releaseImplementation project(':appodeal_ads_core')
 
-    artifactoryImplementation 'io.bidmachine:ads:1.1.1'
-    localMavenImplementation 'io.bidmachine:ads:1.1.0'
+    artifactoryImplementation "io.bidmachine:ads:${project(':bidmachine').android.defaultConfig.versionName}"
+    localMavenImplementation "io.bidmachine:ads:${project(':bidmachine').android.defaultConfig.versionName}"
 }
