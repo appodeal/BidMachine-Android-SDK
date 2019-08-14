@@ -16,6 +16,7 @@ import io.bidmachine.utils.BMError;
 import io.bidmachine.utils.Gender;
 
 import java.lang.reflect.Field;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -23,12 +24,13 @@ import java.util.Map;
 class AdColonyAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
 
     private static HashSet<String> zonesCache = new HashSet<>();
+    private boolean isAdapterInitialized = false;
 
     AdColonyAdapter() {
         super("adcolony",
-                obtainAdColonyVersion(),
-                BuildConfig.VERSION_NAME,
-                new AdsType[]{AdsType.Interstitial, AdsType.Rewarded});
+              obtainAdColonyVersion(),
+              BuildConfig.VERSION_NAME,
+              new AdsType[]{AdsType.Interstitial, AdsType.Rewarded});
     }
 
     @Override
@@ -42,8 +44,22 @@ class AdColonyAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
     }
 
     @Override
-    public void collectHeaderBiddingParams(@NonNull ContextProvider contextProvider,
-                                           @NonNull UnifiedAdRequestParams requestParams,
+    protected void onInitialize(@NonNull ContextProvider contextProvider,
+                                @NonNull UnifiedAdRequestParams adRequestParams,
+                                @NonNull NetworkConfigParams networkConfigParams) {
+        super.onInitialize(contextProvider, adRequestParams, networkConfigParams);
+        EnumMap<AdsFormat, Map<String, String>> mediationConfigs =
+                networkConfigParams.obtainNetworkMediationConfigs(AdsFormat.values());
+        if (mediationConfigs != null) {
+            for (Map<String, String> config : mediationConfigs.values()) {
+                extractZoneId(config);
+            }
+        }
+    }
+
+    @Override
+    public void collectHeaderBiddingParams(@NonNull final ContextProvider contextProvider,
+                                           @NonNull final UnifiedAdRequestParams requestParams,
                                            @NonNull final HeaderBiddingCollectParamsCallback callback,
                                            @NonNull Map<String, String> mediationConfig) {
         String appId = mediationConfig.get(AdColonyConfig.KEY_APP_ID);
@@ -52,7 +68,7 @@ class AdColonyAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
             return;
         }
         assert appId != null;
-        String zoneId = mediationConfig.get(AdColonyConfig.KEY_ZONE_ID);
+        String zoneId = extractZoneId(mediationConfig);
         if (TextUtils.isEmpty(zoneId)) {
             callback.onCollectFail(BMError.requestError("Zone id not provided"));
             return;
@@ -64,15 +80,20 @@ class AdColonyAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
             return;
         }
         assert storeId != null;
-        if (zonesCache == null) {
-            zonesCache = new HashSet<>();
+        synchronized (AdColonyAdapter.class) {
+            if (!isAdapterInitialized) {
+                AdColony.configure(
+                        (Application) contextProvider.getContext().getApplicationContext(),
+                        createAppOptions(contextProvider.getContext(), requestParams, storeId),
+                        appId,
+                        zonesCache.toArray(new String[0]));
+                if (!isAdColonyConfigured()) {
+                    callback.onCollectFail(BMError.TimeoutError);
+                    return;
+                }
+                isAdapterInitialized = true;
+            }
         }
-        zonesCache.add(zoneId);
-        AdColony.configure(
-                (Application) contextProvider.getContext().getApplicationContext(),
-                createAppOptions(contextProvider.getContext(), requestParams, storeId),
-                appId,
-                zonesCache.toArray(new String[0]));
 
         final Map<String, String> params = new HashMap<>();
         params.put(AdColonyConfig.KEY_APP_ID, appId);
@@ -166,6 +187,25 @@ class AdColonyAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
             }
         }
         return version;
+    }
+
+    private String extractZoneId(Map<String, String> mediationConfig) {
+        String zoneId = mediationConfig.get(AdColonyConfig.KEY_ZONE_ID);
+        if (TextUtils.isEmpty(zoneId)) {
+            return null;
+        }
+        assert zoneId != null;
+        if (zonesCache == null) {
+            zonesCache = new HashSet<>();
+        }
+        if (zonesCache.add(zoneId)) {
+            isAdapterInitialized = false;
+        }
+        return zoneId;
+    }
+
+    private boolean isAdColonyConfigured() {
+        return !TextUtils.isEmpty(AdColony.getSDKVersion());
     }
 
 }

@@ -44,7 +44,7 @@ class MyTargetAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
     @Override
     protected void onInitialize(@NonNull ContextProvider contextProvider,
                                 @NonNull UnifiedAdRequestParams adRequestParams,
-                                @NonNull NetworkConfig networkConfig) {
+                                @NonNull NetworkConfigParams networkConfig) {
         updateRestrictions(adRequestParams);
     }
 

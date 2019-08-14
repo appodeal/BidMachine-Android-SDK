@@ -209,7 +209,7 @@ class NetworkRegistry {
                             null);
                     NetworkAdapter networkAdapter = networkConfig.obtainNetworkAdapter();
                     networkAdapter.setLogging(Logger.isLoggingEnabled());
-                    networkAdapter.initialize(contextProvider, adRequestParams, networkConfig);
+                    networkAdapter.initialize(contextProvider, adRequestParams, networkConfig.getNetworkConfigParams());
 
                     String key = networkConfig.getKey();
                     if (!cache.containsKey(key)) {

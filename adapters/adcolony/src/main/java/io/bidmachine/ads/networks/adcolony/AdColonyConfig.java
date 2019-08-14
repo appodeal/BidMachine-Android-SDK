@@ -18,11 +18,6 @@ public class AdColonyConfig extends NetworkConfig {
 
     private static final String DEFAULT_STORE_ID = "google";
 
-    @Nullable
-    private final String appId;
-    @Nullable
-    private final String storeId;
-
     public AdColonyConfig(@NonNull String appId) {
         this(appId, DEFAULT_STORE_ID);
     }
@@ -33,21 +28,11 @@ public class AdColonyConfig extends NetworkConfig {
             put(KEY_APP_ID, appId);
             put(KEY_STORE_ID, storeId);
         }});
-        this.appId = appId;
-        this.storeId = storeId;
     }
 
     @SuppressWarnings("unused")
-    public AdColonyConfig(@Nullable Map<String, String> networkConfig) {
-        super(networkConfig);
-        if (networkConfig != null) {
-            appId = networkConfig.get(KEY_APP_ID);
-            storeId = networkConfig.containsKey(KEY_STORE_ID)
-                    ? networkConfig.get(KEY_STORE_ID) : DEFAULT_STORE_ID;
-        } else {
-            appId = null;
-            storeId = DEFAULT_STORE_ID;
-        }
+    public AdColonyConfig(@Nullable Map<String, String> networkParams) {
+        super(networkParams);
     }
 
     @NonNull
@@ -58,42 +43,29 @@ public class AdColonyConfig extends NetworkConfig {
 
     public AdColonyConfig withMediationConfig(@NonNull AdsFormat adsFormat,
                                               @NonNull String zoneId) {
-        return withMediationConfig(adsFormat, appId, zoneId);
+        return withMediationConfig(adsFormat, zoneId, null);
     }
 
     @SuppressWarnings("WeakerAccess")
     public AdColonyConfig withMediationConfig(@NonNull AdsFormat adsFormat,
-                                              @Nullable String appId,
-                                              @NonNull String zoneId) {
-        return withMediationConfig(adsFormat, appId, zoneId, storeId);
+                                              @NonNull String zoneId,
+                                              @Nullable String appId) {
+        return withMediationConfig(adsFormat, zoneId, appId, null);
     }
 
     @SuppressWarnings("WeakerAccess")
     public AdColonyConfig withMediationConfig(@NonNull AdsFormat adsFormat,
-                                              @Nullable final String appId,
                                               @NonNull final String zoneId,
+                                              @Nullable final String appId,
                                               @Nullable final String storeId) {
         return withMediationConfig(adsFormat, new HashMap<String, String>() {{
+            put(KEY_ZONE_ID, zoneId);
             if (!TextUtils.isEmpty(appId)) {
                 put(KEY_APP_ID, appId);
             }
-            put(KEY_ZONE_ID, zoneId);
             if (!TextUtils.isEmpty(storeId)) {
                 put(KEY_STORE_ID, storeId);
             }
         }});
-    }
-
-    @Override
-    protected void onMediationConfigAdded(@NonNull AdsFormat adsFormat,
-                                          @NonNull Map<String, String> config) {
-        if (!config.containsKey(KEY_APP_ID) && !TextUtils.isEmpty(appId)) {
-            assert appId != null;
-            config.put(KEY_APP_ID, appId);
-        }
-        if (!config.containsKey(KEY_STORE_ID) && !TextUtils.isEmpty(storeId)) {
-            assert storeId != null;
-            config.put(KEY_STORE_ID, storeId);
-        }
     }
 }

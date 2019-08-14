@@ -19,23 +19,14 @@ public class FacebookConfig extends NetworkConfig {
     static final String KEY_TOKEN = "token";
     static final String KEY_BID_PAYLOAD = "bid_payload";
 
-    @Nullable
-    private final String appId;
-
     public FacebookConfig(@NonNull final String appId) {
         super(new HashMap<String, String>() {{
             put(KEY_APP_ID, appId);
         }});
-        this.appId = appId;
     }
 
     public FacebookConfig(@Nullable Map<String, String> networkParams) {
         super(networkParams);
-        if (networkParams != null) {
-            appId = networkParams.get(KEY_APP_ID);
-        } else {
-            appId = null;
-        }
     }
 
     @NonNull
@@ -46,26 +37,18 @@ public class FacebookConfig extends NetworkConfig {
 
     public FacebookConfig withMediationConfig(@NonNull AdsFormat adsFormat,
                                               @NonNull String placementId) {
-        return withMediationConfig(adsFormat, appId, placementId);
+        return withMediationConfig(adsFormat, placementId, null);
     }
 
     @SuppressWarnings("WeakerAccess")
     public FacebookConfig withMediationConfig(@NonNull AdsFormat adsFormat,
-                                              @Nullable final String appId,
-                                              @NonNull final String placementId) {
+                                              @NonNull final String placementId,
+                                              @Nullable final String appId) {
         return withMediationConfig(adsFormat, new HashMap<String, String>() {{
+            put(KEY_PLACEMENT_ID, placementId);
             if (!TextUtils.isEmpty(appId)) {
                 put(KEY_APP_ID, appId);
             }
-            put(KEY_PLACEMENT_ID, placementId);
         }});
-    }
-
-    @Override
-    protected void onMediationConfigAdded(@NonNull AdsFormat adsFormat, @NonNull Map<String, String> config) {
-        if (!config.containsKey(KEY_APP_ID) && !TextUtils.isEmpty(appId)) {
-            assert appId != null;
-            config.put(KEY_APP_ID, appId);
-        }
     }
 }

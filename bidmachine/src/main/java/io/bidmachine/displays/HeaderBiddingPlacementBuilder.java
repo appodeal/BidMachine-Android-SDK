@@ -27,13 +27,15 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
 
     Message.Builder createPlacement(@NonNull ContextProvider contextProvider,
                                     @NonNull UnifiedAdRequestParamsType adRequestParams,
-                                    @NonNull final AdsType adsType,
+                                    @NonNull AdsType adsType,
+                                    @NonNull AdContentType adContentType,
                                     @NonNull Collection<NetworkConfig> networkConfigs) {
         List<AdUnitPreloadTask> preloadTasks = new ArrayList<>();
         for (NetworkConfig networkConfig : networkConfigs) {
             NetworkAdapter adapter = networkConfig.obtainNetworkAdapter();
             if (adapter instanceof HeaderBiddingAdapter) {
-                Map<String, String> mediationConfig = networkConfig.peekMediationConfig(adsType, adRequestParams);
+                Map<String, String> mediationConfig =
+                        networkConfig.peekMediationConfig(adsType, adRequestParams, adContentType);
                 if (mediationConfig != null) {
                     preloadTasks.add(new AdUnitPreloadTask<>(
                             contextProvider,
@@ -184,7 +186,7 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
             builder.setBidderSdkver(adapter.getVersion());
             builder.putAllClientParams(params);
             adUnit = builder.build();
-            Logger.log(String.format("%s: Header bidding collect finished", adapter.getKey()));
+            Logger.log(String.format("%s: %s: Header bidding collect finished", adapter.getKey(), adsType));
             finish();
             BidMachineEvents.eventFinish(
                     trackingObject,

@@ -11,82 +11,93 @@ import io.bidmachine.unified.UnifiedNativeAdRequestParams;
 
 public enum AdsFormat {
     Banner("banner",
-            new AdsFormatMatcher<UnifiedBannerAdRequestParams>(AdsType.Banner) {
-                @Override
-                boolean isMatch(@NonNull UnifiedBannerAdRequestParams adRequestParams) {
-                    return true;
-                }
-            }),
+           new AdsFormatMatcher<UnifiedBannerAdRequestParams>(AdsType.Banner) {
+               @Override
+               boolean isMatch(@NonNull UnifiedBannerAdRequestParams adRequestParams,
+                               @NonNull AdContentType adContentType) {
+                   return true;
+               }
+           }),
     Banner_320x50("banner_320x50",
-            new AdsFormatMatcher<UnifiedBannerAdRequestParams>(AdsType.Banner) {
-                @Override
-                boolean isMatch(@NonNull UnifiedBannerAdRequestParams adRequestParams) {
-                    return adRequestParams.getBannerSize() == BannerSize.Size_320x50;
-                }
-            }),
+                  new AdsFormatMatcher<UnifiedBannerAdRequestParams>(AdsType.Banner) {
+                      @Override
+                      boolean isMatch(@NonNull UnifiedBannerAdRequestParams adRequestParams,
+                                      @NonNull AdContentType adContentType) {
+                          return adRequestParams.getBannerSize() == BannerSize.Size_320x50;
+                      }
+                  }),
     Banner_300x250("banner_300x250",
-            new AdsFormatMatcher<UnifiedBannerAdRequestParams>(AdsType.Banner) {
-                @Override
-                boolean isMatch(@NonNull UnifiedBannerAdRequestParams adRequestParams) {
-                    return adRequestParams.getBannerSize() == BannerSize.Size_300x250;
-                }
-            }),
+                   new AdsFormatMatcher<UnifiedBannerAdRequestParams>(AdsType.Banner) {
+                       @Override
+                       boolean isMatch(@NonNull UnifiedBannerAdRequestParams adRequestParams,
+                                       @NonNull AdContentType adContentType) {
+                           return adRequestParams.getBannerSize() == BannerSize.Size_300x250;
+                       }
+                   }),
     Banner_728x90("banner_728x90",
-            new AdsFormatMatcher<UnifiedBannerAdRequestParams>(AdsType.Banner) {
-                @Override
-                boolean isMatch(@NonNull UnifiedBannerAdRequestParams adRequestParams) {
-                    return adRequestParams.getBannerSize() == BannerSize.Size_728x90;
-                }
-            }),
+                  new AdsFormatMatcher<UnifiedBannerAdRequestParams>(AdsType.Banner) {
+                      @Override
+                      boolean isMatch(@NonNull UnifiedBannerAdRequestParams adRequestParams,
+                                      @NonNull AdContentType adContentType) {
+                          return adRequestParams.getBannerSize() == BannerSize.Size_728x90;
+                      }
+                  }),
     Interstitial("interstitial",
-            new AdsFormatMatcher<UnifiedFullscreenAdRequestParams>(AdsType.Interstitial) {
-                @Override
-                boolean isMatch(@NonNull UnifiedFullscreenAdRequestParams adRequestParams) {
-                    return true;
-                }
-            }),
+                 new AdsFormatMatcher<UnifiedFullscreenAdRequestParams>(AdsType.Interstitial) {
+                     @Override
+                     boolean isMatch(@NonNull UnifiedFullscreenAdRequestParams adRequestParams,
+                                     @NonNull AdContentType adContentType) {
+                         return true;
+                     }
+                 }),
     InterstitialVideo("interstitial_video",
-            new AdsFormatMatcher<UnifiedFullscreenAdRequestParams>(AdsType.Interstitial) {
-                @Override
-                boolean isMatch(@NonNull UnifiedFullscreenAdRequestParams adRequestParams) {
-                    return adRequestParams.isContentTypeMatch(AdContentType.Video);
-                }
-            }),
+                      new AdsFormatMatcher<UnifiedFullscreenAdRequestParams>(AdsType.Interstitial) {
+                          @Override
+                          boolean isMatch(@NonNull UnifiedFullscreenAdRequestParams adRequestParams,
+                                          @NonNull AdContentType adContentType) {
+                              return adContentType == AdContentType.Video;
+                          }
+                      }),
     InterstitialStatic("interstitial_static",
-            new AdsFormatMatcher<UnifiedFullscreenAdRequestParams>(AdsType.Interstitial) {
-                @Override
-                boolean isMatch(@NonNull UnifiedFullscreenAdRequestParams adRequestParams) {
-                    return adRequestParams.isContentTypeMatch(AdContentType.Static);
-                }
-            }),
+                       new AdsFormatMatcher<UnifiedFullscreenAdRequestParams>(AdsType.Interstitial) {
+                           @Override
+                           boolean isMatch(@NonNull UnifiedFullscreenAdRequestParams adRequestParams,
+                                           @NonNull AdContentType adContentType) {
+                               return adContentType == AdContentType.Static;
+                           }
+                       }),
     Rewarded("rewarded",
-            new AdsFormatMatcher<UnifiedFullscreenAdRequestParams>(AdsType.Rewarded) {
-                @Override
-                boolean isMatch(@NonNull UnifiedFullscreenAdRequestParams adRequestParams) {
-                    return true;
-                }
-            }),
+             new AdsFormatMatcher<UnifiedFullscreenAdRequestParams>(AdsType.Rewarded) {
+                 @Override
+                 boolean isMatch(@NonNull UnifiedFullscreenAdRequestParams adRequestParams,
+                                 @NonNull AdContentType adContentType) {
+                     return true;
+                 }
+             }),
     RewardedVideo("rewarded_video",
-            new AdsFormatMatcher<UnifiedFullscreenAdRequestParams>(AdsType.Rewarded) {
-                @Override
-                boolean isMatch(@NonNull UnifiedFullscreenAdRequestParams adRequestParams) {
-                    return adRequestParams.isContentTypeMatch(AdContentType.Video);
-                }
-            }),
+                  new AdsFormatMatcher<UnifiedFullscreenAdRequestParams>(AdsType.Rewarded) {
+                      @Override
+                      boolean isMatch(@NonNull UnifiedFullscreenAdRequestParams adRequestParams,
+                                      @NonNull AdContentType adContentType) {
+                          return adContentType == AdContentType.Video;
+                      }
+                  }),
     RewardedStatic("rewarded_static",
-            new AdsFormatMatcher<UnifiedFullscreenAdRequestParams>(AdsType.Rewarded) {
-                @Override
-                boolean isMatch(@NonNull UnifiedFullscreenAdRequestParams adRequestParams) {
-                    return adRequestParams.isContentTypeMatch(AdContentType.Static);
-                }
-            }),
+                   new AdsFormatMatcher<UnifiedFullscreenAdRequestParams>(AdsType.Rewarded) {
+                       @Override
+                       boolean isMatch(@NonNull UnifiedFullscreenAdRequestParams adRequestParams,
+                                       @NonNull AdContentType adContentType) {
+                           return adContentType == AdContentType.Static;
+                       }
+                   }),
     Native("native",
-            new AdsFormatMatcher<UnifiedNativeAdRequestParams>(AdsType.Native) {
-                @Override
-                boolean isMatch(@NonNull UnifiedNativeAdRequestParams adRequestParams) {
-                    return true;
-                }
-            });
+           new AdsFormatMatcher<UnifiedNativeAdRequestParams>(AdsType.Native) {
+               @Override
+               boolean isMatch(@NonNull UnifiedNativeAdRequestParams adRequestParams,
+                               @NonNull AdContentType adContentType) {
+                   return true;
+               }
+           });
 
     @NonNull
     private String remoteName;
@@ -99,8 +110,10 @@ public enum AdsFormat {
     }
 
     @SuppressWarnings("unchecked")
-    <T extends UnifiedAdRequestParams> boolean isMatch(@NonNull AdsType adsType, @NonNull T adRequestParams) {
-        return matcher.isMatch(adsType, adRequestParams);
+    <T extends UnifiedAdRequestParams> boolean isMatch(@NonNull AdsType adsType,
+                                                       @NonNull T adRequestParams,
+                                                       @NonNull AdContentType adContentType) {
+        return matcher.isMatch(adsType, adRequestParams, adContentType);
     }
 
     @Nullable
@@ -124,11 +137,14 @@ public enum AdsFormat {
             this.adsType = adsType;
         }
 
-        final boolean isMatch(@NonNull AdsType adsType, @NonNull T adRequestParams) {
-            return adsType == this.adsType && isMatch(adRequestParams);
+        final boolean isMatch(@NonNull AdsType adsType,
+                              @NonNull T adRequestParams,
+                              @NonNull AdContentType adContentType) {
+            return adsType == this.adsType && isMatch(adRequestParams, adContentType);
         }
 
-        abstract boolean isMatch(@NonNull T adRequestParams);
+        abstract boolean isMatch(@NonNull T adRequestParams,
+                                 @NonNull AdContentType adContentType);
 
     }
 }

@@ -38,9 +38,9 @@ class TapjoyAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
     @Override
     protected void onInitialize(@NonNull ContextProvider contextProvider,
                                 @NonNull UnifiedAdRequestParams adRequestParams,
-                                @NonNull NetworkConfig networkConfig) {
+                                @NonNull NetworkConfigParams networkConfig) {
         configure(adRequestParams);
-        Map<String, String> networkParams = networkConfig.getNetworkParams();
+        Map<String, String> networkParams = networkConfig.obtainNetworkParams();
         if (networkParams != null) {
             final String sdkKey = networkParams.get(TapjoyConfig.KEY_SDK);
             if (!TextUtils.isEmpty(sdkKey)) {
