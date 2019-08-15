@@ -120,9 +120,9 @@ final class BidMachineImpl {
         }
     };
 
-    synchronized void initialize(@NonNull Context context,
-                                 @NonNull String sellerId,
-                                 @Nullable InitializationCallback callback) {
+    synchronized void initialize(@NonNull final Context context,
+                                 @NonNull final String sellerId,
+                                 @Nullable final InitializationCallback callback) {
         if (isInitialized) {
             return;
         }
@@ -137,16 +137,16 @@ final class BidMachineImpl {
         this.sellerId = sellerId;
         appContext = context.getApplicationContext();
         sessionTracker = new SessionTrackerImpl();
+        loadStoredInitResponse(context);
+        initializeIab(context);
         AdvertisingIdClientInfo.executeTask(context, new AdvertisingIdClientInfo.Closure() {
             @Override
             public void executed(@NonNull AdvertisingIdClientInfo.AdvertisingProfile advertisingProfile) {
                 AdvertisingPersonalData.setLimitAdTrackingEnabled(advertisingProfile.isLimitAdTrackingEnabled());
                 AdvertisingPersonalData.setDeviceAdvertisingId(advertisingProfile.getId());
+                requestInitData(context, sellerId, callback);
             }
         });
-        loadStoredInitResponse(context);
-        initializeIab(context);
-        requestInitData(context, sellerId, callback);
         topActivity = ActivityHelper.getTopActivity();
         ((Application) context.getApplicationContext())
                 .registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks());

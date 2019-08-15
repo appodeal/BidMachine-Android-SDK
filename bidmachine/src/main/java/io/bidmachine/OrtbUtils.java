@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 import android.telephony.TelephonyManager;
 import com.explorestack.protobuf.adcom.*;
 import com.google.protobuf.*;
+import io.bidmachine.core.DeviceInfo;
 import io.bidmachine.core.Logger;
 import io.bidmachine.core.Utils;
 import io.bidmachine.models.DataRestrictions;
@@ -104,13 +105,27 @@ class OrtbUtils {
     static InitRequest obtainInitRequest(@NonNull android.content.Context context,
                                          @NonNull String sellerId,
                                          @Nullable TargetingParams targetingParams,
-                                         @NonNull DataRestrictions paramsRestrictions) {
+                                         @NonNull DataRestrictions restrictions) {
         final InitRequest.Builder initRequest = InitRequest.newBuilder();
         final String packageName = context.getPackageName();
         if (packageName != null) {
             initRequest.setBundle(packageName);
         }
-        if (paramsRestrictions.canSendGeoPosition()) {
+        initRequest.setSellerId(sellerId);
+        initRequest.setOs(OS.OS_ANDROID);
+        initRequest.setOsv(Build.VERSION.RELEASE);
+        initRequest.setSdk(BidMachine.NAME);
+        initRequest.setSdkver(BidMachine.VERSION);
+        initRequest.setIfa(AdvertisingPersonalData.getAdvertisingId(context, !restrictions.canSendIfa()));
+
+        final DeviceInfo deviceInfo = DeviceInfo.obtain(context);
+        initRequest.setDeviceType(deviceInfo.isTablet
+                                          ? DeviceType.DEVICE_TYPE_TABLET
+                                          : DeviceType.DEVICE_TYPE_PHONE_DEVICE);
+        if (restrictions.canSendDeviceInfo()) {
+            initRequest.setContype(OrtbUtils.getConnectionType(context));
+        }
+        if (restrictions.canSendGeoPosition()) {
             final Context.Geo.Builder geoBuilder = Context.Geo.newBuilder();
             if (targetingParams != null) {
                 targetingParams.build(geoBuilder);
@@ -121,11 +136,6 @@ class OrtbUtils {
                                     true);
             initRequest.setGeo(geoBuilder);
         }
-        initRequest.setSellerId(sellerId);
-        initRequest.setOs(OS.OS_ANDROID);
-        initRequest.setOsv(Build.VERSION.RELEASE);
-        initRequest.setSdk(BidMachine.NAME);
-        initRequest.setSdkver(BidMachine.VERSION);
         return initRequest.build();
     }
 
