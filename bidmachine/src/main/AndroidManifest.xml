@@ -7,16 +7,7 @@
     <application>
 
         <activity
-            android:name="org.nexage.sourcekit.vast.activity.VASTActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" />
-
-        <activity
-            android:name="org.nexage.sourcekit.vast.activity.VPAIDActivity"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" />
-
-        <activity
-            android:name="io.bidmachine.adapters.mraid.MraidActivity"
+            android:name="io.bidmachine.ads.networks.mraid.MraidActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen" />
 

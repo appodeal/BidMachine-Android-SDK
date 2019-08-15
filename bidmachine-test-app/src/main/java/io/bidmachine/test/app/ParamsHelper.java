@@ -5,33 +5,20 @@ import android.location.Location;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
-
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
-
 import io.bidmachine.BidMachine;
 import io.bidmachine.ExtraParams;
 import io.bidmachine.PriceFloorParams;
 import io.bidmachine.TargetingParams;
-import io.bidmachine.models.IExtraParams;
-import io.bidmachine.models.IPriceFloorParams;
-import io.bidmachine.models.ITargetingParams;
-import io.bidmachine.models.IUserRestrictionsParams;
-import io.bidmachine.models.RequestBuilder;
+import io.bidmachine.models.*;
 import io.bidmachine.utils.Gender;
+
+import java.lang.reflect.Type;
+import java.util.*;
 
 public class ParamsHelper implements ITargetingParams<ParamsHelper>,
         IUserRestrictionsParams<ParamsHelper>, IExtraParams<ParamsHelper>, IPriceFloorParams<ParamsHelper> {
@@ -91,6 +78,7 @@ public class ParamsHelper implements ITargetingParams<ParamsHelper>,
     private Boolean hasCoppa;
 
     private String sellerId = "1";
+    private String initUrl = null;
 
     //Only testers params
     private String appBundle;
@@ -498,6 +486,14 @@ public class ParamsHelper implements ITargetingParams<ParamsHelper>,
 
     public String getSellerId() {
         return sellerId;
+    }
+
+    public void setInitUrl(String initUrl) {
+        this.initUrl = initUrl;
+    }
+
+    public String getInitUrl() {
+        return initUrl;
     }
 
     public void setAppBundle(String appBundle) {

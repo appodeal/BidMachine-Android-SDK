@@ -1,56 +1,70 @@
 package io.bidmachine;
 
+import android.content.Context;
+import android.support.annotation.NonNull;
 import io.bidmachine.core.Utils;
-import io.bidmachine.displays.FullScreenAdObjectParams;
+import io.bidmachine.models.AdObjectParams;
+import io.bidmachine.unified.UnifiedFullscreenAd;
+import io.bidmachine.unified.UnifiedFullscreenAdCallback;
+import io.bidmachine.unified.UnifiedFullscreenAdRequestParams;
 
-public abstract class FullScreenAdObject<AdType extends OrtbAd>
-        extends AdObjectImpl<AdType, FullScreenAdObjectParams>
-        implements IFullScreenAd {
+public final class FullScreenAdObject<AdRequestType extends FullScreenAdRequest<AdRequestType>>
+        extends AdObjectImpl<AdRequestType, AdObjectParams, UnifiedFullscreenAd, UnifiedFullscreenAdCallback, UnifiedFullscreenAdRequestParams> {
 
-    private ImpressionThresholdTask thresholdTask = new ImpressionThresholdTask() {
+    private final ImpressionThresholdTask thresholdTask = new ImpressionThresholdTask() {
         @Override
         void onTracked() {
-            processImpression();
+            getProcessCallback().processImpression();
         }
     };
 
-    public FullScreenAdObject(FullScreenAdObjectParams adObjectParams) {
-        super(adObjectParams);
+    public FullScreenAdObject(@NonNull ContextProvider contextProvider,
+                              @NonNull AdProcessCallback processCallback,
+                              @NonNull AdRequestType adRequest,
+                              @NonNull AdObjectParams adObjectParams,
+                              @NonNull UnifiedFullscreenAd unifiedAd) {
+        super(contextProvider, processCallback, adRequest, adObjectParams, unifiedAd);
     }
 
-    public int getSkipAfterTimeSec() {
-        return getParams().getSkipAfterTimeSec();
+    @NonNull
+    @Override
+    public UnifiedFullscreenAdCallback createUnifiedCallback(@NonNull AdProcessCallback processCallback) {
+        return new UnifiedFullscreenAdCallbackImpl(processCallback);
+    }
+
+    public void show(@NonNull Context context) {
+        getUnifiedAd().show(context, getUnifiedAdCallback());
     }
 
     @Override
-    protected void onShown() {
+    public void onShown() {
         super.onShown();
         startImpressionThresholdTask();
     }
 
     @Override
-    public void processClosed(boolean finished) {
-        super.processClosed(finished);
-        cancelImpressionThresholdTask();
-    }
-
-    @Override
-    public void processFinished() {
-        super.processFinished();
-        cancelImpressionThresholdTask();
-    }
-
-    @Override
-    protected void onImpression() {
+    public void onImpression() {
         super.onImpression();
         cancelImpressionThresholdTask();
     }
 
-    protected void startImpressionThresholdTask() {
+    @Override
+    public void onClosed(boolean finished) {
+        super.onClosed(finished);
+        cancelImpressionThresholdTask();
+    }
+
+    @Override
+    public void onFinished() {
+        super.onFinished();
+        cancelImpressionThresholdTask();
+    }
+
+    private void startImpressionThresholdTask() {
         thresholdTask.start(getParams().getViewabilityTimeThresholdMs());
     }
 
-    protected void cancelImpressionThresholdTask() {
+    private void cancelImpressionThresholdTask() {
         thresholdTask.cancel();
     }
 
@@ -71,6 +85,33 @@ public abstract class FullScreenAdObject<AdType extends OrtbAd>
 
         abstract void onTracked();
 
+    }
+
+    private final class UnifiedFullscreenAdCallbackImpl extends BaseUnifiedAdCallback implements UnifiedFullscreenAdCallback {
+
+        UnifiedFullscreenAdCallbackImpl(@NonNull AdProcessCallback processCallback) {
+            super(processCallback);
+        }
+
+        @Override
+        public void onAdLoaded() {
+            processCallback.processLoadSuccess();
+        }
+
+        @Override
+        public void onAdShown() {
+            processCallback.processShown();
+        }
+
+        @Override
+        public void onAdFinished() {
+            processCallback.processFinished();
+        }
+
+        @Override
+        public void onAdClosed() {
+            processCallback.processClosed();
+        }
     }
 
 }

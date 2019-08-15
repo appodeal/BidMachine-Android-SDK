@@ -1,0 +1,21 @@
+apply plugin: 'com.android.library'
+
+android {
+    defaultConfig {
+        versionCode 1
+    }
+}
+
+apply from: '../adapters.gradle'
+
+rootProject.allprojects {
+    repositories {
+        maven {
+            url "https://adcolony.bintray.com/AdColony"
+        }
+    }
+}
+
+dependencies {
+    adapterDependency 'com.adcolony:sdk:3.3.10'
+}

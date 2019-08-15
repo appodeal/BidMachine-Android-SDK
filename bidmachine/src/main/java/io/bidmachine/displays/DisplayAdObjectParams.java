@@ -1,9 +1,9 @@
 package io.bidmachine.displays;
 
-import io.bidmachine.protobuf.adcom.Ad;
-import io.bidmachine.protobuf.openrtb.Response;
+import com.explorestack.protobuf.adcom.Ad;
+import com.explorestack.protobuf.openrtb.Response;
 
-public class DisplayAdObjectParams extends FullScreenAdObjectParams {
+final class DisplayAdObjectParams extends IabAdObjectParams {
 
     DisplayAdObjectParams(Response.Seatbid seatbid, Response.Seatbid.Bid bid, Ad ad) {
         super(seatbid, bid, ad);

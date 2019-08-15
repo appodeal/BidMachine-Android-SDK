@@ -15,7 +15,7 @@ import static org.junit.Assert.assertEquals;
 @RunWith(AndroidJUnit4.class)
 @LargeTest
 public abstract class BaseFullScreenRequestTestImpl<AdType extends FullScreenAd, AdRequestType extends AdRequest>
-        extends BaseRequestTestImpl<AdType, AdRequestType> implements FullScreenAdRequestTests, AdRewardedListener<AdType> {
+        extends BaseRequestTestImpl<AdType, AdRequestType> implements FullScreenAdRequestTests {
 
     protected ResultState rewardedState = new ResultState();
 

@@ -1,16 +1,10 @@
 apply plugin: 'com.android.library'
-apply plugin: "com.mobbeel.plugin"
 apply from: "../config.gradle"
 apply from: "publish.gradle"
 
 gradle.ext {
-    protoJarPackage = "io.bidmachine.protobuf"
-    protoJavaPackageFrom = "com.appodeal.protobuf"
-    protoJavaPackageTo = "io.bidmachine.protobuf"
     adsCoreJarPackageName = "io.bidmachine.core"
 }
-
-apply from: "../protobuf/proto.gradle"
 
 android {
     compileSdkVersion androidCompileSdkVersion
@@ -18,13 +12,14 @@ android {
     defaultConfig {
         minSdkVersion androidMinSdkVersion
         targetSdkVersion androidTargetSdkVersion
-        versionCode 100100025
-        versionName "1.1.0"
+        versionCode 100100026
+        versionName "1.3.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
+        consumerProguardFiles 'proguard-rules.pro'
     }
     buildTypes {
-        debug{
+        debug {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             buildConfigField "String", "BM_API_URL", "\"https://staging.appodealx.com\""
@@ -40,7 +35,9 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation fileTree(include: ['*.jar'], dir: 'libs_ext')
-    implementation fileTree(dir: '../protobuf/libs', include: ['*.jar'])
+
+    implementation "io.bidmachine:protobuf-models:$protobufModelsVersion"
+    implementation "com.explorestack:iab:$stackIabVersion"
 
     compileOnly "com.android.support:support-annotations:$supportVersion"
     androidTestImplementation 'com.android.support:multidex:1.0.3'
@@ -55,7 +52,6 @@ dependencies {
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation "org.robolectric:robolectric:$robolectricVersion"
     testImplementation "com.squareup.okhttp3:mockwebserver:$mockwebserver"
-    api project(':nexage')
 }
 
 task createJarAdsCore(type: Copy) {

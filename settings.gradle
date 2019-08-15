@@ -1,1 +1,33 @@
-include ':bidmachine', ':bidmachine-test-app',':nexage', ':protobuf', ':appodeal_ads_core'
+include ':bidmachine', ':bidmachine-test-app', ':appodeal_ads_core', ':adapters'
+
+
+/**
+ * You can define only required networks adapters using 'includingAdNetworks' parameter (will include
+ * only that networks which names are provided) or using 'excludingAdNetworks' (which will exclude
+ * networks which names are provided). Both parameters can work together.
+ */
+gradle.ext {
+    includingAdNetworks = ["adcolony", "facebook", "my_target", "tapjoy"]
+//    excludingAdNetworks = ["ogury"]
+}
+
+/**
+ * Include only required networks adapters modules
+ */
+def includingAdNetworks = gradle.ext.has("includingAdNetworks")
+        ? gradle.ext.get("includingAdNetworks") : null
+def excludingAdNetworks = gradle.ext.has("excludingAdNetworks")
+        ? gradle.ext.get("excludingAdNetworks") : null
+
+file('adapters')
+        .listFiles()
+        .findAll { file -> file.isDirectory() && !file.name.startsWith('_') }
+        .forEach { folder ->
+    if (includingAdNetworks == null
+            || includingAdNetworks.contains(folder.name)) {
+        if (excludingAdNetworks == null
+                || !excludingAdNetworks.contains(folder.name)) {
+            settings.include(':adapters:' + folder.name)
+        }
+    }
+}

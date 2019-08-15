@@ -9,6 +9,7 @@ import android.support.design.widget.Snackbar;
 import android.util.Log;
 import android.util.TypedValue;
 import android.widget.Toast;
+import io.bidmachine.utils.ActivityHelper;
 
 import java.util.List;
 
@@ -18,9 +19,9 @@ public class Utils {
 
     public static void showToast(Context context, String text) {
         Log.d(BMTestApplication, text);
-        if (context instanceof Activity) {
-            Snackbar.make(((Activity) context).findViewById(android.R.id.content),
-                    text, Snackbar.LENGTH_SHORT).show();
+        if (ActivityHelper.getTopActivity() instanceof MainActivity) {
+            Snackbar.make(((Activity) context).findViewById(android.R.id.content), text, Snackbar.LENGTH_SHORT)
+                    .show();
         } else {
             Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
         }

@@ -1,15 +1,14 @@
 package io.bidmachine;
 
+import io.bidmachine.banner.BannerAd;
+import io.bidmachine.interstitial.InterstitialAd;
+import io.bidmachine.nativead.NativeAd;
+import io.bidmachine.rewarded.RewardedAd;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-
-import io.bidmachine.banner.BannerAd;
-import io.bidmachine.interstitial.InterstitialAd;
-import io.bidmachine.nativead.NativeAd;
-import io.bidmachine.rewarded.RewardedAd;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -28,15 +27,15 @@ public class SessionTrackerTest {
 
     @Test
     public void allTypeCountTracking() {
-        OrtbAd[] testRequests = new OrtbAd[]{
+        BidMachineAd[] testRequests = new BidMachineAd[]{
                 new BannerAd(RuntimeEnvironment.application),
                 new NativeAd(RuntimeEnvironment.application),
                 new InterstitialAd(RuntimeEnvironment.application),
                 new RewardedAd(RuntimeEnvironment.application)};
 
-        for (OrtbAd request : testRequests) {
+        for (BidMachineAd request : testRequests) {
             for (TrackEventType type : TrackEventType.values()) {
-                tracker.trackEventFinish(request, type, request.getType(), null);
+                tracker.trackEventFinish(request.trackingObject, type, request.getType(), null);
             }
         }
 
@@ -54,7 +53,7 @@ public class SessionTrackerTest {
     @Test
     public void notifyEvent_sameObject_clearInstanceWhenIntervalsEmptyAfterFinish() {
         TrackingObject trackingObject = mock(TrackingObject.class);
-        tracker.trackEventStart(trackingObject, TrackEventType.AuctionRequest, null);
+        tracker.trackEventStart(trackingObject, TrackEventType.AuctionRequest, null, null);
         assertEquals(1, tracker.intervalHolders.size());
         assertEquals(1, tracker.intervalHolders.get(trackingObject.getTrackingKey()).size());
         tracker.trackEventFinish(trackingObject, TrackEventType.AuctionRequest, null, null);
@@ -64,8 +63,8 @@ public class SessionTrackerTest {
     @Test
     public void notifyEvent_sameObject_notEmptyInstanceAfterFinish() {
         TrackingObject trackingObject = mock(TrackingObject.class);
-        tracker.trackEventStart(trackingObject, TrackEventType.AuctionRequest, null);
-        tracker.trackEventStart(trackingObject, TrackEventType.Load, null);
+        tracker.trackEventStart(trackingObject, TrackEventType.AuctionRequest, null, null);
+        tracker.trackEventStart(trackingObject, TrackEventType.Load, null, null);
         assertEquals(1, tracker.intervalHolders.size());
         assertEquals(2, tracker.intervalHolders.get(trackingObject.getTrackingKey()).size());
         tracker.trackEventFinish(trackingObject, TrackEventType.Load, null, null);
@@ -79,8 +78,8 @@ public class SessionTrackerTest {
         TrackingObject trackingObject2 = mock(TrackingObject.class);
         doReturn("2").when(trackingObject2).getTrackingKey();
 
-        tracker.trackEventStart(trackingObject1, TrackEventType.AuctionRequest, null);
-        tracker.trackEventStart(trackingObject2, TrackEventType.AuctionRequest, null);
+        tracker.trackEventStart(trackingObject1, TrackEventType.AuctionRequest, null, null);
+        tracker.trackEventStart(trackingObject2, TrackEventType.AuctionRequest, null, null);
 
         assertEquals(2, tracker.intervalHolders.size());
         assertEquals(1, tracker.intervalHolders.get(trackingObject1.getTrackingKey()).size());

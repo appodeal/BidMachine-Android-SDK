@@ -8,6 +8,7 @@ public interface IBlockedParams<SelfType> {
      * @param category Block list category ID of content
      * @return Self instance
      */
+    @SuppressWarnings("UnusedReturnValue")
     SelfType addBlockedAdvertiserIABCategory(String category);
 
     /**
@@ -16,6 +17,7 @@ public interface IBlockedParams<SelfType> {
      * @param domain Advertiser domain (e.g., “example.com”) which will be added to block list
      * @return Self instance
      */
+    @SuppressWarnings("UnusedReturnValue")
     SelfType addBlockedAdvertiserDomain(String domain);
 
     /**
@@ -24,6 +26,7 @@ public interface IBlockedParams<SelfType> {
      * @param bundleOrPackage App bundle or package for which ads are disallowed to block list
      * @return Self instance
      */
+    @SuppressWarnings("UnusedReturnValue")
     SelfType addBlockedApplication(String bundleOrPackage);
 
 }

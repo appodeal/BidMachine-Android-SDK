@@ -3,28 +3,41 @@ package io.bidmachine.banner;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.VisibleForTesting;
-
-import io.bidmachine.AdListener;
-import io.bidmachine.AdsType;
-import io.bidmachine.ViewAd;
-import io.bidmachine.ViewAdObject;
+import io.bidmachine.*;
+import io.bidmachine.models.AdObjectParams;
+import io.bidmachine.unified.UnifiedBannerAd;
+import io.bidmachine.unified.UnifiedBannerAdRequestParams;
 
 @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
-public final class BannerAd extends ViewAd<
+final class BannerAd extends ViewAd<
         BannerAd,
         BannerRequest,
-        ViewAdObject<BannerAd>,
+        ViewAdObject<BannerRequest, UnifiedBannerAd, UnifiedBannerAdRequestParams>,
+        UnifiedBannerAdRequestParams,
         AdListener<BannerAd>> {
 
     @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
-    public BannerAd(Context context) {
-        super(context);
+    BannerAd(@NonNull Context context) {
+        super(context, AdsType.Banner);
     }
 
-    @NonNull
     @Override
-    protected AdsType getType() {
-        return AdsType.Banner;
+    protected ViewAdObject<BannerRequest, UnifiedBannerAd, UnifiedBannerAdRequestParams> createAdObject(
+            @NonNull ContextProvider contextProvider,
+            @NonNull BannerRequest adRequest,
+            @NonNull NetworkAdapter adapter,
+            @NonNull AdObjectParams adObjectParams,
+            @NonNull AdProcessCallback processCallback
+    ) {
+        UnifiedBannerAd unifiedAd = adapter.createBanner();
+        if (unifiedAd == null) {
+            return null;
+        }
+        ViewAdObject<BannerRequest, UnifiedBannerAd, UnifiedBannerAdRequestParams> adObject =
+                new ViewAdObject<>(contextProvider, processCallback, adRequest, adObjectParams, unifiedAd);
+        BannerSize bannerSize = adRequest.getSize();
+        adObject.setWidth(bannerSize.width);
+        adObject.setHeight(bannerSize.height);
+        return adObject;
     }
-
 }

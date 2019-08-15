@@ -8,8 +8,9 @@ android {
         applicationId "io.bidmachine.test.app"
         minSdkVersion androidMinSdkVersion
         targetSdkVersion androidTargetSdkVersion
-        versionCode 100100022
-        versionName "1.0.1"
+        versionCode 100100023
+        versionName "1.0.2"
+        multiDexEnabled true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
@@ -39,6 +40,13 @@ repositories {
     maven {
         url 'https://artifactory.bidmachine.io/bidmachine'
     }
+    maven {
+        url 'https://artifactory.bidmachine.io/bidmachine-private'
+        credentials {
+            username = System.getenv("APD_USERNAME")
+            password = System.getenv("APD_USERPASSWORD")
+        }
+    }
     mavenLocal()
     mavenCentral()
 }
@@ -49,6 +57,11 @@ dependencies {
     implementation('com.google.android.gms:play-services-ads-identifier:15.0.0') {
         exclude module: 'support-v4'
         exclude module: 'support-v7'
+    }
+
+    collectAdapters().forEach { project ->
+        println("register dependency: ${project.name}")
+        implementation(project)
     }
 
     //for play service < 15
@@ -63,6 +76,7 @@ dependencies {
     //        exclude module: 'support-v7'
     //    }
 
+    implementation 'com.android.support:multidex:1.0.3'
     implementation 'org.jsoup:jsoup:1.11.3'
     implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation 'com.android.support:design:28.0.0'
@@ -81,6 +95,6 @@ dependencies {
     releaseImplementation project(':bidmachine')
     releaseImplementation project(':appodeal_ads_core')
 
-    artifactoryImplementation 'io.bidmachine:ads:1.1.0'
-    localMavenImplementation 'io.bidmachine:ads:1.1.0'
+    artifactoryImplementation "io.bidmachine:ads:${project(':bidmachine').android.defaultConfig.versionName}"
+    localMavenImplementation "io.bidmachine:ads:${project(':bidmachine').android.defaultConfig.versionName}"
 }

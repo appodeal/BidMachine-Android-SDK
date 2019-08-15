@@ -8,35 +8,20 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.telephony.TelephonyManager;
+import com.explorestack.protobuf.adcom.*;
+import com.google.protobuf.*;
+import io.bidmachine.core.DeviceInfo;
+import io.bidmachine.core.Logger;
+import io.bidmachine.core.Utils;
+import io.bidmachine.models.DataRestrictions;
+import io.bidmachine.protobuf.InitRequest;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
-import io.bidmachine.core.Logger;
-import io.bidmachine.core.Utils;
-import io.bidmachine.models.RequestParamsRestrictions;
-import io.bidmachine.protobuf.Any;
-import io.bidmachine.protobuf.ByteString;
-import io.bidmachine.protobuf.Descriptors;
-import io.bidmachine.protobuf.InitRequest;
-import io.bidmachine.protobuf.Message;
-import io.bidmachine.protobuf.MessageOrBuilder;
-import io.bidmachine.protobuf.TextFormat;
-import io.bidmachine.protobuf.UnknownFieldSet;
-import io.bidmachine.protobuf.WireFormat;
-import io.bidmachine.protobuf.adcom.Ad;
-import io.bidmachine.protobuf.adcom.ConnectionType;
-import io.bidmachine.protobuf.adcom.Context;
-import io.bidmachine.protobuf.adcom.LocationType;
-import io.bidmachine.protobuf.adcom.OS;
-
+import static com.google.protobuf.TextFormat.escapeBytes;
 import static io.bidmachine.core.Utils.oneOf;
-import static io.bidmachine.protobuf.TextFormat.escapeBytes;
 
 class OrtbUtils {
 
@@ -120,28 +105,37 @@ class OrtbUtils {
     static InitRequest obtainInitRequest(@NonNull android.content.Context context,
                                          @NonNull String sellerId,
                                          @Nullable TargetingParams targetingParams,
-                                         @NonNull RequestParamsRestrictions paramsRestrictions) {
+                                         @NonNull DataRestrictions restrictions) {
         final InitRequest.Builder initRequest = InitRequest.newBuilder();
         final String packageName = context.getPackageName();
         if (packageName != null) {
             initRequest.setBundle(packageName);
-        }
-        if (paramsRestrictions.canSendGeoPosition()) {
-            final Context.Geo.Builder geoBuilder = Context.Geo.newBuilder();
-            if (targetingParams != null) {
-                targetingParams.build(context, geoBuilder, targetingParams, paramsRestrictions);
-            }
-            OrtbUtils.locationToGeo(geoBuilder,
-                    obtainBestLocation(context, targetingParams != null
-                            ? targetingParams.getDeviceLocation() : null, null),
-                    true);
-            initRequest.setGeo(geoBuilder);
         }
         initRequest.setSellerId(sellerId);
         initRequest.setOs(OS.OS_ANDROID);
         initRequest.setOsv(Build.VERSION.RELEASE);
         initRequest.setSdk(BidMachine.NAME);
         initRequest.setSdkver(BidMachine.VERSION);
+        initRequest.setIfa(AdvertisingPersonalData.getAdvertisingId(context, !restrictions.canSendIfa()));
+
+        final DeviceInfo deviceInfo = DeviceInfo.obtain(context);
+        initRequest.setDeviceType(deviceInfo.isTablet
+                                          ? DeviceType.DEVICE_TYPE_TABLET
+                                          : DeviceType.DEVICE_TYPE_PHONE_DEVICE);
+        if (restrictions.canSendDeviceInfo()) {
+            initRequest.setContype(OrtbUtils.getConnectionType(context));
+        }
+        if (restrictions.canSendGeoPosition()) {
+            final Context.Geo.Builder geoBuilder = Context.Geo.newBuilder();
+            if (targetingParams != null) {
+                targetingParams.build(geoBuilder);
+            }
+            OrtbUtils.locationToGeo(geoBuilder,
+                                    obtainBestLocation(context, targetingParams != null
+                                            ? targetingParams.getDeviceLocation() : null, null),
+                                    true);
+            initRequest.setGeo(geoBuilder);
+        }
         return initRequest.build();
     }
 
@@ -155,9 +149,35 @@ class OrtbUtils {
         return bestLocation;
     }
 
+    static void prepareEvents(@NonNull Map<TrackEventType, List<String>> outMap,
+                              @Nullable List<Ad.Event> events) {
+        if (events == null || events.size() == 0) {
+            return;
+        }
+        for (Ad.Event event : events) {
+            TrackEventType eventType = TrackEventType.fromNumber(event.getTypeValue());
+            if (eventType == null) continue;
+            addEvent(outMap, eventType, event.getUrl());
+        }
+    }
+
+    private static void addEvent(@NonNull Map<TrackEventType, List<String>> outMap,
+                                 @NonNull TrackEventType eventType, String url) {
+        List<String> urlList = outMap.get(eventType);
+        if (urlList == null) {
+            urlList = new ArrayList<>(1);
+            outMap.put(eventType, urlList);
+        }
+        urlList.add(url);
+    }
+
     /*
     Protobuf dump utils
      */
+
+    //TODO: optimize for different packages support
+    private static String protoRootPackage = "bidmachine";
+    private static String[] protoKnownPackages = {"io.bidmachine", "com.explorestack"};
 
     private static Printer DEFAULT_PRINTER = new Printer();
 
@@ -256,7 +276,9 @@ class OrtbUtils {
             this.printUnknownFields(message.getUnknownFields(), generator);
         }
 
-        private void printField(Descriptors.FieldDescriptor field, Object value, TextGenerator generator) throws IOException {
+        private void printField(Descriptors.FieldDescriptor field,
+                                Object value,
+                                TextGenerator generator) throws IOException {
             if (field.isRepeated()) {
                 Iterator var4 = ((List) value).iterator();
 
@@ -270,7 +292,9 @@ class OrtbUtils {
 
         }
 
-        private void printSingleField(Descriptors.FieldDescriptor field, Object value, TextGenerator generator) throws IOException {
+        private void printSingleField(Descriptors.FieldDescriptor field,
+                                      Object value,
+                                      TextGenerator generator) throws IOException {
             if (field.isExtension()) {
                 generator.print("[");
                 if (field.getContainingType().getOptions().getMessageSetWireFormat()
@@ -308,12 +332,15 @@ class OrtbUtils {
                     final String[] splits = typeUrl.split("/");
                     final String type = splits[splits.length - 1];
 
-                    //TODO: optimize for different packages support
-                    try {
-                        OrtbUtils.print(any.unpack((Class<Message>) Class.forName("io." + type)), tmp);
-                    } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
+                    for (String pkg : protoKnownPackages) {
+                        try {
+                            String className = type.replace(protoRootPackage, pkg);
+                            OrtbUtils.print(any.unpack((Class<Message>) Class.forName(className)), tmp);
+                            break;
+                        } catch (ClassNotFoundException ignore) {
+                        }
                     }
+
                     if (tmp.length() > 0) {
                         generator.indent();
                         generator.print(tmp);
@@ -341,7 +368,9 @@ class OrtbUtils {
 
         }
 
-        private void printFieldValue(Descriptors.FieldDescriptor field, Object value, TextGenerator generator) throws IOException {
+        private void printFieldValue(Descriptors.FieldDescriptor field,
+                                     Object value,
+                                     TextGenerator generator) throws IOException {
             switch (field.getType()) {
                 case INT32:
                 case SINT32:
@@ -372,8 +401,10 @@ class OrtbUtils {
                     break;
                 case STRING:
                     generator.print("\"");
-                    generator.print(this.escapeNonAscii ? escapeBytes(ByteString.copyFromUtf8((String) value))
-                            : TextFormat.escapeDoubleQuotesAndBackslashes((String) value).replace("\n", "\\n"));
+                    generator.print(this.escapeNonAscii
+                                            ? escapeBytes(ByteString.copyFromUtf8((String) value))
+                                            : TextFormat.escapeDoubleQuotesAndBackslashes((String) value)
+                                                        .replace("\n", "\\n"));
                     generator.print("\"");
                     break;
                 case BYTES:
@@ -430,7 +461,10 @@ class OrtbUtils {
 
         }
 
-        private void printUnknownField(int number, int wireType, List<?> values, TextGenerator generator) throws IOException {
+        private void printUnknownField(int number,
+                                       int wireType,
+                                       List<?> values,
+                                       TextGenerator generator) throws IOException {
             for (Object value : values) {
                 generator.print(String.valueOf(number));
                 generator.print(": ");
@@ -466,29 +500,9 @@ class OrtbUtils {
     }
 
     private static String unsignedToString(long value) {
-        return value >= 0L ? Long.toString(value) : BigInteger.valueOf(value & 9223372036854775807L).setBit(63).toString();
-    }
-
-    static void prepareEvents(@NonNull Map<TrackEventType, List<String>> outMap,
-                              @Nullable List<Ad.Event> events) {
-        if (events == null || events.size() == 0) {
-            return;
-        }
-        for (Ad.Event event : events) {
-            TrackEventType eventType = TrackEventType.fromNumber(event.getTypeValue());
-            if (eventType == null) continue;
-            addEvent(outMap, eventType, event.getUrl());
-        }
-    }
-
-    private static void addEvent(@NonNull Map<TrackEventType, List<String>> outMap,
-                                 @NonNull TrackEventType eventType, String url) {
-        List<String> urlList = outMap.get(eventType);
-        if (urlList == null) {
-            urlList = new ArrayList<>(1);
-            outMap.put(eventType, urlList);
-        }
-        urlList.add(url);
+        return value >= 0L ? Long.toString(value) : BigInteger.valueOf(value & 9223372036854775807L)
+                                                              .setBit(63)
+                                                              .toString();
     }
 
 }

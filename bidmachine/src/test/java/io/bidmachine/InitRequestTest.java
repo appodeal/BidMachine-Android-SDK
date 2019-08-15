@@ -3,7 +3,15 @@ package io.bidmachine;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Base64;
-
+import com.explorestack.protobuf.adcom.Ad;
+import io.bidmachine.protobuf.ActionType;
+import io.bidmachine.protobuf.ErrorReason;
+import io.bidmachine.protobuf.EventTypeExtended;
+import io.bidmachine.protobuf.InitResponse;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
+import okio.Buffer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,22 +23,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import io.bidmachine.protobuf.ActionType;
-import io.bidmachine.protobuf.ErrorReason;
-import io.bidmachine.protobuf.EventTypeExtended;
-import io.bidmachine.protobuf.InitResponse;
-import io.bidmachine.protobuf.adcom.Ad;
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
-import okhttp3.mockwebserver.RecordedRequest;
-import okio.Buffer;
-
-import static io.bidmachine.TestUtils.changeInitUrl;
-import static io.bidmachine.TestUtils.resetBidMachineInstance;
-import static io.bidmachine.TestUtils.restoreInitUrl;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static io.bidmachine.TestUtils.*;
+import static org.junit.Assert.*;
 
 @RunWith(RobolectricTestRunner.class)
 public class InitRequestTest {
@@ -80,7 +74,7 @@ public class InitRequestTest {
         mockWebServer.enqueue(new MockResponse().setResponseCode(200)
                 .setBody(buffer));
 
-        BidMachineImpl.get().initialize(RuntimeEnvironment.application, "1");
+        BidMachineImpl.get().initialize(RuntimeEnvironment.application, "1", null);
 
         RecordedRequest recordedRequest =
                 mockWebServer.takeRequest(3, TimeUnit.SECONDS);
@@ -121,7 +115,7 @@ public class InitRequestTest {
         mockWebServer.enqueue(new MockResponse().setResponseCode(400)
                 .setBody(buffer));
 
-        BidMachineImpl.get().initialize(RuntimeEnvironment.application, "1");
+        BidMachineImpl.get().initialize(RuntimeEnvironment.application, "1", null);
 
         RecordedRequest recordedRequest =
                 mockWebServer.takeRequest(3, TimeUnit.SECONDS);

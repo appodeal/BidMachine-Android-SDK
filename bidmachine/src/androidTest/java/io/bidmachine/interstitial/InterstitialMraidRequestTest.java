@@ -11,6 +11,6 @@ public class InterstitialMraidRequestTest extends InterstitialRequestTest {
 
     @Override
     protected PlacementDisplayBuilder createPlacementDisplayBuilder() {
-        return new MraidDisplayBuilder();
+        return new MraidDisplayBuilder().setSize(320, 400);
     }
 }

@@ -7,7 +7,6 @@ import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
-
 import io.bidmachine.core.Logger;
 import io.bidmachine.models.AuctionResult;
 import io.bidmachine.models.RequestBuilder;
@@ -16,9 +15,9 @@ import io.bidmachine.utils.ParamsHelper;
 
 public abstract class AdView<
         SelfType extends AdView<SelfType, AdType, AdRequestType, AdObjectType, ExternalAdListenerType>,
-        AdType extends ViewAd<AdType, AdRequestType, AdObjectType, AdListener<AdType>>,
-        AdRequestType extends AdRequest<AdRequestType>,
-        AdObjectType extends ViewAdObject<AdType>,
+        AdType extends ViewAd<AdType, AdRequestType, AdObjectType, ?, AdListener<AdType>>,
+        AdRequestType extends AdRequest<AdRequestType, ?>,
+        AdObjectType extends ViewAdObject<AdRequestType, ?, ?>,
         ExternalAdListenerType extends AdListener<SelfType>>
         extends FrameLayout
         implements IAd<SelfType, AdRequestType> {
@@ -155,6 +154,16 @@ public abstract class AdView<
     @Override
     public boolean isLoading() {
         return pendingAd != null && pendingAd.isLoading();
+    }
+
+    @Override
+    public boolean isExpired() {
+        return pendingAd != null ? pendingAd.isExpired() : currentAd != null && currentAd.isExpired();
+    }
+
+    @Override
+    public boolean isDestroyed() {
+        return pendingAd != null ? pendingAd.isDestroyed() : currentAd != null && currentAd.isDestroyed();
     }
 
     @Nullable

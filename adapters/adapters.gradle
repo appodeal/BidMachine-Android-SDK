@@ -1,0 +1,33 @@
+/**
+ * Notes:
+ * - should be applied right after 'android' initialization block
+ */
+apply from: "$rootProject.projectDir/config.gradle"
+
+android {
+    defaultConfig {
+        versionName "${project(':bidmachine').android.defaultConfig.versionName}.${versionCode}"
+        consumerProguardFiles 'proguard-rules.pro', '../adapter-proguard-rules.pro'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro', '../adapter-proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    api "com.android.support:support-annotations:$supportVersion"
+
+    api project(':bidmachine')
+
+    testImplementation "junit:junit:$jUnitVersion"
+    testImplementation "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation "org.robolectric:robolectric:$robolectricVersion"
+    testImplementation "com.squareup.okhttp3:mockwebserver:$mockwebserver"
+}
+
+apply from: '../builder.gradle'
+apply from: "../publish.gradle"

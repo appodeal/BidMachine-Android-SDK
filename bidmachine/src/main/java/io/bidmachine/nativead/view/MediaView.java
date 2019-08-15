@@ -19,18 +19,11 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
-
-import org.nexage.sourcekit.util.Assets;
-import org.nexage.sourcekit.vast.model.TRACKING_EVENTS_TYPE;
-import org.nexage.sourcekit.vast.model.VASTModel;
-import org.nexage.sourcekit.vast.view.CircleCountdownView;
-
-import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
-
+import com.explorestack.iab.utils.Assets;
+import com.explorestack.iab.vast.TrackingEvent;
+import com.explorestack.iab.vast.VastError;
+import com.explorestack.iab.vast.VastRequest;
+import com.explorestack.iab.vast.view.CircleCountdownView;
 import io.bidmachine.core.Logger;
 import io.bidmachine.core.Utils;
 import io.bidmachine.nativead.NativeAdObject;
@@ -40,7 +33,14 @@ import io.bidmachine.nativead.utils.ImageHelper;
 import io.bidmachine.nativead.utils.NativeInteractor;
 import io.bidmachine.nativead.utils.NativeMediaPrivateData;
 import io.bidmachine.nativead.utils.NativeNetworkExecutor;
-import io.bidmachine.nativead.utils.NativePrivateData;
+import io.bidmachine.nativead.utils.NativeData;
+import io.bidmachine.nativead.utils.*;
+
+import java.io.File;
+import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static io.bidmachine.core.Utils.getScreenDensity;
 
@@ -52,7 +52,7 @@ public class MediaView extends RelativeLayout implements MediaPlayer.OnCompletio
     private static final float ASPECT_MULTIPLIER_HEIGHT_TO_WIDTH = 16f / 9;
 
     @Nullable
-    NativePrivateData nativeData;
+    NativeData nativeData;
     @Nullable
     NativeMediaPrivateData nativeMediaData;
     @Nullable
@@ -76,7 +76,7 @@ public class MediaView extends RelativeLayout implements MediaPlayer.OnCompletio
     private boolean hasVideo;
     private volatile boolean error;
     private boolean finishedOrExpanded;
-    private VASTModel vastModel;
+    private VastRequest vastRequest;
     private int videoDuration;
     private int quartile;
 
@@ -107,7 +107,7 @@ public class MediaView extends RelativeLayout implements MediaPlayer.OnCompletio
         applyNative(nativeAdObject, nativeAdObject, nativeAdObject);
     }
 
-    public void applyNative(@NonNull NativePrivateData nativeData,
+    public void applyNative(@NonNull NativeData nativeData,
                             @NonNull NativeMediaPrivateData nativeMediaData,
                             @NonNull NativeInteractor nativeInteractor) {
         this.nativeData = nativeData;
@@ -117,8 +117,8 @@ public class MediaView extends RelativeLayout implements MediaPlayer.OnCompletio
         if ((nativeData.getVideoUrl() != null && !nativeData.getVideoUrl().isEmpty())
                 || (nativeData.getVideoAdm() != null && !nativeData.getVideoAdm().isEmpty())) {
             hasVideo = true;
-            if (nativeMediaData.getVideoVastModel() != null) {
-                vastModel = nativeMediaData.getVideoVastModel();
+            if (nativeMediaData.getVastRequest() != null) {
+                vastRequest = nativeMediaData.getVastRequest();
             }
         }
         createView();
@@ -215,10 +215,10 @@ public class MediaView extends RelativeLayout implements MediaPlayer.OnCompletio
                         final DownloadVastVideoTask downloadVideoVastTask = new DownloadVastVideoTask(getContext(),
                                 new DownloadVastVideoTask.OnLoadedListener() {
                                     @Override
-                                    public void onVideoLoaded(DownloadVastVideoTask task, Uri videoFileUri, VASTModel vastModel) {
-                                        MediaView.this.vastModel = vastModel;
+                                    public void onVideoLoaded(DownloadVastVideoTask task, Uri videoFileUri, VastRequest vastRequest) {
+                                        MediaView.this.vastRequest = vastRequest;
                                         nativeMediaData.setVideoUri(videoFileUri);
-                                        nativeMediaData.setVideoVastModel(vastModel);
+                                        nativeMediaData.setVastRequest(vastRequest);
                                         prepareMediaPlayer();
                                     }
 
@@ -547,7 +547,7 @@ public class MediaView extends RelativeLayout implements MediaPlayer.OnCompletio
 
     private void notifyVideoFinished() {
         if (!isVideoFinishNotified) {
-            processEvent(TRACKING_EVENTS_TYPE.complete);
+            processEvent(TrackingEvent.complete);
             isVideoFinishNotified = true;
             Logger.log("MediaView video finished");
         }
@@ -646,16 +646,16 @@ public class MediaView extends RelativeLayout implements MediaPlayer.OnCompletio
                                 if (percentage >= 25 * quartile) {
                                     if (quartile == 0) {
                                         Logger.log(String.format("Video started: %s%%", percentage));
-                                        processEvent(TRACKING_EVENTS_TYPE.start);
+                                        processEvent(TrackingEvent.start);
                                     } else if (quartile == 1) {
                                         Logger.log(String.format("Video at first quartile: %s%%", percentage));
-                                        processEvent(TRACKING_EVENTS_TYPE.firstQuartile);
+                                        processEvent(TrackingEvent.firstQuartile);
                                     } else if (quartile == 2) {
                                         Logger.log(String.format("Video at midpoint: %s%%", percentage));
-                                        processEvent(TRACKING_EVENTS_TYPE.midpoint);
+                                        processEvent(TrackingEvent.midpoint);
                                     } else if (quartile == 3) {
                                         Logger.log(String.format("Video at third quartile: %s%%", percentage));
-                                        processEvent(TRACKING_EVENTS_TYPE.thirdQuartile);
+                                        processEvent(TrackingEvent.thirdQuartile);
                                     }
                                     quartile++;
                                 }
@@ -692,19 +692,20 @@ public class MediaView extends RelativeLayout implements MediaPlayer.OnCompletio
     }
 
     private void processImpressions() {
-        if (vastModel != null) {
-            List<String> impressions = vastModel.getImpressions();
+        if (vastRequest != null && vastRequest.getVastAd() != null) {
+            List<String> impressions = vastRequest.getVastAd().getImpressionUrlList();
             fireUrls(impressions);
         }
     }
 
-    private void processEvent(TRACKING_EVENTS_TYPE eventName) {
-        if (vastModel != null) {
-            HashMap<TRACKING_EVENTS_TYPE, List<String>> trackingUrls = vastModel.getTrackingUrls();
+    private void processEvent(TrackingEvent eventName) {
+        if (vastRequest != null && vastRequest.getVastAd() != null) {
+            Map<TrackingEvent, List<String>> trackingUrls =
+                    vastRequest.getVastAd().getTrackingEventListMap();
             List<String> urls = trackingUrls.get(eventName);
             fireUrls(urls);
         }
-        if (eventName == TRACKING_EVENTS_TYPE.complete && nativeInteractor != null) {
+        if (eventName == TrackingEvent.complete && nativeInteractor != null) {
             nativeInteractor.dispatchVideoPlayFinished();
         }
     }
@@ -718,8 +719,8 @@ public class MediaView extends RelativeLayout implements MediaPlayer.OnCompletio
     }
 
     private void processErrorEvent() {
-        if (vastModel != null) {
-            vastModel.sendError(VASTModel.ERROR_CODE_ERROR_SHOWING);
+        if (vastRequest != null) {
+            vastRequest.sendError(VastError.ERROR_CODE_ERROR_SHOWING);
         }
     }
 

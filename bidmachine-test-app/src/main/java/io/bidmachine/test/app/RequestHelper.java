@@ -300,7 +300,7 @@ public class RequestHelper {
         if (currentRewardedAd != null) {
             currentRewardedAd.destroy();
         }
-        currentRewardedAd = new RewardedAd(context)
+        currentRewardedAd = new RewardedAd(peekContext())
                 .setListener(new RewardedListener() {
                     @Override
                     public void onAdLoaded(@NonNull RewardedAd ad) {

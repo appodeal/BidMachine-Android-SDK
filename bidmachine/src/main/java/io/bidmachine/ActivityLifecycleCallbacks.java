@@ -8,7 +8,7 @@ class ActivityLifecycleCallbacks implements Application.ActivityLifecycleCallbac
 
     @Override
     public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
-
+        // ignore
     }
 
     @Override
@@ -23,21 +23,21 @@ class ActivityLifecycleCallbacks implements Application.ActivityLifecycleCallbac
 
     @Override
     public void onActivityPaused(Activity activity) {
-
+        // ignore
     }
 
     @Override
     public void onActivityStopped(Activity activity) {
-
+        // ignore
     }
 
     @Override
     public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
-
+        // ignore
     }
 
     @Override
     public void onActivityDestroyed(Activity activity) {
-
+        // ignore
     }
 }

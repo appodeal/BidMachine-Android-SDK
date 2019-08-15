@@ -10,10 +10,8 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.RelativeLayout;
 import android.widget.VideoView;
-
-import org.nexage.sourcekit.util.Assets;
-import org.nexage.sourcekit.vast.view.CircleCountdownView;
-
+import com.explorestack.iab.utils.Assets;
+import com.explorestack.iab.vast.view.CircleCountdownView;
 import io.bidmachine.core.Logger;
 
 import static io.bidmachine.core.Utils.getScreenDensity;
