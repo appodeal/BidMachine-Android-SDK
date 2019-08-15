@@ -76,7 +76,7 @@ class FacebookAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
         assert appId != null;
         final String placementId = mediationConfig.get(FacebookConfig.KEY_PLACEMENT_ID);
         if (TextUtils.isEmpty(placementId)) {
-            callback.onCollectFail(BMError.requestError("placement_id not provided"));
+            callback.onCollectFail(BMError.requestError("placement_id (facebook_key) not provided"));
             return;
         }
         assert placementId != null;

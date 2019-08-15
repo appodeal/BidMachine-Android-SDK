@@ -75,12 +75,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        try {
-            setFinalStatic(Class.forName("io.bidmachine.BuildConfig").getDeclaredField("DEBUG"), true);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
         final SpannableStringBuilder appInfoBuilder = new SpannableStringBuilder();
         appInfoBuilder.append("Version: ");
         appendBold(appInfoBuilder, BidMachine.VERSION).append("   ");
@@ -566,25 +560,6 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(new Intent(this, BannerScrollableActivity.class), 0);
     }
 
-    private static void setFinalStatic(Field field, Object newValue) throws Exception {
-        field.setAccessible(true);
-        try {
-            Field modifiersField = Field.class.getDeclaredField("slot");
-            modifiersField.setAccessible(true);
-            modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-        } catch (Exception e) {
-            e.printStackTrace();
-            try {
-                Field modifiersField = Field.class.getDeclaredField("accessFlags");
-                modifiersField.setAccessible(true);
-                modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-            } catch (Exception e2) {
-                e2.printStackTrace();
-            }
-        }
-        field.set(null, newValue);
-    }
-
     public void configureNetworks(View view) {
         String[] titles = new String[optionalNetworks.length];
         boolean[] checkedItems = new boolean[optionalNetworks.length];
@@ -705,26 +680,27 @@ public class MainActivity extends AppCompatActivity {
                             .withMediationConfig(AdsFormat.RewardedVideo, "1525692904128549_2386753464689151"),
                     "{\n" +
                             "    \"network\":\"facebook\",\n" +
-                            "    \"adunits\":[\n" +
+                            "    \"app_id\":\"1525692904128549\",\n" +
+                            "    \"ad_units\":[\n" +
                             "        {\n" +
                             "            \"format\":\"banner\",\n" +
-                            "            \"slot_id\":\"1525692904128549_2386746951356469\"\n" +
+                            "            \"facebook_key\":\"1525692904128549_2386746951356469\"\n" +
                             "        },\n" +
                             "        {\n" +
                             "            \"format\":\"banner_320x50\",\n" +
-                            "            \"slot_id\":\"1525692904128549_2386746951356469\"\n" +
+                            "            \"facebook_key\":\"1525692904128549_2386746951356469\"\n" +
                             "        },\n" +
                             "        {\n" +
                             "            \"format\":\"banner_300x250\",\n" +
-                            "            \"slot_id\":\"1525692904128549_2386746951356469\"\n" +
+                            "            \"facebook_key\":\"1525692904128549_2386746951356469\"\n" +
                             "        },\n" +
                             "        {\n" +
                             "            \"format\":\"interstitial_static\",\n" +
-                            "            \"slot_id\":\"1525692904128549_2386743441356820\"\n" +
+                            "            \"facebook_key\":\"1525692904128549_2386743441356820\"\n" +
                             "        },\n" +
                             "        {\n" +
                             "            \"format\":\"rewarded_video\",\n" +
-                            "            \"slot_id\":\"1525692904128549_2386753464689151\"\n" +
+                            "            \"facebook_key\":\"1525692904128549_2386753464689151\"\n" +
                             "        }\n" +
                             "    ]\n" +
                             "}")
