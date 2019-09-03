@@ -24,5 +24,4 @@ dependencies {
     adapterDependency "com.explorestack.mintegral:videocommon:${mintegralVersion}"
     adapterDependency "com.explorestack.mintegral:videojs:${mintegralVersion}"
     adapterDependency "com.explorestack.mintegral:mtgbid:${mintegralVersion}"
-
 }

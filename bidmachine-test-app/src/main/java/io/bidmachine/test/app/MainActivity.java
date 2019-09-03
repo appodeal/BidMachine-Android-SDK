@@ -753,23 +753,22 @@ public class MainActivity extends AppCompatActivity {
                                         "    ]\n" +
                                         "}"),
             new OptionalNetwork(5, "Mintegral",
-                                new MintegralConfig("92762", "936dcbdd57fe235fd7cf61c2e93da3c4")
-                                        .withMediationConfig(AdsFormat.InterstitialVideo, "21310")
+                                new MintegralConfig("117852", "936dcbdd57fe235fd7cf61c2e93da3c4")
+                                        .withMediationConfig(AdsFormat.InterstitialVideo, "140146")
                                         .withMediationConfig(AdsFormat.RewardedVideo,
-                                                             "21310",
-                                                             "12817"),
+                                                             "140144"),
                                 "{\n" +
                                         "    \"network\":\"mintegral\",\n" +
-                                        "    \"app_id\":\"92762\",\n" +
+                                        "    \"app_id\":\"117852\",\n" +
                                         "    \"api_key\":\"936dcbdd57fe235fd7cf61c2e93da3c4\",\n" +
                                         "    \"ad_units\":[\n" +
                                         "        {\n" +
                                         "            \"format\":\"interstitial_video\",\n" +
-                                        "            \"unit_id\":\"21310\"\n" +
+                                        "            \"unit_id\":\"140146\"\n" +
                                         "        },\n" +
                                         "        {\n" +
                                         "            \"format\":\"rewarded_video\",\n" +
-                                        "            \"unit_id\":\"21310\",\n" +
+                                        "            \"unit_id\":\"140144\",\n" +
                                         "            \"reward_id\":\"12817\"\n" +
                                         "        }\n" +
                                         "    ]\n" +
