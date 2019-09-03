@@ -23,7 +23,7 @@ public class MintegralRewarded extends UnifiedFullscreenAd {
 
     @Override
     public void show(@NonNull Context context, @NonNull UnifiedFullscreenAdCallback callback) {
-        if (handler != null) {
+        if (handler != null && handler.isBidReady()) {
             handler.showFromBid(rewardId);
         } else {
             callback.onAdShowFailed(BMError.Internal);

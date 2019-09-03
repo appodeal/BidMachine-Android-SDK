@@ -112,11 +112,11 @@ public class MintegralAdapter extends NetworkAdapter implements HeaderBiddingAda
                            @Nullable final SyncCallback syncCallback) {
         TargetingInfo targetingInfo = adRequestParams.getTargetingParams();
         DataRestrictions dataRestrictions = adRequestParams.getDataRestrictions();
-        if (dataRestrictions.isUserGdprProtected()) {
+        if (dataRestrictions.isUserInGdprScope()) {
             MIntegralSDKFactory.getMIntegralSDK().setUserPrivateInfoType(
                     context.getContext(),
                     MIntegralConstans.AUTHORITY_ALL_INFO,
-                    dataRestrictions.isUserHasConsent()
+                    dataRestrictions.isUserGdprProtected()
                             ? MIntegralConstans.IS_SWITCH_OFF
                             : MIntegralConstans.IS_SWITCH_ON);
         }

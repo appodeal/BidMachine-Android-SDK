@@ -21,7 +21,7 @@ class MintegralVideo extends UnifiedFullscreenAd {
 
     @Override
     public void show(@NonNull Context context, @NonNull UnifiedFullscreenAdCallback callback) {
-        if (handler != null) {
+        if (handler != null && handler.isBidReady()) {
             handler.showFromBid();
         } else {
             callback.onAdShowFailed(BMError.NotLoaded);
