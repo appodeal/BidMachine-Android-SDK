@@ -24,13 +24,13 @@ android {
 
     flavorDimensions 'bidmachine'
     productFlavors {
-        demo {
+        local {
             dimension 'bidmachine'
         }
-        artifactory {
+        remote {
             dimension 'bidmachine'
         }
-        localMaven {
+        localRemote {
             dimension 'bidmachine'
         }
     }
@@ -52,7 +52,6 @@ repositories {
 }
 
 dependencies {
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
     //for play service v15+
     implementation('com.google.android.gms:play-services-ads-identifier:15.0.0') {
         exclude module: 'support-v4'
@@ -89,12 +88,12 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
-    demoImplementation project(':bidmachine')
-    demoImplementation project(':appodeal_ads_core')
+    localImplementation project(':bidmachine')
+    localImplementation project(':appodeal_ads_core')
 
     releaseImplementation project(':bidmachine')
     releaseImplementation project(':appodeal_ads_core')
 
-    artifactoryImplementation "io.bidmachine:ads:${project(':bidmachine').android.defaultConfig.versionName}"
-    localMavenImplementation "io.bidmachine:ads:${project(':bidmachine').android.defaultConfig.versionName}"
+    remoteImplementation "io.bidmachine:ads:${project(':bidmachine').android.defaultConfig.versionName}"
+    localRemoteImplementation "io.bidmachine:ads:${project(':bidmachine').android.defaultConfig.versionName}"
 }
