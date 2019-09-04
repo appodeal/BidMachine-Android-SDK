@@ -4,9 +4,13 @@
  */
 apply from: "$rootProject.projectDir/config.gradle"
 
+ext {
+    minBidMachineSdkVersion = '1.3.0'
+}
+
 android {
     defaultConfig {
-        versionName "${project(':bidmachine').android.defaultConfig.versionName}.${versionCode}"
+        versionName "${minBidMachineSdkVersion}.${versionCode}"
         consumerProguardFiles 'proguard-rules.pro', '../adapter-proguard-rules.pro'
     }
 
