@@ -81,11 +81,6 @@ public class MintegralAdapter extends NetworkAdapter implements HeaderBiddingAda
             callback.onCollectFail(BMError.requestError("unit_id not provided"));
             return;
         }
-        final String buyerUid = BidManager.getBuyerUid(contextProvider.getContext());
-        if (TextUtils.isEmpty(buyerUid)) {
-            callback.onCollectFail(BMError.requestError("buyerUid getting failed"));
-            return;
-        }
         syncState(contextProvider, requestParams, new SyncCallback() {
             @Override
             public void onSyncFinished() {
@@ -96,6 +91,13 @@ public class MintegralAdapter extends NetworkAdapter implements HeaderBiddingAda
                         sdk.init(map, contextProvider.getContext().getApplicationContext());
                         isInitialized = true;
                     }
+                }
+                // Need use BidManager.getBuyerUid after initialize, because starting from target
+                // api 27 or higher ads not load
+                final String buyerUid = BidManager.getBuyerUid(contextProvider.getContext());
+                if (TextUtils.isEmpty(buyerUid)) {
+                    callback.onCollectFail(BMError.requestError("buyerUid getting failed"));
+                    return;
                 }
                 final HashMap<String, String> params = new HashMap<>();
                 params.put(MintegralConfig.KEY_APP_ID, appId);
@@ -110,6 +112,9 @@ public class MintegralAdapter extends NetworkAdapter implements HeaderBiddingAda
     private void syncState(@NonNull ContextProvider context,
                            @NonNull UnifiedAdRequestParams adRequestParams,
                            @Nullable final SyncCallback syncCallback) {
+        // The flag(INIT_UA_IN) is responsible for Appwall adtype initialization.
+        // We don't have implementation. Must be false.
+        MIntegralConstans.INIT_UA_IN = false;
         TargetingInfo targetingInfo = adRequestParams.getTargetingParams();
         DataRestrictions dataRestrictions = adRequestParams.getDataRestrictions();
         if (dataRestrictions.isUserInGdprScope()) {
