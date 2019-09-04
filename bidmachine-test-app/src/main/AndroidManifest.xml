@@ -18,10 +18,6 @@
         android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning,UnusedAttribute">
 
-        <uses-library
-            android:name="org.apache.http.legacy"
-            android:required="false" />
-
         <activity
             android:name="io.bidmachine.test.app.MainActivity"
             android:theme="@style/AppTheme.MainActivity">

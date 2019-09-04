@@ -3,6 +3,11 @@
         package="io.bidmachine.ads.networks.mintegral">
 
     <application>
+
+        <uses-library
+                android:name="org.apache.http.legacy"
+                android:required="false" />
+
         <activity
                 android:name="com.mintegral.msdk.activity.MTGCommonActivity"
                 android:configChanges="keyboard|orientation"

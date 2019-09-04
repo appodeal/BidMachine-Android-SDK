@@ -45,6 +45,14 @@ class MintegralVideo extends UnifiedFullscreenAd {
         });
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (handler != null) {
+            handler = null;
+        }
+    }
+
     private class Listener implements InterstitialVideoListener {
 
         @NonNull
