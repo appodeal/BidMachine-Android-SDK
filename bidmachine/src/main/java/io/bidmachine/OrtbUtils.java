@@ -8,17 +8,35 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.telephony.TelephonyManager;
-import com.explorestack.protobuf.adcom.*;
-import com.google.protobuf.*;
+
+import com.explorestack.protobuf.adcom.Ad;
+import com.explorestack.protobuf.adcom.ConnectionType;
+import com.explorestack.protobuf.adcom.Context;
+import com.explorestack.protobuf.adcom.DeviceType;
+import com.explorestack.protobuf.adcom.LocationType;
+import com.explorestack.protobuf.adcom.OS;
+import com.google.protobuf.Any;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.Descriptors;
+import com.google.protobuf.Message;
+import com.google.protobuf.MessageOrBuilder;
+import com.google.protobuf.TextFormat;
+import com.google.protobuf.UnknownFieldSet;
+import com.google.protobuf.WireFormat;
+
+import java.io.IOException;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
 import io.bidmachine.core.DeviceInfo;
 import io.bidmachine.core.Logger;
 import io.bidmachine.core.Utils;
 import io.bidmachine.models.DataRestrictions;
 import io.bidmachine.protobuf.InitRequest;
-
-import java.io.IOException;
-import java.math.BigInteger;
-import java.util.*;
 
 import static com.google.protobuf.TextFormat.escapeBytes;
 import static io.bidmachine.core.Utils.oneOf;
@@ -63,35 +81,39 @@ class OrtbUtils {
                 (ConnectivityManager) context.getSystemService(android.content.Context.CONNECTIVITY_SERVICE);
         NetworkInfo info = cm.getActiveNetworkInfo();
         ConnectionType connectionType;
-        switch (info.getType()) {
-            case ConnectivityManager.TYPE_MOBILE: {
-                switch (info.getSubtype()) {
-                    case TelephonyManager.NETWORK_TYPE_UNKNOWN:
-                        connectionType = ConnectionType.CONNECTION_TYPE_INVALID;
-                        break;
-                    case TelephonyManager.NETWORK_TYPE_GSM:
-                        connectionType = ConnectionType.CONNECTION_TYPE_CELLULAR_NETWORK_2G;
-                        break;
-                    case TelephonyManager.NETWORK_TYPE_CDMA:
-                        connectionType = ConnectionType.CONNECTION_TYPE_CELLULAR_NETWORK_3G;
-                        break;
-                    case TelephonyManager.NETWORK_TYPE_LTE:
-                        connectionType = ConnectionType.CONNECTION_TYPE_CELLULAR_NETWORK_5G;
-                        break;
-                    default:
-                        connectionType = ConnectionType.CONNECTION_TYPE_CELLULAR_NETWORK_4G;
-                        break;
+        if (info == null) {
+            connectionType = ConnectionType.CONNECTION_TYPE_INVALID;
+        } else {
+            switch (info.getType()) {
+                case ConnectivityManager.TYPE_MOBILE: {
+                    switch (info.getSubtype()) {
+                        case TelephonyManager.NETWORK_TYPE_UNKNOWN:
+                            connectionType = ConnectionType.CONNECTION_TYPE_CELLULAR_NETWORK_UNKNOWN;
+                            break;
+                        case TelephonyManager.NETWORK_TYPE_GSM:
+                            connectionType = ConnectionType.CONNECTION_TYPE_CELLULAR_NETWORK_2G;
+                            break;
+                        case TelephonyManager.NETWORK_TYPE_CDMA:
+                            connectionType = ConnectionType.CONNECTION_TYPE_CELLULAR_NETWORK_3G;
+                            break;
+                        case TelephonyManager.NETWORK_TYPE_LTE:
+                            connectionType = ConnectionType.CONNECTION_TYPE_CELLULAR_NETWORK_5G;
+                            break;
+                        default:
+                            connectionType = ConnectionType.CONNECTION_TYPE_CELLULAR_NETWORK_4G;
+                            break;
+                    }
+                    break;
                 }
-                break;
+                case ConnectivityManager.TYPE_WIFI:
+                    connectionType = ConnectionType.CONNECTION_TYPE_WIFI;
+                    break;
+                case ConnectivityManager.TYPE_ETHERNET:
+                    connectionType = ConnectionType.CONNECTION_TYPE_ETHERNET;
+                    break;
+                default:
+                    connectionType = ConnectionType.CONNECTION_TYPE_INVALID;
             }
-            case ConnectivityManager.TYPE_WIFI:
-                connectionType = ConnectionType.CONNECTION_TYPE_WIFI;
-                break;
-            case ConnectivityManager.TYPE_ETHERNET:
-                connectionType = ConnectionType.CONNECTION_TYPE_ETHERNET;
-                break;
-            default:
-                connectionType = ConnectionType.CONNECTION_TYPE_INVALID;
         }
         return connectionType;
     }
