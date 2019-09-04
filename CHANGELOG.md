@@ -1,3 +1,8 @@
+## Version 1.3.1 (September 4, 2019)
+**Features**:
+* Added Mintegral network adapter for Header-Bidding
+* Update proguard rules
+
 ## Version 1.3.0 (August 14, 2019)
 **Features**:
 * Support of 3d party Ad networks adapters for Header-Bidding that work with BidMachine via SDK
