@@ -77,7 +77,7 @@ public class MintegralRewarded extends UnifiedFullscreenAd {
 
         @Override
         public void onVideoLoadFail(String s) {
-            callback.onAdLoadFailed(BMError.Internal);
+            callback.onAdLoadFailed(MintegralAdapter.mapError(s));
         }
 
         @Override

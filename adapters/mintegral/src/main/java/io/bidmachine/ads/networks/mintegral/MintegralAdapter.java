@@ -156,4 +156,16 @@ public class MintegralAdapter extends NetworkAdapter implements HeaderBiddingAda
     private interface SyncCallback {
         void onSyncFinished();
     }
+
+    static BMError mapError(@Nullable String msg) {
+        if (msg != null) {
+            msg = msg.toLowerCase();
+            if (msg.contains("no fill") || msg.contains("no ads")) {
+                return BMError.NoContent;
+            } else if (msg.contains("timeout")) {
+                return BMError.Connection;
+            }
+        }
+        return BMError.Internal;
+    }
 }
