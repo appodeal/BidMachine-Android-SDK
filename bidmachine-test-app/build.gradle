@@ -58,11 +58,6 @@ dependencies {
         exclude module: 'support-v7'
     }
 
-    collectAdapters().forEach { project ->
-        println("register dependency: ${project.name}")
-        implementation(project)
-    }
-
     //for play service < 15
     //    implementation("com.google.android.gms:play-services-basement:15.0.0") {
     //        exclude module: 'support-v4'
@@ -91,9 +86,16 @@ dependencies {
     localImplementation project(':bidmachine')
     localImplementation project(':appodeal_ads_core')
 
-    releaseImplementation project(':bidmachine')
-    releaseImplementation project(':appodeal_ads_core')
-
     remoteImplementation "io.bidmachine:ads:${project(':bidmachine').android.defaultConfig.versionName}"
     localRemoteImplementation "io.bidmachine:ads:${project(':bidmachine').android.defaultConfig.versionName}"
+}
+
+gradle.projectsEvaluated {
+    dependencies {
+        collectAdapters().forEach { adapterProject ->
+            println("register dependency: ${adapterProject.name}")
+            localImplementation(adapterProject)
+            remoteImplementation "io.bidmachine:ads.networks.${adapterProject.name}:${adapterProject.minBidMachineSdkVersion}.${adapterProject.android.defaultConfig.versionCode}"
+        }
+    }
 }

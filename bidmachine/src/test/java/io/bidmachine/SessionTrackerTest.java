@@ -1,6 +1,6 @@
 package io.bidmachine;
 
-import io.bidmachine.banner.BannerAd;
+import io.bidmachine.banner.BannerBridge;
 import io.bidmachine.interstitial.InterstitialAd;
 import io.bidmachine.nativead.NativeAd;
 import io.bidmachine.rewarded.RewardedAd;
@@ -28,7 +28,7 @@ public class SessionTrackerTest {
     @Test
     public void allTypeCountTracking() {
         BidMachineAd[] testRequests = new BidMachineAd[]{
-                new BannerAd(RuntimeEnvironment.application),
+                BannerBridge.createBannerAd(RuntimeEnvironment.application),
                 new NativeAd(RuntimeEnvironment.application),
                 new InterstitialAd(RuntimeEnvironment.application),
                 new RewardedAd(RuntimeEnvironment.application)};
