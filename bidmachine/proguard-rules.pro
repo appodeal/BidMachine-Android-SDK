@@ -4,9 +4,8 @@
 -keep public class io.bidmachine.**
 -keepclassmembers class io.bidmachine.** {*;}
 -keepattributes EnclosingMethod, InnerClasses, Signature, JavascriptInterface
--keep class com.explorestack.protobuf.** {*;}
 -keep class io.bidmachine.protobuf.**
--keep class com.explorestack.protobuf.**
+-keep class com.explorestack.protobuf.** {*;}
 -keepclassmembers class com.explorestack.protobuf.** {*;}
 
 # Support for Android Advertiser ID.
