@@ -4,7 +4,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import com.explorestack.protobuf.adcom.Ad;
 import com.explorestack.protobuf.openrtb.Response;
-import com.google.protobuf.Message;
+import com.explorestack.protobuf.Message;
 import io.bidmachine.AdContentType;
 import io.bidmachine.AdsType;
 import io.bidmachine.ContextProvider;

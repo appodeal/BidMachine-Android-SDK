@@ -5,7 +5,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import com.explorestack.protobuf.adcom.Ad;
 import com.explorestack.protobuf.openrtb.Response;
-import com.google.protobuf.InvalidProtocolBufferException;
+import com.explorestack.protobuf.InvalidProtocolBufferException;
 import io.bidmachine.TrackEventType;
 import io.bidmachine.protobuf.AdExtension;
 import io.bidmachine.unified.UnifiedMediationParams;

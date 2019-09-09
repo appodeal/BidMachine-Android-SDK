@@ -10,9 +10,9 @@ import com.explorestack.protobuf.adcom.Context;
 import com.explorestack.protobuf.adcom.Placement;
 import com.explorestack.protobuf.openrtb.Request;
 import com.explorestack.protobuf.openrtb.Response;
-import com.google.protobuf.Any;
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.Message;
+import com.explorestack.protobuf.Any;
+import com.explorestack.protobuf.InvalidProtocolBufferException;
+import com.explorestack.protobuf.Message;
 
 import java.util.ArrayList;
 import java.util.Map;
