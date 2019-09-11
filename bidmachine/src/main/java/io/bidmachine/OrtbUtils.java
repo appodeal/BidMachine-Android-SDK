@@ -15,14 +15,14 @@ import com.explorestack.protobuf.adcom.Context;
 import com.explorestack.protobuf.adcom.DeviceType;
 import com.explorestack.protobuf.adcom.LocationType;
 import com.explorestack.protobuf.adcom.OS;
-import com.google.protobuf.Any;
-import com.google.protobuf.ByteString;
-import com.google.protobuf.Descriptors;
-import com.google.protobuf.Message;
-import com.google.protobuf.MessageOrBuilder;
-import com.google.protobuf.TextFormat;
-import com.google.protobuf.UnknownFieldSet;
-import com.google.protobuf.WireFormat;
+import com.explorestack.protobuf.Any;
+import com.explorestack.protobuf.ByteString;
+import com.explorestack.protobuf.Descriptors;
+import com.explorestack.protobuf.Message;
+import com.explorestack.protobuf.MessageOrBuilder;
+import com.explorestack.protobuf.TextFormat;
+import com.explorestack.protobuf.UnknownFieldSet;
+import com.explorestack.protobuf.WireFormat;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -38,7 +38,7 @@ import io.bidmachine.core.Utils;
 import io.bidmachine.models.DataRestrictions;
 import io.bidmachine.protobuf.InitRequest;
 
-import static com.google.protobuf.TextFormat.escapeBytes;
+import static com.explorestack.protobuf.TextFormat.escapeBytes;
 import static io.bidmachine.core.Utils.oneOf;
 
 class OrtbUtils {

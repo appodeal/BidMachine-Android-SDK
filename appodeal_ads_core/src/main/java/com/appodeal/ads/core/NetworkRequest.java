@@ -4,7 +4,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Base64;
 
-import com.google.protobuf.AbstractMessage;
+import com.explorestack.protobuf.AbstractMessage;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
