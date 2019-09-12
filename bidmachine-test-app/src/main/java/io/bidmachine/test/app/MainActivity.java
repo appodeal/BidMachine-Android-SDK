@@ -89,8 +89,8 @@ public class MainActivity extends AppCompatActivity {
     private boolean isStaticMode;
     private boolean isResumed;
 
-    private final Collection<OptionalNetwork> checkedOptionalNetworks = new HashSet<>(Arrays.asList(
-            optionalNetworks));
+    private final Collection<OptionalNetwork> checkedOptionalNetworks =
+            new HashSet<>(Arrays.asList(optionalNetworks));
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

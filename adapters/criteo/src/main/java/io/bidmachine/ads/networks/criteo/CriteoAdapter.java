@@ -23,6 +23,7 @@ import java.util.concurrent.Executors;
 import javax.net.ssl.HttpsURLConnection;
 
 import io.bidmachine.AdsType;
+import io.bidmachine.BMLog;
 import io.bidmachine.ContextProvider;
 import io.bidmachine.NetworkAdapter;
 import io.bidmachine.NetworkConfigParams;
@@ -43,18 +44,10 @@ class CriteoAdapter extends NetworkAdapter {
     private String senderId;
     @Nullable
     private DataRestrictions dataRestrictions;
-
-    private boolean isLoggingEnabled = false;
     private volatile long nextValidRequestTime;
 
     CriteoAdapter() {
         super("criteo", BuildConfig.VERSION_NAME, BuildConfig.VERSION_NAME, new AdsType[]{});
-    }
-
-    @Override
-    public void setLogging(boolean enabled) {
-        super.setLogging(enabled);
-        isLoggingEnabled = enabled;
     }
 
     @Override
@@ -99,13 +92,9 @@ class CriteoAdapter extends NetworkAdapter {
     }
 
     private void sendRequest(@NonNull final Context context, @NonNull final String eventType) {
-        if (isLoggingEnabled) {
-            Log.d(TAG, String.format("Sending event: %s", eventType));
-        }
+        BMLog.log(TAG, String.format("Sending event: %s", eventType));
         if (dataRestrictions == null || !maySendRequest(context, dataRestrictions)) {
-            if (isLoggingEnabled) {
-                Log.d(TAG, "Event sending consumed");
-            }
+            BMLog.log(TAG, "Event sending consumed");
             return;
         }
         networkExecutor.execute(new Runnable() {
@@ -136,17 +125,15 @@ class CriteoAdapter extends NetworkAdapter {
                     } else if (responseCode == HttpsURLConnection.HTTP_BAD_REQUEST) {
                         inputStream = urlConnection.getErrorStream();
                         JSONObject response = getResponse(inputStream);
-                        if (response != null && response.has("error") && isLoggingEnabled) {
-                            Log.d(TAG,
-                                  String.format(Locale.ENGLISH,
-                                                "Error: %s",
-                                                response.getString("error")));
+                        if (response != null && response.has("error")) {
+                            BMLog.log(TAG,
+                                      String.format(Locale.ENGLISH,
+                                                    "Error: %s",
+                                                    response.getString("error")));
                         }
                     }
                 } catch (Exception e) {
-                    if (isLoggingEnabled) {
-                        e.printStackTrace();
-                    }
+                    BMLog.log(e);
                 } finally {
                     try {
                         if (urlConnection != null) {
@@ -173,9 +160,7 @@ class CriteoAdapter extends NetworkAdapter {
             }
             return new JSONObject(builder.toString());
         } catch (Exception e) {
-            if (isLoggingEnabled) {
-                e.printStackTrace();
-            }
+            BMLog.log(e);
             return null;
         } finally {
             try {
