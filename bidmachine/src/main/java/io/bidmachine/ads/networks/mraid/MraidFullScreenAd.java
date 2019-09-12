@@ -4,8 +4,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+
 import com.explorestack.iab.mraid.MRAIDInterstitial;
 import com.explorestack.iab.vast.VideoType;
+
 import io.bidmachine.ContextProvider;
 import io.bidmachine.unified.UnifiedFullscreenAd;
 import io.bidmachine.unified.UnifiedFullscreenAdCallback;
@@ -38,7 +40,7 @@ class MraidFullScreenAd extends UnifiedFullscreenAd {
                      @NonNull UnifiedMediationParams mediationParams) {
         final Activity activity = contextProvider.getActivity();
         if (activity == null) {
-            BMError.requestError("Activity not provided");
+            callback.onAdLoadFailed(BMError.requestError("Activity not provided"));
             return;
         }
         mraidParams = new MraidParams(mediationParams);
@@ -52,11 +54,15 @@ class MraidFullScreenAd extends UnifiedFullscreenAd {
             @Override
             public void run() {
                 mraidInterstitial = MRAIDInterstitial
-                        .newBuilder(activity, mraidParams.creativeAdm, mraidParams.width, mraidParams.height)
+                        .newBuilder(activity,
+                                    mraidParams.creativeAdm,
+                                    mraidParams.width,
+                                    mraidParams.height)
                         .setPreload(mraidParams.canPreload)
                         .setListener(adapterListener)
                         .setNativeFeatureListener(adapterListener)
                         .build();
+                mraidInterstitial.load();
             }
         });
     }
