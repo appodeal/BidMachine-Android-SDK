@@ -1,3 +1,7 @@
+## Version 1.3.2 (September 12, 2019)
+**Features**:
+* Update compatibility with Google's Protobuf libraries
+
 ## Version 1.3.1 (September 4, 2019)
 **Features**:
 * Added Mintegral network adapter for Header-Bidding

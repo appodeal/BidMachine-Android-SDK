@@ -3,11 +3,21 @@ package io.bidmachine;
 import android.graphics.Point;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+
+import com.explorestack.protobuf.Any;
+import com.explorestack.protobuf.InvalidProtocolBufferException;
+import com.explorestack.protobuf.Message;
 import com.explorestack.protobuf.adcom.Ad;
 import com.explorestack.protobuf.openrtb.Response;
-import com.google.protobuf.Any;
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.Message;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
 import io.bidmachine.banner.BannerSize;
 import io.bidmachine.core.Logger;
 import io.bidmachine.displays.DisplayPlacementBuilder;
@@ -19,46 +29,51 @@ import io.bidmachine.protobuf.headerbidding.HeaderBiddingAd;
 import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.unified.UnifiedBannerAdRequestParams;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-
 public enum AdsType {
 
-    Banner(new ApiRequest.ApiAuctionDataBinder(),
-            new PlacementBuilder[]{
-                    new DisplayPlacementBuilder<UnifiedBannerAdRequestParams>(false, true) {
-                        @Override
-                        public Point getSize(ContextProvider contextProvider, UnifiedBannerAdRequestParams bannerRequest) {
-                            BannerSize bannerSize = bannerRequest.getBannerSize();
-                            return new Point(bannerSize.width, bannerSize.height);
-                        }
-                    }}),
-    Interstitial(new ApiRequest.ApiAuctionDataBinder(),
-            new PlacementBuilder[]{
-                    new DisplayPlacementBuilder(true, true),
-                    new VideoPlacementBuilder(true, true)}),
-    Rewarded(new ApiRequest.ApiAuctionDataBinder(),
-            new PlacementBuilder[]{
-                    new DisplayPlacementBuilder(true, true),
-                    new VideoPlacementBuilder(false, true)}),
-    Native(new ApiRequest.ApiAuctionDataBinder(),
-            new PlacementBuilder[]{
-                    new NativePlacementBuilder(false)});
+    Banner("banner",
+           new ApiRequest.ApiAuctionDataBinder(),
+           new PlacementBuilder[]{
+                   new DisplayPlacementBuilder<UnifiedBannerAdRequestParams>(false, true) {
+                       @Override
+                       public Point getSize(ContextProvider contextProvider,
+                                            UnifiedBannerAdRequestParams bannerRequest) {
+                           BannerSize bannerSize = bannerRequest.getBannerSize();
+                           return new Point(bannerSize.width, bannerSize.height);
+                       }
+                   }}),
+    Interstitial("interstitial",
+                 new ApiRequest.ApiAuctionDataBinder(),
+                 new PlacementBuilder[]{
+                         new DisplayPlacementBuilder(true, true),
+                         new VideoPlacementBuilder(true, true)}),
+    Rewarded("rewarded",
+             new ApiRequest.ApiAuctionDataBinder(),
+             new PlacementBuilder[]{
+                     new DisplayPlacementBuilder(true, true),
+                     new VideoPlacementBuilder(false, true)}),
+    Native("native",
+           new ApiRequest.ApiAuctionDataBinder(),
+           new PlacementBuilder[]{
+                   new NativePlacementBuilder(false)});
 
+    private final String name;
     private final ApiRequest.ApiAuctionDataBinder binder;
     private final PlacementBuilder[] placementBuilders;
     private final Map<String, NetworkConfig> networkConfigs = new HashMap<>();
-    private final Executor placementCreateExecutor = Executors.newFixedThreadPool(Math.max(8, Runtime.getRuntime().availableProcessors() * 4));
+    private final Executor placementCreateExecutor = Executors.newFixedThreadPool(
+            Math.max(8, Runtime.getRuntime().availableProcessors() * 4));
 
-    AdsType(@NonNull ApiRequest.ApiAuctionDataBinder binder,
+    AdsType(@NonNull String name,
+            @NonNull ApiRequest.ApiAuctionDataBinder binder,
             @NonNull PlacementBuilder[] placementBuilders) {
+        this.name = name;
         this.binder = binder;
         this.placementBuilders = placementBuilders;
+    }
+
+    public String getName() {
+        return name;
     }
 
     NetworkConfig obtainNetworkConfig(@NonNull Ad ad) {
