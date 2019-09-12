@@ -2,24 +2,40 @@ package io.bidmachine.displays;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import com.explorestack.protobuf.adcom.Ad;
-import com.explorestack.protobuf.openrtb.Response;
+
 import com.explorestack.protobuf.Any;
 import com.explorestack.protobuf.InvalidProtocolBufferException;
 import com.explorestack.protobuf.Message;
-import io.bidmachine.*;
+import com.explorestack.protobuf.adcom.Ad;
+import com.explorestack.protobuf.openrtb.Response;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import io.bidmachine.AdContentType;
+import io.bidmachine.AdsType;
+import io.bidmachine.BidMachineEvents;
+import io.bidmachine.ContextProvider;
+import io.bidmachine.HeaderBiddingAdapter;
+import io.bidmachine.HeaderBiddingCollectParamsCallback;
+import io.bidmachine.NetworkAdapter;
+import io.bidmachine.NetworkConfig;
+import io.bidmachine.TrackEventInfo;
+import io.bidmachine.TrackEventType;
+import io.bidmachine.TrackingObject;
 import io.bidmachine.core.Logger;
 import io.bidmachine.models.AdObjectParams;
 import io.bidmachine.protobuf.headerbidding.HeaderBiddingAd;
 import io.bidmachine.protobuf.headerbidding.HeaderBiddingPlacement;
 import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.utils.BMError;
-
-import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAdRequestParams> {
 
@@ -55,8 +71,11 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
                     return key;
                 }
             };
+            BidMachineEvents.eventStart(
+                    trackingObject,
+                    TrackEventType.HeaderBiddingNetworksPrepare,
+                    adsType);
             try {
-
                 CountDownLatch syncLock = new CountDownLatch(preloadTasks.size());
                 for (AdUnitPreloadTask task : preloadTasks) {
                     task.execute(syncLock);
@@ -112,7 +131,9 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
         if (headerBiddingAd == null && ad.hasVideo()) {
             headerBiddingAd = obtainHeaderBiddingAd(ad.getVideo().getExtList());
         }
-        return headerBiddingAd != null ? new HeaderBiddingAdObjectParams(seatbid, bid, ad, headerBiddingAd) : null;
+        return headerBiddingAd != null
+                ? new HeaderBiddingAdObjectParams(seatbid, bid, ad, headerBiddingAd)
+                : null;
     }
 
     @Nullable
@@ -132,7 +153,8 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
     private static final class AdUnitPreloadTask<UnifiedAdRequestParamsType extends UnifiedAdRequestParams>
             implements Runnable, HeaderBiddingCollectParamsCallback {
 
-        private static Executor executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
+        private static Executor executor = Executors.newFixedThreadPool(
+                Runtime.getRuntime().availableProcessors() * 2);
 
         @NonNull
         private ContextProvider contextProvider;
@@ -173,7 +195,10 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
 
         @Override
         public void run() {
-            adapter.collectHeaderBiddingParams(contextProvider, adRequestParams, this, mediationConfig);
+            adapter.collectHeaderBiddingParams(contextProvider,
+                                               adRequestParams,
+                                               this,
+                                               mediationConfig);
         }
 
         @Override
@@ -186,7 +211,9 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
             builder.setBidderSdkver(adapter.getVersion());
             builder.putAllClientParams(params);
             adUnit = builder.build();
-            Logger.log(String.format("%s: %s: Header bidding collect finished", adapter.getKey(), adsType));
+            Logger.log(String.format("%s: %s: Header bidding collect finished",
+                                     adapter.getKey(),
+                                     adsType));
             finish();
             BidMachineEvents.eventFinish(
                     trackingObject,
@@ -201,7 +228,9 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
                 return;
             }
             if (error != null) {
-                Logger.log(String.format("%s: Header bidding collect fail: %s", adapter.getKey(), error.getMessage()));
+                Logger.log(String.format("%s: Header bidding collect fail: %s",
+                                         adapter.getKey(),
+                                         error.getMessage()));
             }
             finish();
             BidMachineEvents.eventFinish(
@@ -217,7 +246,7 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
                     TrackEventType.HeaderBiddingNetworkPrepare,
                     new TrackEventInfo()
                             .withParameter("HB_NETWORK", adapter.getKey())
-                            .withParameter("BM_AD_TYPE", adsType.ordinal()),
+                            .withParameter("BM_AD_TYPE", adsType.getName()),
                     adsType);
             this.syncLock = syncLock;
             executor.execute(this);
