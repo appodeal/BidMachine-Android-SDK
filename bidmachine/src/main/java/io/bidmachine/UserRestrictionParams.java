@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 
 import com.explorestack.protobuf.adcom.Context;
 
+import io.bidmachine.core.DeviceInfo;
 import io.bidmachine.models.DataRestrictions;
 import io.bidmachine.models.IUserRestrictionsParams;
 import io.bidmachine.models.RequestParams;
@@ -113,4 +114,18 @@ final class UserRestrictionParams
         return hasCoppa();
     }
 
+    @Override
+    public String getHttpAgent(@NonNull android.content.Context context) {
+        return canSendDeviceInfo() ? DeviceInfo.obtain(context).httpAgent : null;
+    }
+
+    @Override
+    public String getIfa(@NonNull android.content.Context context) {
+        return AdvertisingPersonalData.getAdvertisingId(context, canSendIfa());
+    }
+
+    @Override
+    public boolean isLimitAdTrackingEnabled() {
+        return AdvertisingPersonalData.isLimitAdTrackingEnabled();
+    }
 }
