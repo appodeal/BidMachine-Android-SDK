@@ -9,7 +9,7 @@ ext {
     jUnitVersion = '4.12'
     mockwebserver = '3.3.0'
     protobufModelsVersion = '1.0.1'
-    stackIabVersion = '0.5.2'
+    stackIabVersion = '0.5.3'
 }
 
 android {
