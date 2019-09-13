@@ -53,6 +53,7 @@ import io.bidmachine.BidMachine;
 import io.bidmachine.BuildConfig;
 import io.bidmachine.InitializationCallback;
 import io.bidmachine.MediaAssetType;
+import io.bidmachine.ads.networks.AmazonConfig;
 import io.bidmachine.ads.networks.adcolony.AdColonyConfig;
 import io.bidmachine.ads.networks.facebook.FacebookConfig;
 import io.bidmachine.ads.networks.mintegral.MintegralConfig;
@@ -119,9 +120,7 @@ public class MainActivity extends AppCompatActivity {
             final RadioButton radioButton = new RadioButton(this);
             int id = ("rbtn" + size.name()).hashCode();
             radioButton.setId(id < 0 ? -id : id);
-            radioButton.setText(size.name()
-                                    .replace("Size_", "")
-                                    .replace("_", " x "));
+            radioButton.setText(size.name().replace("Size_", "").replace("_", " x "));
             radioButton.setTag(size);
             bannerSizesParent.addView(radioButton,
                                       new RadioGroup.LayoutParams(0,
@@ -277,9 +276,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void showParamsFragment(Fragment fragment, String tag) {
         getSupportFragmentManager().beginTransaction()
-                                   .add(R.id.parent, fragment, tag)
-                                   .addToBackStack(tag)
-                                   .commitAllowingStateLoss();
+                .add(R.id.parent, fragment, tag)
+                .addToBackStack(tag)
+                .commitAllowingStateLoss();
     }
 
     public void loadBanner(View view) {
@@ -353,10 +352,10 @@ public class MainActivity extends AppCompatActivity {
     public void showNative(View view) {
         hideNative(null);
         final NativeRequest request = ParamsHelper.getInstance(this, ParamsHelper.AdsType.Native)
-                                                  .createParams(new NativeRequest.Builder()
-                                                                        .setMediaAssetTypes(
-                                                                                MediaAssetType.All))
-                                                  .build();
+                .createParams(new NativeRequest.Builder()
+                                      .setMediaAssetTypes(
+                                              MediaAssetType.All))
+                .build();
         new NativeAd(this)
                 .setListener(new NativeListener() {
                     @Override
@@ -636,25 +635,44 @@ public class MainActivity extends AppCompatActivity {
                                                              "vz06e8c32a037749699e7050")
                                         .withMediationConfig(AdsFormat.RewardedVideo,
                                                              "vz1fd5a8b2bf6841a0a4b826"),
-                                "{\n" +
-                                        "        \"network\": \"adcolony\",\n" +
-                                        "        \"network_config\": {\n" +
-                                        "            \"app_id\": \"app185a7e71e1714831a49ec7\"\n" +
-                                        "        },\n" +
-                                        "        \"ad_units\": [\n" +
-                                        "            {\n" +
-                                        "                \"format\": \"interstitial_video\",\n" +
-                                        "                \"app_id\": \"app185a7e71e1714831a49ec7\",\n" +
-                                        "                \"zone_id\": \"vz06e8c32a037749699e7050\",\n" +
-                                        "                \"store_id\": \"google\" // optional\n" +
-                                        "            },\n" +
-                                        "            {\n" +
-                                        "                \"format\": \"rewarded_video\",\n" +
-                                        "                \"app_id\": \"app185a7e71e1714831a49ec7\",\n" +
-                                        "                \"zone_id\": \"vz1fd5a8b2bf6841a0a4b826\",\n" +
-                                        "                \"store_id\": \"google\" // optional\n" +
-                                        "            }\n" +
-                                        "        ]\n" +
+                                "{\n"
+                                        +
+                                        "        \"network\": \"adcolony\",\n"
+                                        +
+                                        "        \"network_config\": {\n"
+                                        +
+                                        "            \"app_id\": \"app185a7e71e1714831a49ec7\"\n"
+                                        +
+                                        "        },\n"
+                                        +
+                                        "        \"ad_units\": [\n"
+                                        +
+                                        "            {\n"
+                                        +
+                                        "                \"format\": \"interstitial_video\",\n"
+                                        +
+                                        "                \"app_id\": \"app185a7e71e1714831a49ec7\",\n"
+                                        +
+                                        "                \"zone_id\": \"vz06e8c32a037749699e7050\",\n"
+                                        +
+                                        "                \"store_id\": \"google\" // optional\n"
+                                        +
+                                        "            },\n"
+                                        +
+                                        "            {\n"
+                                        +
+                                        "                \"format\": \"rewarded_video\",\n"
+                                        +
+                                        "                \"app_id\": \"app185a7e71e1714831a49ec7\",\n"
+                                        +
+                                        "                \"zone_id\": \"vz1fd5a8b2bf6841a0a4b826\",\n"
+                                        +
+                                        "                \"store_id\": \"google\" // optional\n"
+                                        +
+                                        "            }\n"
+                                        +
+                                        "        ]\n"
+                                        +
                                         "    }"),
             new OptionalNetwork(2, "myTarget",
                                 new MyTargetConfig()
@@ -700,21 +718,36 @@ public class MainActivity extends AppCompatActivity {
                                                              "video_without_cap_pb")
                                         .withMediationConfig(AdsFormat.RewardedVideo,
                                                              "rewarded_video_without_cap_pb"),
-                                "{\n" +
-                                        "        \"network\": \"tapjoy\",\n" +
-                                        "        \"sdk_key\": \"tmyN5ZcXTMyjeJNJmUD5ggECAbnEGtJREmLDd0fvqKBXcIr7e1dvboNKZI4y\",\n" +
-                                        "        \"ad_units\": [\n" +
-                                        "            {\n" +
-                                        "                \"format\": \"interstitial_video\",\n" +
-                                        "                \"sdk_key\": \"tmyN5ZcXTMyjeJNJmUD5ggECAbnEGtJREmLDd0fvqKBXcIr7e1dvboNKZI4y\",\n" +
-                                        "                \"placement_name\": \"video_without_cap_pb\"\n" +
-                                        "            },\n" +
-                                        "            {\n" +
-                                        "                \"format\": \"rewarded_video\",\n" +
-                                        "                \"sdk_key\": \"tmyN5ZcXTMyjeJNJmUD5ggECAbnEGtJREmLDd0fvqKBXcIr7e1dvboNKZI4y\",\n" +
-                                        "                \"placement_name\": \"rewarded_video_without_cap_pb\"\n" +
-                                        "            }\n" +
-                                        "        ]\n" +
+                                "{\n"
+                                        +
+                                        "        \"network\": \"tapjoy\",\n"
+                                        +
+                                        "        \"sdk_key\": \"tmyN5ZcXTMyjeJNJmUD5ggECAbnEGtJREmLDd0fvqKBXcIr7e1dvboNKZI4y\",\n"
+                                        +
+                                        "        \"ad_units\": [\n"
+                                        +
+                                        "            {\n"
+                                        +
+                                        "                \"format\": \"interstitial_video\",\n"
+                                        +
+                                        "                \"sdk_key\": \"tmyN5ZcXTMyjeJNJmUD5ggECAbnEGtJREmLDd0fvqKBXcIr7e1dvboNKZI4y\",\n"
+                                        +
+                                        "                \"placement_name\": \"video_without_cap_pb\"\n"
+                                        +
+                                        "            },\n"
+                                        +
+                                        "            {\n"
+                                        +
+                                        "                \"format\": \"rewarded_video\",\n"
+                                        +
+                                        "                \"sdk_key\": \"tmyN5ZcXTMyjeJNJmUD5ggECAbnEGtJREmLDd0fvqKBXcIr7e1dvboNKZI4y\",\n"
+                                        +
+                                        "                \"placement_name\": \"rewarded_video_without_cap_pb\"\n"
+                                        +
+                                        "            }\n"
+                                        +
+                                        "        ]\n"
+                                        +
                                         "    }"),
             new OptionalNetwork(4, "Facebook",
                                 new FacebookConfig("1525692904128549")
@@ -726,31 +759,56 @@ public class MainActivity extends AppCompatActivity {
                                                              "1525692904128549_2386743441356820")
                                         .withMediationConfig(AdsFormat.RewardedVideo,
                                                              "1525692904128549_2386753464689151"),
-                                "{\n" +
-                                        "    \"network\":\"facebook\",\n" +
-                                        "    \"app_id\":\"1525692904128549\",\n" +
-                                        "    \"ad_units\":[\n" +
-                                        "        {\n" +
-                                        "            \"format\":\"banner\",\n" +
-                                        "            \"facebook_key\":\"1525692904128549_2386746951356469\"\n" +
-                                        "        },\n" +
-                                        "        {\n" +
-                                        "            \"format\":\"banner_320x50\",\n" +
-                                        "            \"facebook_key\":\"1525692904128549_2386746951356469\"\n" +
-                                        "        },\n" +
-                                        "        {\n" +
-                                        "            \"format\":\"banner_300x250\",\n" +
-                                        "            \"facebook_key\":\"1525692904128549_2386746951356469\"\n" +
-                                        "        },\n" +
-                                        "        {\n" +
-                                        "            \"format\":\"interstitial_static\",\n" +
-                                        "            \"facebook_key\":\"1525692904128549_2386743441356820\"\n" +
-                                        "        },\n" +
-                                        "        {\n" +
-                                        "            \"format\":\"rewarded_video\",\n" +
-                                        "            \"facebook_key\":\"1525692904128549_2386753464689151\"\n" +
-                                        "        }\n" +
-                                        "    ]\n" +
+                                "{\n"
+                                        +
+                                        "    \"network\":\"facebook\",\n"
+                                        +
+                                        "    \"app_id\":\"1525692904128549\",\n"
+                                        +
+                                        "    \"ad_units\":[\n"
+                                        +
+                                        "        {\n"
+                                        +
+                                        "            \"format\":\"banner\",\n"
+                                        +
+                                        "            \"facebook_key\":\"1525692904128549_2386746951356469\"\n"
+                                        +
+                                        "        },\n"
+                                        +
+                                        "        {\n"
+                                        +
+                                        "            \"format\":\"banner_320x50\",\n"
+                                        +
+                                        "            \"facebook_key\":\"1525692904128549_2386746951356469\"\n"
+                                        +
+                                        "        },\n"
+                                        +
+                                        "        {\n"
+                                        +
+                                        "            \"format\":\"banner_300x250\",\n"
+                                        +
+                                        "            \"facebook_key\":\"1525692904128549_2386746951356469\"\n"
+                                        +
+                                        "        },\n"
+                                        +
+                                        "        {\n"
+                                        +
+                                        "            \"format\":\"interstitial_static\",\n"
+                                        +
+                                        "            \"facebook_key\":\"1525692904128549_2386743441356820\"\n"
+                                        +
+                                        "        },\n"
+                                        +
+                                        "        {\n"
+                                        +
+                                        "            \"format\":\"rewarded_video\",\n"
+                                        +
+                                        "            \"facebook_key\":\"1525692904128549_2386753464689151\"\n"
+                                        +
+                                        "        }\n"
+                                        +
+                                        "    ]\n"
+                                        +
                                         "}"),
             new OptionalNetwork(5, "Mintegral",
                                 new MintegralConfig("117852", "936dcbdd57fe235fd7cf61c2e93da3c4")
@@ -772,6 +830,42 @@ public class MainActivity extends AppCompatActivity {
                                         "            \"reward_id\":\"12817\"\n" +
                                         "        }\n" +
                                         "    ]\n" +
-                                        "}")
+                                        "}"),
+            new OptionalNetwork(6, "Amazon",
+                                new AmazonConfig("a9_onboarding_app_id")
+                                        .withMediationConfig(AdsFormat.Banner_320x50,
+                                                             "5ab6a4ae-4aa5-43f4-9da4-e30755f2b295")
+                                        .withMediationConfig(AdsFormat.Banner_300x250,
+                                                             "54fb2d08-c222-40b1-8bbe-4879322dc04b")
+                                        .withMediationConfig(AdsFormat.Banner_728x90,
+                                                             "bed17ec3-b185-453e-b2a8-4a3c6bb9234d")
+                                        .withMediationConfig(AdsFormat.InterstitialStatic,
+                                                             "4e918ac0-5c68-4fe1-8d26-4e76e8f74831"),
+                                "{\n"
+                                        + "    \"network\":\"amazon\",\n"
+                                        + "    \"app_key\":\"a9_onboarding_app_id\",\n"
+                                        + "    \"ad_units\": [\n"
+                                        + "        {\n"
+                                        + "            \"format\":\"banner\",\n"
+                                        + "            \"slot_uuid\":\"5ab6a4ae-4aa5-43f4-9da4-e30755f2b295\"\n"
+                                        + "        },\n"
+                                        + "        {\n"
+                                        + "            \"format\":\"banner_320x50\",\n"
+                                        + "            \"slot_uuid\":\"5ab6a4ae-4aa5-43f4-9da4-e30755f2b295\"\n"
+                                        + "        },\n"
+                                        + "        {\n"
+                                        + "            \"format\":\"banner_300x250\",\n"
+                                        + "            \"slot_uuid\":\"54fb2d08-c222-40b1-8bbe-4879322dc04b\"\n"
+                                        + "        },\n"
+                                        + "        {\n"
+                                        + "            \"format\":\"banner_728x90\",\n"
+                                        + "            \"slot_uuid\":\"bed17ec3-b185-453e-b2a8-4a3c6bb9234d\"\n"
+                                        + "        },\n"
+                                        + "        {\n"
+                                        + "            \"format\":\"interstitial_static\",\n"
+                                        + "            \"slot_uuid\":\"4e918ac0-5c68-4fe1-8d26-4e76e8f74831\"\n"
+                                        + "        }\n"
+                                        + "    ]\n"
+                                        + "}")
     };
 }
