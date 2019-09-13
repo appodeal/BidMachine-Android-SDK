@@ -114,18 +114,4 @@ final class UserRestrictionParams
         return hasCoppa();
     }
 
-    @Override
-    public String getHttpAgent(@NonNull android.content.Context context) {
-        return canSendDeviceInfo() ? DeviceInfo.obtain(context).httpAgent : null;
-    }
-
-    @Override
-    public String getIfa(@NonNull android.content.Context context) {
-        return AdvertisingPersonalData.getAdvertisingId(context, canSendIfa());
-    }
-
-    @Override
-    public boolean isLimitAdTrackingEnabled() {
-        return AdvertisingPersonalData.isLimitAdTrackingEnabled();
-    }
 }

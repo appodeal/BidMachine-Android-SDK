@@ -641,8 +641,7 @@ public class MainActivity extends AppCompatActivity {
                                         +
                                         "        \"network\": \"adcolony\",\n"
                                         +
-                                        "        \"network_config\": {\n"
-                                        +
+                                        "        \"network_config\": {\n" +
                                         "            \"app_id\": \"app185a7e71e1714831a49ec7\"\n"
                                         +
                                         "        },\n"
@@ -833,11 +832,11 @@ public class MainActivity extends AppCompatActivity {
                                         "        }\n" +
                                         "    ]\n" +
                                         "}"),
-            new OptionalNetwork(6, "Criteo",
-                                new CriteoConfig("1"),
+            new OptionalNetwork(7, "Criteo",
+                                new CriteoConfig("3703"),
                                 "{\n"
                                         + "    \"network\":\"criteo\",\n"
-                                        + "    \"sender_id\":\"1\"\n"
+                                        + "    \"sender_id\":\"3703\"\n"
                                         + "}")
     };
 }
