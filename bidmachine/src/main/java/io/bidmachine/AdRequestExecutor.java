@@ -39,20 +39,31 @@ class AdRequestExecutor extends ThreadPoolExecutor {
         if (isEnabled) {
             super.execute(command);
         } else {
-            if (pendingCommands == null) {
-                pendingCommands = new ArrayList<>();
+            // To prevent unnecessary synchronization we shouldn't wrap all 'execute' logic
+            synchronized (AdRequestExecutor.this) {
+                // Since we can rich this block during processing enabling logic, we should check
+                // enabled state
+                if (isEnabled) {
+                    super.execute(command);
+                } else {
+                    if (pendingCommands == null) {
+                        pendingCommands = new ArrayList<>();
+                    }
+                    pendingCommands.add(command);
+                }
             }
-            pendingCommands.add(command);
         }
     }
 
     void enable() {
         isEnabled = true;
-        if (pendingCommands != null) {
-            for (Runnable command : pendingCommands) {
-                execute(command);
+        synchronized (AdRequestExecutor.this) {
+            if (pendingCommands != null) {
+                for (Runnable command : pendingCommands) {
+                    execute(command);
+                }
+                pendingCommands.clear();
             }
-            pendingCommands.clear();
         }
     }
 }
