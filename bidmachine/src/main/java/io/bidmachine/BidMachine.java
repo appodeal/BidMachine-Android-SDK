@@ -3,6 +3,7 @@ package io.bidmachine;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+
 import io.bidmachine.core.Logger;
 
 public class BidMachine {
@@ -36,6 +37,15 @@ public class BidMachine {
                                   @NonNull String sellerId,
                                   @Nullable InitializationCallback callback) {
         BidMachineImpl.get().initialize(context, sellerId, callback);
+    }
+
+    /**
+     * Check if BidMachine SDK was initialized
+     *
+     * @return - {@code true} if BidMachine SDK was already initialized
+     */
+    public static boolean isInitialized() {
+        return BidMachineImpl.get().isInitialized();
     }
 
     /**

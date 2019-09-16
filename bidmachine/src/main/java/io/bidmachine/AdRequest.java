@@ -38,8 +38,6 @@ import static io.bidmachine.core.Utils.oneOf;
 
 public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestParamsType extends UnifiedAdRequestParams> {
 
-    private static final Executor buildExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
-
     private static final long DEF_EXPIRATION_TIME = TimeUnit.MINUTES.toSeconds(29);
 
     private final String trackingId = UUID.randomUUID().toString();
@@ -249,7 +247,7 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
                 currentApiRequest.cancel();
             }
             Logger.log(toString() + ": api request start");
-            buildExecutor.execute(new Runnable() {
+            AdRequestExecutor.get().execute(new Runnable() {
                 @Override
                 public void run() {
                     Object requestBuildResult = build(context, getType());

@@ -3,6 +3,22 @@ package io.bidmachine;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
 import io.bidmachine.ads.networks.mraid.MraidAdapter;
 import io.bidmachine.ads.networks.nast.NastAdapter;
 import io.bidmachine.ads.networks.vast.VastAdapter;
@@ -10,13 +26,6 @@ import io.bidmachine.core.Logger;
 import io.bidmachine.core.Utils;
 import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.utils.BMError;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.*;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 class NetworkRegistry {
 
@@ -90,7 +99,8 @@ class NetworkRegistry {
     }
 
     static void initializeNetworks(@NonNull final ContextProvider contextProvider,
-                                   @NonNull final UnifiedAdRequestParams unifiedAdRequestParams) {
+                                   @NonNull final UnifiedAdRequestParams unifiedAdRequestParams,
+                                   @Nullable final NetworksInitializeCallback initializeCallback) {
         if (isNetworksInitialized) {
             return;
         }
@@ -99,17 +109,35 @@ class NetworkRegistry {
             @Override
             public void run() {
                 super.run();
+                final List<NetworkLoadTask> loadTasks = new ArrayList<>();
                 if (pendingNetworks != null) {
                     for (NetworkConfig networkConfig : pendingNetworks) {
-                        new NetworkLoadTask(contextProvider, unifiedAdRequestParams, networkConfig)
-                                .execute();
+                        loadTasks.add(new NetworkLoadTask(contextProvider,
+                                                          unifiedAdRequestParams,
+                                                          networkConfig));
                     }
                 }
                 if (pendingNetworksJson != null) {
                     for (JSONObject networkConfig : pendingNetworksJson) {
-                        new NetworkLoadTask(contextProvider, unifiedAdRequestParams, networkConfig)
-                                .execute();
+                        loadTasks.add(new NetworkLoadTask(contextProvider,
+                                                          unifiedAdRequestParams,
+                                                          networkConfig));
                     }
+                }
+                if (loadTasks.size() > 0) {
+                    final CountDownLatch latch = new CountDownLatch(loadTasks.size());
+                    final NetworkLoadTask.NetworkLoadCallback loadTaskCallback = new NetworkLoadTask.NetworkLoadCallback() {
+                        @Override
+                        public void onNetworkLoadingFinished() {
+                            latch.countDown();
+                        }
+                    };
+                    for (NetworkLoadTask task : loadTasks) {
+                        task.withCallback(loadTaskCallback).execute();
+                    }
+                }
+                if (initializeCallback != null) {
+                    initializeCallback.onNetworksInitialized();
                 }
             }
         }.start();
@@ -133,6 +161,8 @@ class NetworkRegistry {
         private JSONObject jsonConfig;
         @Nullable
         private NetworkConfig networkConfig;
+        @Nullable
+        private NetworkLoadCallback callback;
 
         private NetworkLoadTask(@NonNull ContextProvider contextProvider,
                                 @NonNull UnifiedAdRequestParams adRequestParams) {
@@ -154,18 +184,32 @@ class NetworkRegistry {
             this.jsonConfig = jsonConfig;
         }
 
+        NetworkLoadTask withCallback(@Nullable NetworkLoadCallback callback) {
+            this.callback = callback;
+            return this;
+        }
+
         @Override
         public void run() {
+            process();
+            if (callback != null) {
+                callback.onNetworkLoadingFinished();
+            }
+        }
+
+        private void process() {
             String networkName = null;
             if (jsonConfig != null) {
                 try {
                     networkName = jsonConfig.getString(KEY_NETWORK);
-                    Logger.log(String.format("Load network from json config start: %s", networkName));
+                    Logger.log(String.format("Load network from json config start: %s",
+                                             networkName));
                     JSONObject networkAssetConfig =
                             new JSONObject(
                                     Utils.streamToString(
                                             contextProvider.getContext().getAssets()
-                                                    .open(String.format("bm_networks/%s.bmnetwork", networkName))));
+                                                    .open(String.format("bm_networks/%s.bmnetwork",
+                                                                        networkName))));
                     networkConfig = (NetworkConfig)
                             Class.forName(networkAssetConfig.getString(KEY_CLASSPATH))
                                     .getConstructor(Map.class)
@@ -173,16 +217,20 @@ class NetworkRegistry {
                     JSONArray params = jsonConfig.getJSONArray(KEY_AD_UNITS);
                     for (int i = 0; i < params.length(); i++) {
                         JSONObject mediationConfig = params.getJSONObject(i);
-                        AdsFormat format = AdsFormat.byRemoteName(mediationConfig.getString(KEY_FORMAT));
+                        AdsFormat format = AdsFormat.byRemoteName(mediationConfig.getString(
+                                KEY_FORMAT));
                         if (format != null) {
                             networkConfig.withMediationConfig(format, toMap(mediationConfig));
                         } else {
-                            Logger.log(String.format("Network (%s) adunit register fail: %s not provided", networkName, KEY_FORMAT));
+                            Logger.log(String.format(
+                                    "Network (%s) adunit register fail: %s not provided",
+                                    networkName,
+                                    KEY_FORMAT));
                         }
                     }
                     Logger.log(
                             String.format("Load network from json config finish: %s, %s",
-                                    networkName, networkConfig.getVersion()));
+                                          networkName, networkConfig.getVersion()));
                 } catch (Throwable e) {
                     Logger.log(String.format("Network (%s) load fail!", networkName));
                     Logger.log(e);
@@ -209,7 +257,9 @@ class NetworkRegistry {
                             null);
                     NetworkAdapter networkAdapter = networkConfig.obtainNetworkAdapter();
                     networkAdapter.setLogging(Logger.isLoggingEnabled());
-                    networkAdapter.initialize(contextProvider, adRequestParams, networkConfig.getNetworkConfigParams());
+                    networkAdapter.initialize(contextProvider,
+                                              adRequestParams,
+                                              networkConfig.getNetworkConfigParams());
 
                     String key = networkConfig.getKey();
                     if (!cache.containsKey(key)) {
@@ -220,16 +270,25 @@ class NetworkRegistry {
                     }
                     Logger.log(
                             String.format("Load network from config finish: %s, %s, %s",
-                                    networkName, networkAdapter.getVersion(), networkAdapter.getAdapterVersion()));
+                                          networkName,
+                                          networkAdapter.getVersion(),
+                                          networkAdapter.getAdapterVersion()));
                     if (networkAdapter instanceof HeaderBiddingAdapter) {
-                        BidMachineEvents.eventFinish(trackingObject, TrackEventType.HeaderBiddingNetworkInitialize, null, null);
+                        BidMachineEvents.eventFinish(trackingObject,
+                                                     TrackEventType.HeaderBiddingNetworkInitialize,
+                                                     null,
+                                                     null);
                     } else {
-                        BidMachineEvents.clearEvent(trackingObject, TrackEventType.HeaderBiddingNetworkInitialize);
+                        BidMachineEvents.clearEvent(trackingObject,
+                                                    TrackEventType.HeaderBiddingNetworkInitialize);
                     }
                 } catch (Throwable throwable) {
                     Logger.log(String.format("Network (%s) load fail!", networkName));
                     Logger.log(throwable);
-                    BidMachineEvents.eventFinish(trackingObject, TrackEventType.HeaderBiddingNetworkInitialize, null, BMError.Internal);
+                    BidMachineEvents.eventFinish(trackingObject,
+                                                 TrackEventType.HeaderBiddingNetworkInitialize,
+                                                 null,
+                                                 BMError.Internal);
                 }
             }
         }
@@ -250,11 +309,19 @@ class NetworkRegistry {
             }
             return map;
         }
+
+        interface NetworkLoadCallback {
+            void onNetworkLoadingFinished();
+        }
     }
 
     static void setLoggingEnabled(boolean enabled) {
         for (Map.Entry<String, NetworkConfig> entry : cache.entrySet()) {
             entry.getValue().obtainNetworkAdapter().setLogging(enabled);
         }
+    }
+
+    interface NetworksInitializeCallback {
+        void onNetworksInitialized();
     }
 }
