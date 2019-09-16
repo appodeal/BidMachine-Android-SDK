@@ -150,7 +150,13 @@ final class BidMachineImpl {
                                                                           getTargetingParams());
                 NetworkRegistry.initializeNetworks(
                         new SimpleContextProvider(context),
-                        new SimpleUnifiedAdRequestParams(dataRestrictions, targetingInfo));
+                        new SimpleUnifiedAdRequestParams(dataRestrictions, targetingInfo),
+                        new NetworkRegistry.NetworksInitializeCallback() {
+                            @Override
+                            public void onNetworksInitialized() {
+                                AdRequestExecutor.get().enable();
+                            }
+                        });
                 requestInitData(context, sellerId, callback);
             }
         });
