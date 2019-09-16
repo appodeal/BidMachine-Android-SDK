@@ -135,6 +135,11 @@ class NetworkRegistry {
                     for (NetworkLoadTask task : loadTasks) {
                         task.withCallback(loadTaskCallback).execute();
                     }
+                    try {
+                        latch.await();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
                 if (initializeCallback != null) {
                     initializeCallback.onNetworksInitialized();
