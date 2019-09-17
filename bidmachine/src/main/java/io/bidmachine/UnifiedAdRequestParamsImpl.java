@@ -1,21 +1,26 @@
 package io.bidmachine;
 
 import android.support.annotation.NonNull;
+
 import io.bidmachine.models.DataRestrictions;
+import io.bidmachine.models.DeviceInfo;
 import io.bidmachine.models.TargetingInfo;
 import io.bidmachine.unified.UnifiedAdRequestParams;
 
-class SimpleUnifiedAdRequestParams implements UnifiedAdRequestParams {
+class UnifiedAdRequestParamsImpl implements UnifiedAdRequestParams {
 
-    @NonNull
-    private final DataRestrictions dataRestrictions;
     @NonNull
     private final TargetingInfo targetingInfo;
+    @NonNull
+    private final DeviceInfo deviceInfo;
+    @NonNull
+    private final DataRestrictions dataRestrictions;
 
-    SimpleUnifiedAdRequestParams(@NonNull DataRestrictions dataRestrictions,
-                                 @NonNull TargetingInfo targetingInfo) {
+    UnifiedAdRequestParamsImpl(@NonNull TargetingParams targetingParams,
+                               @NonNull DataRestrictions dataRestrictions) {
+        this.targetingInfo = new TargetingInfoImpl(dataRestrictions, targetingParams);
+        this.deviceInfo = new DeviceInfoImpl(dataRestrictions);
         this.dataRestrictions = dataRestrictions;
-        this.targetingInfo = targetingInfo;
     }
 
     @NonNull
@@ -27,6 +32,12 @@ class SimpleUnifiedAdRequestParams implements UnifiedAdRequestParams {
     @Override
     public TargetingInfo getTargetingParams() {
         return targetingInfo;
+    }
+
+    @Override
+    @NonNull
+    public DeviceInfo getDeviceInfo() {
+        return deviceInfo;
     }
 
     @Override
