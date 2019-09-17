@@ -2,6 +2,7 @@ package io.bidmachine.models;
 
 import android.location.Location;
 import android.support.annotation.Nullable;
+
 import io.bidmachine.utils.Gender;
 
 public interface TargetingInfo {
