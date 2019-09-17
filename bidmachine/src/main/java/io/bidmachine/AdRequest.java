@@ -5,20 +5,18 @@ import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
 
+import com.explorestack.protobuf.Any;
+import com.explorestack.protobuf.InvalidProtocolBufferException;
+import com.explorestack.protobuf.Message;
 import com.explorestack.protobuf.adcom.Ad;
 import com.explorestack.protobuf.adcom.Context;
 import com.explorestack.protobuf.adcom.Placement;
 import com.explorestack.protobuf.openrtb.Request;
 import com.explorestack.protobuf.openrtb.Response;
-import com.explorestack.protobuf.Any;
-import com.explorestack.protobuf.InvalidProtocolBufferException;
-import com.explorestack.protobuf.Message;
 
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import io.bidmachine.core.Logger;
@@ -28,7 +26,6 @@ import io.bidmachine.models.AuctionResult;
 import io.bidmachine.models.DataRestrictions;
 import io.bidmachine.models.RequestBuilder;
 import io.bidmachine.models.RequestParams;
-import io.bidmachine.models.TargetingInfo;
 import io.bidmachine.protobuf.RequestExtension;
 import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.utils.BMError;
@@ -537,30 +534,11 @@ public abstract class AdRequest<SelfType extends AdRequest, UnifiedAdRequestPara
 
     }
 
-    protected static class BaseUnifiedRequestParams implements UnifiedAdRequestParams {
+    protected static class BaseUnifiedAdRequestParams extends UnifiedAdRequestParamsImpl {
 
-        private final DataRestrictions dataRestrictions;
-        private final TargetingInfo targetingInfo;
-
-        public BaseUnifiedRequestParams(@NonNull TargetingParams targetingParams,
-                                        @NonNull DataRestrictions dataRestrictions) {
-            this.targetingInfo = new TargetingInfoImpl(dataRestrictions, targetingParams);
-            this.dataRestrictions = dataRestrictions;
-        }
-
-        @Override
-        public DataRestrictions getDataRestrictions() {
-            return dataRestrictions;
-        }
-
-        @Override
-        public TargetingInfo getTargetingParams() {
-            return targetingInfo;
-        }
-
-        @Override
-        public boolean isTestMode() {
-            return BidMachineImpl.get().isTestMode();
+        public BaseUnifiedAdRequestParams(@NonNull TargetingParams targetingParams,
+                                   @NonNull DataRestrictions dataRestrictions) {
+            super(targetingParams, dataRestrictions);
         }
     }
 

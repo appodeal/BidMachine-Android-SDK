@@ -27,7 +27,7 @@ import io.bidmachine.BMLog;
 import io.bidmachine.ContextProvider;
 import io.bidmachine.NetworkAdapter;
 import io.bidmachine.NetworkConfigParams;
-import io.bidmachine.models.TargetingInfo;
+import io.bidmachine.models.DeviceInfo;
 import io.bidmachine.unified.UnifiedAdRequestParams;
 
 class CriteoAdapter extends NetworkAdapter {
@@ -43,7 +43,7 @@ class CriteoAdapter extends NetworkAdapter {
     @Nullable
     private String senderId;
     @Nullable
-    private TargetingInfo targetingInfo;
+    private DeviceInfo deviceInfo;
     private volatile long nextValidRequestTime;
 
     CriteoAdapter() {
@@ -62,37 +62,37 @@ class CriteoAdapter extends NetworkAdapter {
                 Log.e(TAG, "Initialize failed: sender_id not provided");
                 return;
             }
-            targetingInfo = adRequestParams.getTargetingParams();
+            deviceInfo = adRequestParams.getDeviceInfo();
             ((Application) contextProvider.getContext().getApplicationContext())
                     .registerActivityLifecycleCallbacks(lifecycleCallbacks);
             sendRequest(contextProvider.getContext(), EVENT_LAUNCH);
         }
     }
 
-    private boolean maySendRequest(@NonNull Context context, @NonNull TargetingInfo targetingInfo) {
+    private boolean maySendRequest(@NonNull Context context, @NonNull DeviceInfo deviceInfo) {
         boolean mayByThrottle = nextValidRequestTime == 0
                 || System.currentTimeMillis() > nextValidRequestTime;
         return !TextUtils.isEmpty(senderId)
-                && !TextUtils.isEmpty(targetingInfo.getHttpAgent(context))
+                && !TextUtils.isEmpty(deviceInfo.getHttpAgent(context))
                 && mayByThrottle;
     }
 
     private URL getUrl(@NonNull Context context,
                        @NonNull String eventType,
-                       @NonNull TargetingInfo targetingInfo) throws Exception {
+                       @NonNull DeviceInfo deviceInfo) throws Exception {
         String url = String.format(Locale.ENGLISH,
                                    "https://gum.criteo.com/appevent/v1/%s?gaid=%s&appId=%s&eventType=%s&limitedAdTracking=%d",
                                    senderId,
-                                   targetingInfo.getIfa(context),
+                                   deviceInfo.getIfa(context),
                                    context.getPackageName(),
                                    eventType,
-                                   targetingInfo.isLimitAdTrackingEnabled() ? 1 : 0);
+                                   deviceInfo.isLimitAdTrackingEnabled() ? 1 : 0);
         return new URL(url);
     }
 
     private void sendRequest(@NonNull final Context context, @NonNull final String eventType) {
         BMLog.log(TAG, String.format("Sending event: %s", eventType));
-        if (targetingInfo == null || !maySendRequest(context, targetingInfo)) {
+        if (deviceInfo == null || !maySendRequest(context, deviceInfo)) {
             BMLog.log(TAG, "Event sending consumed");
             return;
         }
@@ -104,10 +104,10 @@ class CriteoAdapter extends NetworkAdapter {
                 try {
                     urlConnection = (HttpsURLConnection) getUrl(context,
                                                                 eventType,
-                                                                targetingInfo).openConnection();
+                                                                deviceInfo).openConnection();
                     urlConnection.setRequestMethod("GET");
                     urlConnection.setRequestProperty("User-Agent",
-                                                     targetingInfo.getHttpAgent(context));
+                                                     deviceInfo.getHttpAgent(context));
                     urlConnection.setConnectTimeout(10000);
                     urlConnection.setReadTimeout(10000);
 

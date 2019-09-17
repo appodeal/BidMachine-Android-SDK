@@ -1,9 +1,8 @@
 package io.bidmachine.models;
 
-import android.content.Context;
 import android.location.Location;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+
 import io.bidmachine.utils.Gender;
 
 public interface TargetingInfo {
@@ -40,10 +39,4 @@ public interface TargetingInfo {
 
     @Nullable
     Boolean isPaid();
-
-    String getHttpAgent(@NonNull Context context);
-
-    String getIfa(@NonNull Context context);
-
-    boolean isLimitAdTrackingEnabled();
 }

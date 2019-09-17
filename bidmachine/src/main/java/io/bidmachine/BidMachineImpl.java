@@ -23,7 +23,6 @@ import io.bidmachine.core.Logger;
 import io.bidmachine.core.NetworkRequest;
 import io.bidmachine.core.Utils;
 import io.bidmachine.models.DataRestrictions;
-import io.bidmachine.models.TargetingInfo;
 import io.bidmachine.protobuf.InitRequest;
 import io.bidmachine.protobuf.InitResponse;
 import io.bidmachine.utils.ActivityHelper;
@@ -145,12 +144,11 @@ final class BidMachineImpl {
             public void executed(@NonNull AdvertisingIdClientInfo.AdvertisingProfile advertisingProfile) {
                 AdvertisingPersonalData.setLimitAdTrackingEnabled(advertisingProfile.isLimitAdTrackingEnabled());
                 AdvertisingPersonalData.setDeviceAdvertisingId(advertisingProfile.getId());
+                final TargetingParams targetingParams = getTargetingParams();
                 final DataRestrictions dataRestrictions = getUserRestrictionParams();
-                final TargetingInfo targetingInfo = new TargetingInfoImpl(dataRestrictions,
-                                                                          getTargetingParams());
                 NetworkRegistry.initializeNetworks(
                         new SimpleContextProvider(context),
-                        new SimpleUnifiedAdRequestParams(dataRestrictions, targetingInfo),
+                        new UnifiedAdRequestParamsImpl(targetingParams, dataRestrictions),
                         new NetworkRegistry.NetworksInitializeCallback() {
                             @Override
                             public void onNetworksInitialized() {
