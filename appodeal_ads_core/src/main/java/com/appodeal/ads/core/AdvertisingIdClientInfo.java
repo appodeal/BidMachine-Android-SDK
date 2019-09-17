@@ -22,7 +22,7 @@ public class AdvertisingIdClientInfo implements Runnable {
         BackgroundTaskManager.async(new AdvertisingIdClientInfo(context, closure));
     }
 
-    private AdvertisingIdClientInfo(Context context, Closure closure) {
+    public AdvertisingIdClientInfo(Context context, Closure closure) {
         this.context = context;
         this.closure = closure;
 

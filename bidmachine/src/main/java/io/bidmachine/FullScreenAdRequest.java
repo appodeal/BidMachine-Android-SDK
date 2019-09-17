@@ -1,6 +1,7 @@
 package io.bidmachine;
 
 import android.support.annotation.NonNull;
+
 import io.bidmachine.displays.PlacementBuilder;
 import io.bidmachine.models.DataRestrictions;
 import io.bidmachine.models.RequestBuilder;
@@ -41,8 +42,7 @@ public abstract class FullScreenAdRequest<SelfType extends FullScreenAdRequest>
         }
     }
 
-    private class FullscreenUnifiedAdRequestParams
-            extends BaseUnifiedRequestParams
+    private class FullscreenUnifiedAdRequestParams extends BaseUnifiedAdRequestParams
             implements UnifiedFullscreenAdRequestParams {
 
         FullscreenUnifiedAdRequestParams(@NonNull TargetingParams targetingParams,

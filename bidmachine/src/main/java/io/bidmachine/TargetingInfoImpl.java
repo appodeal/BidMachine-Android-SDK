@@ -3,11 +3,12 @@ package io.bidmachine;
 import android.location.Location;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+
+import java.util.Calendar;
+
 import io.bidmachine.models.DataRestrictions;
 import io.bidmachine.models.TargetingInfo;
 import io.bidmachine.utils.Gender;
-
-import java.util.Calendar;
 
 class TargetingInfoImpl implements TargetingInfo {
 
