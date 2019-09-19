@@ -23,6 +23,7 @@ import io.bidmachine.AdContentType;
 import io.bidmachine.AdsType;
 import io.bidmachine.BidMachineEvents;
 import io.bidmachine.ContextProvider;
+import io.bidmachine.HeaderBiddingAdRequestParams;
 import io.bidmachine.HeaderBiddingAdapter;
 import io.bidmachine.HeaderBiddingCollectParamsCallback;
 import io.bidmachine.NetworkAdapter;
@@ -53,12 +54,14 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
                 Map<String, String> mediationConfig =
                         networkConfig.peekMediationConfig(adsType, adRequestParams, adContentType);
                 if (mediationConfig != null) {
-                    preloadTasks.add(new AdUnitPreloadTask<>(
-                            contextProvider,
-                            (HeaderBiddingAdapter) adapter,
-                            adsType,
-                            adRequestParams,
-                            mediationConfig));
+                    preloadTasks.add(
+                            new AdUnitPreloadTask<>(
+                                    contextProvider,
+                                    (HeaderBiddingAdapter) adapter,
+                                    adsType,
+                                    adContentType,
+                                    adRequestParams,
+                                    mediationConfig));
                 }
             }
         }
@@ -151,7 +154,7 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
     }
 
     private static final class AdUnitPreloadTask<UnifiedAdRequestParamsType extends UnifiedAdRequestParams>
-            implements Runnable, HeaderBiddingCollectParamsCallback {
+            implements Runnable, HeaderBiddingAdRequestParams, HeaderBiddingCollectParamsCallback {
 
         private static Executor executor = Executors.newFixedThreadPool(
                 Runtime.getRuntime().availableProcessors() * 2);
@@ -162,6 +165,8 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
         private HeaderBiddingAdapter adapter;
         @NonNull
         private AdsType adsType;
+        @NonNull
+        private AdContentType adContentType;
         @NonNull
         private UnifiedAdRequestParamsType adRequestParams;
         @NonNull
@@ -184,19 +189,34 @@ class HeaderBiddingPlacementBuilder<UnifiedAdRequestParamsType extends UnifiedAd
         AdUnitPreloadTask(@NonNull ContextProvider contextProvider,
                           @NonNull HeaderBiddingAdapter adapter,
                           @NonNull AdsType adsType,
+                          @NonNull AdContentType adContentType,
                           @NonNull UnifiedAdRequestParamsType adRequestParams,
                           @NonNull Map<String, String> mediationConfig) {
             this.contextProvider = contextProvider;
             this.adapter = adapter;
             this.adsType = adsType;
+            this.adContentType = adContentType;
             this.adRequestParams = adRequestParams;
             this.mediationConfig = mediationConfig;
+        }
+
+        @Override
+        @NonNull
+        public AdsType getAdsType() {
+            return adsType;
+        }
+
+        @Override
+        @NonNull
+        public AdContentType getAdContentType() {
+            return adContentType;
         }
 
         @Override
         public void run() {
             adapter.collectHeaderBiddingParams(contextProvider,
                                                adRequestParams,
+                                               this,
                                                this,
                                                mediationConfig);
         }

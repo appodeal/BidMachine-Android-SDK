@@ -4,7 +4,7 @@ def mintegralVersion = '9.13.5'
 
 android {
     defaultConfig {
-        versionCode 1
+        versionCode 2
     }
 }
 

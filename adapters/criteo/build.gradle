@@ -6,10 +6,6 @@ android {
     }
 }
 
-ext {
-    minBidMachineSdkVersion = '1.3.3'
-}
-
 apply from: '../adapters.gradle'
 
 dependencies {}
