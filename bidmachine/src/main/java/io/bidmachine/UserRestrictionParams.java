@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 
 import com.explorestack.protobuf.adcom.Context;
 
+import io.bidmachine.core.DeviceInfo;
 import io.bidmachine.models.DataRestrictions;
 import io.bidmachine.models.IUserRestrictionsParams;
 import io.bidmachine.models.RequestParams;

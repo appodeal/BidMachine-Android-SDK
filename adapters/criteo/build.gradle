@@ -1,0 +1,15 @@
+apply plugin: 'com.android.library'
+
+android {
+    defaultConfig {
+        versionCode 1
+    }
+}
+
+ext {
+    minBidMachineSdkVersion = '1.3.3'
+}
+
+apply from: '../adapters.gradle'
+
+dependencies {}

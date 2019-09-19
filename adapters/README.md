@@ -5,6 +5,7 @@ We have formally separated network adapters to enable an independent release cad
 Supported networks:
 * [Amazon](amazon)
 * [AdColony](adcolony)
+* [Criteo](criteo)
 * [Facebook](facebook)
 * [Mintegral](mintegral)
 * [myTarget](my_target)
