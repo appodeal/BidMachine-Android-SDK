@@ -100,7 +100,7 @@ class CriteoAdapter extends NetworkAdapter {
             @Override
             public void run() {
                 HttpsURLConnection urlConnection = null;
-                InputStream inputStream;
+                InputStream inputStream = null;
                 try {
                     urlConnection = (HttpsURLConnection) getUrl(context,
                                                                 eventType,
@@ -137,6 +137,12 @@ class CriteoAdapter extends NetworkAdapter {
                     try {
                         if (urlConnection != null) {
                             urlConnection.disconnect();
+                        }
+                    } catch (Exception ignore) {
+                    }
+                    try {
+                        if (inputStream != null) {
+                            inputStream.close();
                         }
                     } catch (Exception ignore) {
                     }
