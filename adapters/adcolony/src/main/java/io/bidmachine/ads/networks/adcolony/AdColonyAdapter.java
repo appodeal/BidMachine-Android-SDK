@@ -58,25 +58,26 @@ class AdColonyAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
     }
 
     @Override
-    public void collectHeaderBiddingParams(@NonNull final ContextProvider contextProvider,
-                                           @NonNull final UnifiedAdRequestParams requestParams,
-                                           @NonNull final HeaderBiddingCollectParamsCallback callback,
+    public void collectHeaderBiddingParams(@NonNull ContextProvider contextProvider,
+                                           @NonNull UnifiedAdRequestParams adRequestParams,
+                                           @NonNull HeaderBiddingAdRequestParams hbAdRequestParams,
+                                           @NonNull final HeaderBiddingCollectParamsCallback collectCallback,
                                            @NonNull Map<String, String> mediationConfig) {
         String appId = mediationConfig.get(AdColonyConfig.KEY_APP_ID);
         if (TextUtils.isEmpty(appId)) {
-            callback.onCollectFail(BMError.requestError("App id not provided"));
+            collectCallback.onCollectFail(BMError.requestError("App id not provided"));
             return;
         }
         assert appId != null;
         String zoneId = extractZoneId(mediationConfig);
         if (TextUtils.isEmpty(zoneId)) {
-            callback.onCollectFail(BMError.requestError("Zone id not provided"));
+            collectCallback.onCollectFail(BMError.requestError("Zone id not provided"));
             return;
         }
         assert zoneId != null;
         String storeId = mediationConfig.get(AdColonyConfig.KEY_STORE_ID);
         if (TextUtils.isEmpty(storeId)) {
-            callback.onCollectFail(BMError.requestError("Store id not provided"));
+            collectCallback.onCollectFail(BMError.requestError("Store id not provided"));
             return;
         }
         assert storeId != null;
@@ -84,11 +85,11 @@ class AdColonyAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
             if (!isAdapterInitialized) {
                 AdColony.configure(
                         (Application) contextProvider.getContext().getApplicationContext(),
-                        createAppOptions(contextProvider.getContext(), requestParams, storeId),
+                        createAppOptions(contextProvider.getContext(), adRequestParams, storeId),
                         appId,
                         zonesCache.toArray(new String[0]));
                 if (!isAdColonyConfigured()) {
-                    callback.onCollectFail(BMError.TimeoutError);
+                    collectCallback.onCollectFail(BMError.TimeoutError);
                     return;
                 }
                 isAdapterInitialized = true;
@@ -101,19 +102,19 @@ class AdColonyAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
 
         AdColonyZone zone = AdColony.getZone(zoneId);
         if (zone != null && zone.isValid()) {
-            callback.onCollectFinished(params);
+            collectCallback.onCollectFinished(params);
         } else {
             AdColony.requestInterstitial(zoneId, new AdColonyInterstitialListener() {
                 @Override
                 public void onRequestFilled(AdColonyInterstitial adColonyInterstitial) {
-                    callback.onCollectFinished(params);
+                    collectCallback.onCollectFinished(params);
                 }
 
                 @Override
                 public void onRequestNotFilled(AdColonyZone zone) {
-                    callback.onCollectFail(BMError.NoContent);
+                    collectCallback.onCollectFail(BMError.NoContent);
                 }
-            }, createAdOptions(requestParams));
+            }, createAdOptions(adRequestParams));
         }
     }
 

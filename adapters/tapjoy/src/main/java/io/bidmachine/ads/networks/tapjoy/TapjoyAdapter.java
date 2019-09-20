@@ -53,17 +53,18 @@ class TapjoyAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
     @Override
     public void collectHeaderBiddingParams(@NonNull ContextProvider contextProvider,
                                            @NonNull UnifiedAdRequestParams adRequestParams,
-                                           @NonNull final HeaderBiddingCollectParamsCallback callback,
+                                           @NonNull HeaderBiddingAdRequestParams hbAdRequestParams,
+                                           @NonNull final HeaderBiddingCollectParamsCallback collectCallback,
                                            @NonNull Map<String, String> mediationConfig) {
         final String sdkKey = mediationConfig.get(TapjoyConfig.KEY_SDK);
         if (TextUtils.isEmpty(sdkKey)) {
-            callback.onCollectFail(BMError.requestError("sdk_key not provided"));
+            collectCallback.onCollectFail(BMError.requestError("sdk_key not provided"));
             return;
         }
         assert sdkKey != null;
         final String placementName = mediationConfig.get(TapjoyConfig.KEY_PLACEMENT_NAME);
         if (TextUtils.isEmpty(placementName)) {
-            callback.onCollectFail(BMError.requestError("placement_name not provided"));
+            collectCallback.onCollectFail(BMError.requestError("placement_name not provided"));
             return;
         }
         assert placementName != null;
@@ -75,12 +76,12 @@ class TapjoyAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
                 params.put(TapjoyConfig.KEY_SDK, sdkKey);
                 params.put(TapjoyConfig.KEY_PLACEMENT_NAME, placementName);
                 params.put(TapjoyConfig.KEY_TOKEN, Tapjoy.getUserToken());
-                callback.onCollectFinished(params);
+                collectCallback.onCollectFinished(params);
             }
 
             @Override
             public void onInitializationFail(BMError error) {
-                callback.onCollectFail(error);
+                collectCallback.onCollectFail(error);
             }
         });
     }

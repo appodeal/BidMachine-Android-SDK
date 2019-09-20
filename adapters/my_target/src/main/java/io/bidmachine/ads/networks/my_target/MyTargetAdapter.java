@@ -50,17 +50,18 @@ class MyTargetAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
 
     @Override
     public void collectHeaderBiddingParams(@NonNull ContextProvider contextProvider,
-                                           @NonNull UnifiedAdRequestParams requestParams,
-                                           @NonNull HeaderBiddingCollectParamsCallback callback,
+                                           @NonNull UnifiedAdRequestParams adRequestParams,
+                                           @NonNull HeaderBiddingAdRequestParams hbAdRequestParams,
+                                           @NonNull HeaderBiddingCollectParamsCallback collectCallback,
                                            @NonNull Map<String, String> mediationConfig) {
         String slotId = mediationConfig.get(MyTargetConfig.KEY_SLOT_ID);
         if (TextUtils.isEmpty(slotId)) {
-            callback.onCollectFail(BMError.requestError("slot_id not provided"));
+            collectCallback.onCollectFail(BMError.requestError("slot_id not provided"));
             return;
         }
-        updateRestrictions(requestParams);
+        updateRestrictions(adRequestParams);
         Map<String, String> params = Collections.singletonMap(MyTargetConfig.KEY_SLOT_ID, slotId);
-        callback.onCollectFinished(params);
+        collectCallback.onCollectFinished(params);
     }
 
     private void updateRestrictions(@NonNull UnifiedAdRequestParams adRequestParams) {
