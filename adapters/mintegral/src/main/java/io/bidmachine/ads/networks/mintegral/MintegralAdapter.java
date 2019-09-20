@@ -19,6 +19,7 @@ import java.util.Map;
 
 import io.bidmachine.AdsType;
 import io.bidmachine.ContextProvider;
+import io.bidmachine.HeaderBiddingAdRequestParams;
 import io.bidmachine.HeaderBiddingAdapter;
 import io.bidmachine.HeaderBiddingCollectParamsCallback;
 import io.bidmachine.NetworkAdapter;
@@ -63,25 +64,26 @@ public class MintegralAdapter extends NetworkAdapter implements HeaderBiddingAda
 
     @Override
     public void collectHeaderBiddingParams(@NonNull final ContextProvider contextProvider,
-                                           @NonNull UnifiedAdRequestParams requestParams,
-                                           @NonNull final HeaderBiddingCollectParamsCallback callback,
+                                           @NonNull UnifiedAdRequestParams adRequestParams,
+                                           @NonNull HeaderBiddingAdRequestParams hbAdRequestParams,
+                                           @NonNull final HeaderBiddingCollectParamsCallback collectCallback,
                                            @NonNull Map<String, String> mediationConfig) {
         final String appId = mediationConfig.get(MintegralConfig.KEY_APP_ID);
         if (TextUtils.isEmpty(appId)) {
-            callback.onCollectFail(BMError.requestError("app_id not provided"));
+            collectCallback.onCollectFail(BMError.requestError("app_id not provided"));
             return;
         }
         final String apiKey = mediationConfig.get(MintegralConfig.KEY_API_KEY);
         if (TextUtils.isEmpty(apiKey)) {
-            callback.onCollectFail(BMError.requestError("api_key not provided"));
+            collectCallback.onCollectFail(BMError.requestError("api_key not provided"));
             return;
         }
         final String unitId = mediationConfig.get(MintegralConfig.KEY_UNIT_ID);
         if (TextUtils.isEmpty(unitId)) {
-            callback.onCollectFail(BMError.requestError("unit_id not provided"));
+            collectCallback.onCollectFail(BMError.requestError("unit_id not provided"));
             return;
         }
-        syncState(contextProvider, requestParams, new SyncCallback() {
+        syncState(contextProvider, adRequestParams, new SyncCallback() {
             @Override
             public void onSyncFinished() {
                 synchronized (MintegralAdapter.class) {
@@ -96,7 +98,7 @@ public class MintegralAdapter extends NetworkAdapter implements HeaderBiddingAda
                 // api 27 or higher ads not load
                 final String buyerUid = BidManager.getBuyerUid(contextProvider.getContext());
                 if (TextUtils.isEmpty(buyerUid)) {
-                    callback.onCollectFail(BMError.requestError("buyerUid getting failed"));
+                    collectCallback.onCollectFail(BMError.requestError("buyerUid getting failed"));
                     return;
                 }
                 final HashMap<String, String> params = new HashMap<>();
@@ -104,7 +106,7 @@ public class MintegralAdapter extends NetworkAdapter implements HeaderBiddingAda
                 params.put(MintegralConfig.KEY_API_KEY, apiKey);
                 params.put(MintegralConfig.KEY_UNIT_ID, unitId);
                 params.put(MintegralConfig.KEY_BUYER_UID, buyerUid);
-                callback.onCollectFinished(params);
+                collectCallback.onCollectFinished(params);
             }
         });
     }
