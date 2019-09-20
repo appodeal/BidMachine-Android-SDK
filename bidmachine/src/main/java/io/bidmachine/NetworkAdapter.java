@@ -1,6 +1,7 @@
 package io.bidmachine;
 
 import android.support.annotation.NonNull;
+
 import io.bidmachine.unified.UnifiedAdRequestParams;
 import io.bidmachine.unified.UnifiedBannerAd;
 import io.bidmachine.unified.UnifiedFullscreenAd;

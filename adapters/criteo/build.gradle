@@ -1,0 +1,11 @@
+apply plugin: 'com.android.library'
+
+android {
+    defaultConfig {
+        versionCode 1
+    }
+}
+
+apply from: '../adapters.gradle'
+
+dependencies {}

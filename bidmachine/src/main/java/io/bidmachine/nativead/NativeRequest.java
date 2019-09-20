@@ -1,6 +1,11 @@
 package io.bidmachine.nativead;
 
 import android.support.annotation.NonNull;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import io.bidmachine.AdRequest;
 import io.bidmachine.AdsType;
 import io.bidmachine.MediaAssetType;
@@ -8,10 +13,6 @@ import io.bidmachine.TargetingParams;
 import io.bidmachine.models.DataRestrictions;
 import io.bidmachine.models.INativeRequestBuilder;
 import io.bidmachine.unified.UnifiedNativeAdRequestParams;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public final class NativeRequest extends AdRequest<NativeRequest, UnifiedNativeAdRequestParams> {
 
@@ -33,7 +34,7 @@ public final class NativeRequest extends AdRequest<NativeRequest, UnifiedNativeA
     @Override
     protected UnifiedNativeAdRequestParams createUnifiedAdRequestParams(@NonNull TargetingParams targetingParams,
                                                                         @NonNull DataRestrictions dataRestrictions) {
-        return new NativeUnifiedRequestParams(targetingParams, dataRestrictions);
+        return new NativeUnifiedAdRequestParams(targetingParams, dataRestrictions);
     }
 
     public static final class Builder extends AdRequestBuilderImpl<Builder, NativeRequest>
@@ -54,10 +55,11 @@ public final class NativeRequest extends AdRequest<NativeRequest, UnifiedNativeA
 
     }
 
-    private class NativeUnifiedRequestParams extends BaseUnifiedRequestParams implements UnifiedNativeAdRequestParams {
+    private class NativeUnifiedAdRequestParams extends BaseUnifiedAdRequestParams
+            implements UnifiedNativeAdRequestParams {
 
-        NativeUnifiedRequestParams(@NonNull TargetingParams targetingParams,
-                                   @NonNull DataRestrictions dataRestrictions) {
+        NativeUnifiedAdRequestParams(@NonNull TargetingParams targetingParams,
+                                     @NonNull DataRestrictions dataRestrictions) {
             super(targetingParams, dataRestrictions);
         }
 

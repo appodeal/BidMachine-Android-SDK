@@ -38,7 +38,7 @@ public final class BannerRequest extends AdRequest<BannerRequest, UnifiedBannerA
     @Override
     protected UnifiedBannerAdRequestParams createUnifiedAdRequestParams(@NonNull TargetingParams targetingParams,
                                                                         @NonNull DataRestrictions dataRestrictions) {
-        return new BannerUnifiedRequestParams(targetingParams, dataRestrictions);
+        return new BannerUnifiedAdRequestParams(targetingParams, dataRestrictions);
     }
 
     public static final class Builder extends AdRequestBuilderImpl<Builder, BannerRequest>
@@ -69,10 +69,11 @@ public final class BannerRequest extends AdRequest<BannerRequest, UnifiedBannerA
     public interface AdRequestListener extends AdRequest.AdRequestListener<BannerRequest> {
     }
 
-    private class BannerUnifiedRequestParams extends BaseUnifiedRequestParams implements UnifiedBannerAdRequestParams {
+    private class BannerUnifiedAdRequestParams extends BaseUnifiedAdRequestParams
+            implements UnifiedBannerAdRequestParams {
 
-        BannerUnifiedRequestParams(@NonNull TargetingParams targetingParams,
-                                   @NonNull DataRestrictions dataRestrictions) {
+        BannerUnifiedAdRequestParams(@NonNull TargetingParams targetingParams,
+                                     @NonNull DataRestrictions dataRestrictions) {
             super(targetingParams, dataRestrictions);
         }
 

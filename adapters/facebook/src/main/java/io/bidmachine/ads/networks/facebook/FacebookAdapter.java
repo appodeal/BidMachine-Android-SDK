@@ -65,18 +65,19 @@ class FacebookAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
 
     @Override
     public void collectHeaderBiddingParams(@NonNull ContextProvider contextProvider,
-                                           @NonNull UnifiedAdRequestParams requestParams,
-                                           @NonNull final HeaderBiddingCollectParamsCallback callback,
+                                           @NonNull UnifiedAdRequestParams adRequestParams,
+                                           @NonNull HeaderBiddingAdRequestParams hbAdRequestParams,
+                                           @NonNull final HeaderBiddingCollectParamsCallback collectCallback,
                                            @NonNull Map<String, String> mediationConfig) {
         final String appId = mediationConfig.get(FacebookConfig.KEY_APP_ID);
         if (TextUtils.isEmpty(appId)) {
-            callback.onCollectFail(BMError.requestError("app_id not provided"));
+            collectCallback.onCollectFail(BMError.requestError("app_id not provided"));
             return;
         }
         assert appId != null;
         final String placementId = mediationConfig.get(FacebookConfig.KEY_PLACEMENT_ID);
         if (TextUtils.isEmpty(placementId)) {
-            callback.onCollectFail(BMError.requestError("placement_id (facebook_key) not provided"));
+            collectCallback.onCollectFail(BMError.requestError("placement_id (facebook_key) not provided"));
             return;
         }
         assert placementId != null;
@@ -87,12 +88,12 @@ class FacebookAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
                 params.put(FacebookConfig.KEY_APP_ID, appId);
                 params.put(FacebookConfig.KEY_PLACEMENT_ID, placementId);
                 params.put(FacebookConfig.KEY_TOKEN, bidderToken);
-                callback.onCollectFinished(params);
+                collectCallback.onCollectFinished(params);
             }
 
             @Override
             public void onInitializationFailed() {
-                callback.onCollectFail(BMError.Internal);
+                collectCallback.onCollectFail(BMError.Internal);
             }
         });
     }
