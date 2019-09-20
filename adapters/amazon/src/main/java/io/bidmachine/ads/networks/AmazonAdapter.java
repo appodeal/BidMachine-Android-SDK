@@ -62,18 +62,17 @@ class AmazonAdapter extends NetworkAdapter implements HeaderBiddingAdapter {
                                            @NonNull HeaderBiddingAdRequestParams hbAdRequestParams,
                                            @NonNull final HeaderBiddingCollectParamsCallback collectCallback,
                                            @NonNull Map<String, String> mediationConfig) {
-        if (!initialize(contextProvider, adRequestParams, mediationConfig)) {
-            collectCallback.onCollectFail(
-                    BMError.paramError(AmazonConfig.APP_KEY + " not provided"));
-            return;
-        }
         final String slotUuid = mediationConfig.get(AmazonConfig.SLOT_UUID);
         if (TextUtils.isEmpty(slotUuid)) {
             collectCallback.onCollectFail(
                     BMError.paramError(AmazonConfig.SLOT_UUID + " not provided"));
             return;
         }
-
+        if (!initialize(contextProvider, adRequestParams, mediationConfig)) {
+            collectCallback.onCollectFail(
+                    BMError.paramError(AmazonConfig.APP_KEY + " not provided"));
+            return;
+        }
         final AdsType adsType = hbAdRequestParams.getAdsType();
         final AdContentType adContentType = hbAdRequestParams.getAdContentType();
         if (adsType == AdsType.Banner) {
