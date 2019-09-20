@@ -7,7 +7,7 @@ include ':bidmachine', ':bidmachine-test-app', ':appodeal_ads_core', ':adapters'
  * networks which names are provided). Both parameters can work together.
  */
 gradle.ext {
-    includingAdNetworks = ["adcolony", "facebook", "my_target", "tapjoy", "mintegral"]
+//    includingAdNetworks = ["adcolony"]
 //    excludingAdNetworks = ["ogury"]
 }
 

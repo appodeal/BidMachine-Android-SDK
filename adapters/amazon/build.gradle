@@ -1,0 +1,17 @@
+apply plugin: 'com.android.library'
+
+android {
+    defaultConfig {
+        versionCode 1
+    }
+}
+
+apply from: '../adapters.gradle'
+
+dependencies {
+    adapterDependency 'com.explorestack.amazon:sdk.dtb:8.0.0'
+    adapterDependency("com.google.android.gms:play-services-ads:15.0.0") {
+        exclude module: 'support-v4'
+        exclude module: 'support-v7'
+    }
+}

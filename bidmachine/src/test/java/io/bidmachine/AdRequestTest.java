@@ -99,7 +99,7 @@ public class AdRequestTest {
         @NonNull
         @Override
         protected UnifiedAdRequestParams createUnifiedAdRequestParams(@NonNull TargetingParams targetingParams, @NonNull DataRestrictions dataRestrictions) {
-            return new BaseUnifiedRequestParams(targetingParams, dataRestrictions);
+            return new BaseUnifiedAdRequestParams(targetingParams, dataRestrictions);
         }
 
     }

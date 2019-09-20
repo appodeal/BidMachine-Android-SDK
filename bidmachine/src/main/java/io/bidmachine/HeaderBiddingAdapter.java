@@ -1,9 +1,10 @@
 package io.bidmachine;
 
 import android.support.annotation.NonNull;
-import io.bidmachine.unified.UnifiedAdRequestParams;
 
 import java.util.Map;
+
+import io.bidmachine.unified.UnifiedAdRequestParams;
 
 public interface HeaderBiddingAdapter {
 
@@ -12,8 +13,9 @@ public interface HeaderBiddingAdapter {
     String getVersion();
 
     void collectHeaderBiddingParams(@NonNull ContextProvider contextProvider,
-                                    @NonNull UnifiedAdRequestParams requestParams,
-                                    @NonNull HeaderBiddingCollectParamsCallback callback,
+                                    @NonNull UnifiedAdRequestParams adRequestParams,
+                                    @NonNull HeaderBiddingAdRequestParams hbAdRequestParams,
+                                    @NonNull HeaderBiddingCollectParamsCallback collectCallback,
                                     @NonNull Map<String, String> mediationConfig);
 
 }

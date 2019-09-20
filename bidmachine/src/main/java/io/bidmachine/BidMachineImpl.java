@@ -11,22 +11,22 @@ import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
 import android.util.Base64;
-import io.bidmachine.core.AdvertisingIdClientInfo;
-import io.bidmachine.core.Logger;
-import io.bidmachine.core.NetworkRequest;
-import io.bidmachine.core.Utils;
-import io.bidmachine.models.DataRestrictions;
-import io.bidmachine.models.TargetingInfo;
-import io.bidmachine.protobuf.InitRequest;
-import io.bidmachine.protobuf.InitResponse;
-import io.bidmachine.utils.ActivityHelper;
-import io.bidmachine.utils.BMError;
 
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
+import io.bidmachine.core.AdvertisingIdClientInfo;
+import io.bidmachine.core.Logger;
+import io.bidmachine.core.NetworkRequest;
+import io.bidmachine.core.Utils;
+import io.bidmachine.models.DataRestrictions;
+import io.bidmachine.protobuf.InitRequest;
+import io.bidmachine.protobuf.InitResponse;
+import io.bidmachine.utils.ActivityHelper;
+import io.bidmachine.utils.BMError;
 
 final class BidMachineImpl {
 
@@ -144,17 +144,23 @@ final class BidMachineImpl {
             public void executed(@NonNull AdvertisingIdClientInfo.AdvertisingProfile advertisingProfile) {
                 AdvertisingPersonalData.setLimitAdTrackingEnabled(advertisingProfile.isLimitAdTrackingEnabled());
                 AdvertisingPersonalData.setDeviceAdvertisingId(advertisingProfile.getId());
+                final TargetingParams targetingParams = getTargetingParams();
+                final DataRestrictions dataRestrictions = getUserRestrictionParams();
+                NetworkRegistry.initializeNetworks(
+                        new SimpleContextProvider(context),
+                        new UnifiedAdRequestParamsImpl(targetingParams, dataRestrictions),
+                        new NetworkRegistry.NetworksInitializeCallback() {
+                            @Override
+                            public void onNetworksInitialized() {
+                                AdRequestExecutor.get().enable();
+                            }
+                        });
                 requestInitData(context, sellerId, callback);
             }
         });
         topActivity = ActivityHelper.getTopActivity();
         ((Application) context.getApplicationContext())
                 .registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks());
-        final DataRestrictions dataRestrictions = getUserRestrictionParams();
-        final TargetingInfo targetingInfo = new TargetingInfoImpl(dataRestrictions, getTargetingParams());
-        NetworkRegistry.initializeNetworks(
-                new SimpleContextProvider(context),
-                new SimpleUnifiedAdRequestParams(dataRestrictions, targetingInfo));
         isInitialized = true;
     }
 
@@ -209,7 +215,10 @@ final class BidMachineImpl {
         currentInitRequest = new ApiRequest.Builder<InitRequest, InitResponse>()
                 .url(currentInitUrl)
                 .setDataBinder(new ApiRequest.ApiInitDataBinder())
-                .setRequestData(OrtbUtils.obtainInitRequest(context, sellerId, targetingParams, userRestrictionParams))
+                .setRequestData(OrtbUtils.obtainInitRequest(context,
+                                                            sellerId,
+                                                            targetingParams,
+                                                            userRestrictionParams))
                 .setCallback(new NetworkRequest.Callback<InitResponse, BMError>() {
                     @Override
                     public void onSuccess(@Nullable InitResponse result) {
@@ -222,9 +231,9 @@ final class BidMachineImpl {
                         Utils.cancelBackgroundThreadTask(rescheduleInitRunnable);
                         notifyInitializationFinished(callback);
                         BidMachineEvents.eventFinish(trackingObject,
-                                TrackEventType.InitLoading,
-                                null,
-                                null);
+                                                     TrackEventType.InitLoading,
+                                                     null,
+                                                     null);
                     }
 
                     @Override
@@ -272,12 +281,17 @@ final class BidMachineImpl {
     }
 
     private void storeInitResponse(@NonNull Context context, @NonNull InitResponse response) {
-        SharedPreferences preferences = context.getSharedPreferences("BidMachinePref", Context.MODE_PRIVATE);
-        preferences.edit().putString(PREF_INIT_DATA, Base64.encodeToString(response.toByteArray(), Base64.DEFAULT)).apply();
+        SharedPreferences preferences = context.getSharedPreferences("BidMachinePref",
+                                                                     Context.MODE_PRIVATE);
+        preferences.edit()
+                .putString(PREF_INIT_DATA,
+                           Base64.encodeToString(response.toByteArray(), Base64.DEFAULT))
+                .apply();
     }
 
     private void loadStoredInitResponse(@NonNull Context context) {
-        SharedPreferences preferences = context.getSharedPreferences("BidMachinePref", Context.MODE_PRIVATE);
+        SharedPreferences preferences = context.getSharedPreferences("BidMachinePref",
+                                                                     Context.MODE_PRIVATE);
         if (preferences.contains(PREF_INIT_DATA)) {
             try {
                 InitResponse initResponse = InitResponse.parseFrom(

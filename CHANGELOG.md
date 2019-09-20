@@ -1,3 +1,8 @@
+## Version 1.3.3 (September 20, 2019)
+**Features**:
+* Added Amazon network adapter for Header-Bidding
+* Added Criteo network adapter for Header-Bidding
+
 ## Version 1.3.2 (September 12, 2019)
 **Features**:
 * Update compatibility with Google's Protobuf libraries
