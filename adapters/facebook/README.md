@@ -27,3 +27,7 @@ BidMachine.registerNetworks(
                         .withMediationConfig(AdsFormat.InterstitialStatic, "YOUR_PLACEMENT_ID")
                         .withMediationConfig(AdsFormat.RewardedVideo, "YOUR_PLACEMENT_ID"));
 ```
+
+## What's new in this version
+
+Please view the [changelog](CHANGELOG.md) for details.
