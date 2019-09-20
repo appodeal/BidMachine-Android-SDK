@@ -53,6 +53,7 @@ import io.bidmachine.BidMachine;
 import io.bidmachine.BuildConfig;
 import io.bidmachine.InitializationCallback;
 import io.bidmachine.MediaAssetType;
+import io.bidmachine.ads.networks.AmazonConfig;
 import io.bidmachine.ads.networks.adcolony.AdColonyConfig;
 import io.bidmachine.ads.networks.criteo.CriteoConfig;
 import io.bidmachine.ads.networks.facebook.FacebookConfig;
@@ -792,6 +793,49 @@ public class MainActivity extends AppCompatActivity {
                             "        }\n" +
                             "    ]\n" +
                             "}"),
+            new OptionalNetwork(
+                    6, "Amazon",
+                    new AmazonConfig("a9_onboarding_app_id")
+                            .withMediationConfig(AdsFormat.Banner_320x50,
+                                                 "5ab6a4ae-4aa5-43f4-9da4-e30755f2b295")
+                            .withMediationConfig(AdsFormat.Banner_300x250,
+                                                 "54fb2d08-c222-40b1-8bbe-4879322dc04b")
+                            .withMediationConfig(AdsFormat.Banner_728x90,
+                                                 "bed17ec3-b185-453e-b2a8-4a3c6bb9234d")
+                            .withMediationConfig(AdsFormat.InterstitialStatic,
+                                                 "4e918ac0-5c68-4fe1-8d26-4e76e8f74831")
+                            .withMediationConfig(AdsFormat.InterstitialVideo,
+                                                 "4acc26e6-3ada-4ee8-bae0-753c1e0ad278"),
+                    "{\n"
+                            + "    \"network\": \"amazon\",\n"
+                            + "    \"app_key\": \"a9_onboarding_app_id\",\n"
+                            + "    \"ad_units\": [\n"
+                            + "        {\n"
+                            + "            \"format\": \"banner\",\n"
+                            + "            \"slot_uuid\": \"5ab6a4ae-4aa5-43f4-9da4-e30755f2b295\"\n"
+                            + "        },\n"
+                            + "        {\n"
+                            + "            \"format\": \"banner_320x50\",\n"
+                            + "            \"slot_uuid\": \"5ab6a4ae-4aa5-43f4-9da4-e30755f2b295\"\n"
+                            + "        },\n"
+                            + "        {\n"
+                            + "            \"format\": \"banner_300x250\",\n"
+                            + "            \"slot_uuid\": \"54fb2d08-c222-40b1-8bbe-4879322dc04b\"\n"
+                            + "        },\n"
+                            + "        {\n"
+                            + "            \"format\": \"banner_728x90\",\n"
+                            + "            \"slot_uuid\": \"bed17ec3-b185-453e-b2a8-4a3c6bb9234d\"\n"
+                            + "        },\n"
+                            + "        {\n"
+                            + "            \"format\": \"interstitial_static\",\n"
+                            + "            \"slot_uuid\": \"4e918ac0-5c68-4fe1-8d26-4e76e8f74831\"\n"
+                            + "        },\n"
+                            + "        {\n"
+                            + "            \"format\":\"interstitial_video\",\n"
+                            + "            \"slot_uuid\":\"4acc26e6-3ada-4ee8-bae0-753c1e0ad278\"\n"
+                            + "        }\n"
+                            + "    ]\n"
+                            + "}"),
             new OptionalNetwork(7, "Criteo",
                                 new CriteoConfig("3703"),
                                 "{\n"

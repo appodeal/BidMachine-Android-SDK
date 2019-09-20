@@ -3,6 +3,7 @@
 We have formally separated network adapters to enable an independent release cadence.
 
 Supported networks:
+* [Amazon](amazon)
 * [AdColony](adcolony)
 * [Criteo](criteo)
 * [Facebook](facebook)
