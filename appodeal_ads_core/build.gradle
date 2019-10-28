@@ -63,7 +63,7 @@ task prepareAppodealAdCore_helper(dependsOn: repackJarAdsCore, type: Zip, group:
         archiveName sprintf('../appodeal_ads_core/build/intermediates/intermediate-jars/debug/ads_core.jar')
     }
     from({
-        zipTree(new File(projectDir, '../appodeal_ads_core/build/intermediates/intermediate-jars/debug/full.jar'))
+        zipTree(new File(projectDir, '../appodeal_ads_core/build/intermediates/intermediate-jars/debug/classes.jar'))
     }) {
         include '**'
     }
@@ -76,7 +76,7 @@ task prepareAppodealAdsCore(dependsOn: prepareAppodealAdCore_helper, type: JavaE
             "jarjar-1.4.jar",
             "process",
             "jarjar_rules.txt",
-            sprintf("../appodeal_ads_core/build/intermediates/intermediate-jars/debug/full.jar"),
+            sprintf("../appodeal_ads_core/build/intermediates/intermediate-jars/debug/classes.jar"),
             sprintf("../appodeal_ads_core/build/intermediates/intermediate-jars/debug/ads_core.jar")
     ]
 }
