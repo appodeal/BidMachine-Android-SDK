@@ -59,6 +59,7 @@ import io.bidmachine.ads.networks.criteo.CriteoConfig;
 import io.bidmachine.ads.networks.facebook.FacebookConfig;
 import io.bidmachine.ads.networks.mintegral.MintegralConfig;
 import io.bidmachine.ads.networks.my_target.MyTargetConfig;
+import io.bidmachine.ads.networks.smaato.SmaatoConfig;
 import io.bidmachine.ads.networks.tapjoy.TapjoyConfig;
 import io.bidmachine.banner.BannerSize;
 import io.bidmachine.banner.BannerView;
@@ -841,6 +842,32 @@ public class MainActivity extends AppCompatActivity {
                                 "{\n"
                                         + "    \"network\":\"criteo\",\n"
                                         + "    \"sender_id\":\"3703\"\n"
+                                        + "}"),
+            new OptionalNetwork(8, "Smaato",
+                                new SmaatoConfig("1100042525")
+                                        .withMediationConfig(AdsFormat.Banner_320x50,
+                                                             "130563103")
+                                        .withMediationConfig(AdsFormat.Interstitial,
+                                                             "130626426")
+                                        .withMediationConfig(AdsFormat.Rewarded,
+                                                             "130626428"),
+                                "{\n"
+                                        + "    \"network\": \"smaato\",\n"
+                                        + "    \"publisher_id\": \"1100042525\",\n"
+                                        + "    \"ad_units\": ["
+                                        + "        {\n"
+                                        + "            \"format\": \"banner_320x50\",\n"
+                                        + "            \"ad_space_id\": \"130563103\"\n"
+                                        + "        },"
+                                        + "        {\n"
+                                        + "            \"format\": \"interstitial\",\n"
+                                        + "            \"ad_space_id\": \"130626426\"\n"
+                                        + "        },"
+                                        + "        {\n"
+                                        + "            \"format\": \"rewarded\",\n"
+                                        + "            \"ad_space_id\": \"130626428\"\n"
+                                        + "        }"
+                                        + "    ]\n"
                                         + "}")
     };
 }

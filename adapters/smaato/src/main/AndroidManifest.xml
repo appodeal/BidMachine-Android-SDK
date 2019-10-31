@@ -1,0 +1,11 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="io.bidmachine.ads.networks.smaato">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <uses-sdk tools:overrideLibrary="com.smaato.sdk,com.smaato.sdk.banner,com.smaato.sdk.interstitial,com.smaato.sdk.rewarded,com.smaato.sdk.richmedia,com.smaato.sdk.video,com.smaato.sdk.core,com.smaato.sdk.ub" />
+
+</manifest>

@@ -1,0 +1,24 @@
+apply plugin: 'com.android.library'
+
+android {
+    defaultConfig {
+        versionCode 1
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+apply from: '../adapters.gradle'
+
+repositories {
+    maven {
+        url "https://s3.amazonaws.com/smaato-sdk-releases/"
+    }
+}
+
+dependencies {
+    adapterDependency 'com.smaato.android.sdk:smaato-sdk:21.1.4'
+    adapterDependency 'com.smaato.android.sdk:smaato-sdk-unified-bidding:21.1.4'
+}
